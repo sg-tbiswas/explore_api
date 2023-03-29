@@ -32,7 +32,12 @@ const getExploreData = async (req, res) => {
   let noHOAFilter = {};
   let maxHOAFilter = {};
   let maxDOMFilter = {};
+  let DATA_COUNT = 36;
   let customQuery = [];
+
+  if (params.pageno) {
+    DATA_COUNT = 36 * parseInt(params.pageno);
+  }
 
   const params = req.query;
   if (!params.adtype) {
@@ -211,8 +216,7 @@ const getExploreData = async (req, res) => {
             ...customQuery,
           ],
         })
-        .skip(0)
-        .limit(10)
+        .limit(DATA_COUNT)
         .toArray()
         .then(async (data) => {
           const dataCollection = [];
