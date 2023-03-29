@@ -67,14 +67,32 @@ async function addRecordsToMongoDB(records, className) {
    */
   const uri = "mongodb://localhost:27017?retryWrites=true&w=majority";
   const client = new MongoClient(uri);
+  //console.log("records", records);
+  const updatedRecords = [];
+  for (const result of records) {
+    let data = result;
+    data.listing_price = result?.listing_price
+      ? parseFloat(result.listing_price)
+      : 0;
+    data.bedrooms = result?.bedrooms ? parseInt(result.bedrooms) : 0;
+    data.bathrooms = result?.bathrooms ? parseInt(result.bathrooms) : 0;
+    data.other_data.DOM = result?.other_data?.DOM
+      ? parseInt(result?.other_data?.DOM)
+      : 0;
 
+    data.other_data.HOA_Fee = result?.other_data["HOA Fee"]
+      ? parseFloat(result?.other_data["HOA Fee"])
+      : 0;
+
+    updatedRecords.push(data);
+  }
   try {
     // Connect to the MongoDB cluster
     await client.connect();
 
     // Make the appropriate DB calls
-    const collection = client.db("gobyHomes").collection("propertyData");
-    await collection.insertMany(records, (err, res) => {
+    const collection = client.db("gobyHomes").collection("ptest2");
+    await collection.insertMany(updatedRecords, (err, res) => {
       if (err) throw err;
       console.log(`${res.insertedCount} documents inserted`);
       client.close();
@@ -172,8 +190,8 @@ const fetchRecords = async (resource, className, keyMapping) => {
       });
       return updatedRecord;
     });
-    console.log(recordsWithUpdatedFields, className);
-    //await addRecordsToMongoDB(recordsWithUpdatedFields, className);
+    // console.log(recordsWithUpdatedFields, className);
+    await addRecordsToMongoDB(recordsWithUpdatedFields, className);
     //await addRecordsToFirestore(recordsWithUpdatedFields, className);
   } catch (err) {
     console.error(`Error occurred in fetchRecords function: ${err.message}`);

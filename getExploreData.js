@@ -1,3 +1,4 @@
+const _ = require("lodash");
 const MongoClient = require("mongodb").MongoClient;
 const uri = "mongodb://localhost:27017?retryWrites=true&w=majority";
 const databasename = "gobyHomes";
@@ -97,48 +98,58 @@ const getExploreData = async (req, res) => {
     };
   }
   if (params.garage) {
-    garageFilter.$ne = "0";
+    garageFilter = {
+      $or: [
+        { "other_data.Garage YN": { $eq: "1" } },
+        { "other_data.Garage_YN": { $eq: "1" } },
+      ],
+    };
   }
   if (params.fireplace) {
-    fireplaceFilter.$ne = "0";
+    fireplaceFilter = {
+      $or: [
+        { "other_data.Fireplace YN": { $eq: "1" } },
+        { "other_data.Fireplace_YN": { $eq: "1" } },
+      ],
+    };
   }
   if (params.basement) {
-    basementFilter.$ne = "0";
+    basementFilter = {
+      $or: [
+        { "other_data.Basement YN": { $eq: "1" } },
+        { "other_data.Basement_YN": { $eq: "1" } },
+      ],
+    };
   }
   if (params.waterView) {
-    waterViewFilter.$ne = "0";
+    waterViewFilter = {
+      $or: [
+        { "other_data.Water View YN": { $eq: "1" } },
+        { "other_data.Water_View_YN": { $eq: "1" } },
+      ],
+    };
   }
   if (params.noHOA) {
-    noHOAFilter.$ne = "0";
+    noHOAFilter = {
+      $or: [
+        { "other_data.HOA Y/N": { $eq: "1" } },
+        { "other_data.HOA_Yu2f_N": { $eq: "1" } },
+      ],
+    };
   }
 
-  if (params.maxHOA) {
-    maxHOAFilter.$lte = parseInt(params.maxHOA);
-  }
   if (params.maxDOM) {
     maxDOMFilter.$lte = parseInt(params.maxDOM);
   }
 
-  const garageFilterResult = queryObjectFilter(
-    garageFilter,
-    "other_data.Garage YN"
-  );
-  const fireplaceFilterResult = queryObjectFilter(
-    fireplaceFilter,
-    "other_data.Fireplace YN"
-  );
-  const basementFilterResult = queryObjectFilter(
-    basementFilter,
-    "other_data.Basement YN"
-  );
-  const waterViewFilterResult = queryObjectFilter(
-    waterViewFilter,
-    "other_data.Water View YN"
-  );
-  const noHOAFilterResult = queryObjectFilter(
-    noHOAFilter,
-    "other_data.HOA Y/N"
-  );
+  if (params.maxHOA) {
+    maxHOAFilter = {
+      $or: [
+        { "other_data.HOA Fee": { $lte: parseInt(params.maxHOA) } },
+        { "other_data.HOA_Fee": { $lte: parseInt(params.maxHOA) } },
+      ],
+    };
+  }
 
   const bedsFilterResult = queryObjectFilter(bedsFilter, "bedrooms");
   const bathsFilterResult = queryObjectFilter(bathFilter, "bathrooms");
@@ -161,11 +172,6 @@ const getExploreData = async (req, res) => {
 
   const statusFilterResult = queryObjectFilter(statusFilter, "status");
 
-  const maxHOAFilterResult = queryObjectFilter(
-    maxHOAFilter,
-    "other_data.HOA_Fee"
-  );
-
   const maxDOMFilterResult = queryObjectFilter(maxDOMFilter, "other_data.DOM");
 
   if (bedsFilterResult) customQuery.push(bedsFilterResult);
@@ -179,16 +185,16 @@ const getExploreData = async (req, res) => {
   if (priceFilterResult) customQuery.push(priceFilterResult);
   if (statusFilterResult) customQuery.push(statusFilterResult);
 
-  if (garageFilterResult) customQuery.push(garageFilterResult);
-  if (fireplaceFilterResult) customQuery.push(fireplaceFilterResult);
-  if (basementFilterResult) customQuery.push(basementFilterResult);
-  if (waterViewFilterResult) customQuery.push(waterViewFilterResult);
-  if (noHOAFilterResult) customQuery.push(noHOAFilterResult);
+  if (!_.isEmpty(garageFilter)) customQuery.push(garageFilter);
+  if (!_.isEmpty(fireplaceFilter)) customQuery.push(fireplaceFilter);
+  if (!_.isEmpty(basementFilter)) customQuery.push(basementFilter);
+  if (!_.isEmpty(waterViewFilter)) customQuery.push(waterViewFilter);
+  if (!_.isEmpty(noHOAFilter)) customQuery.push(noHOAFilter);
+  if (!_.isEmpty(maxHOAFilter)) customQuery.push(maxHOAFilter);
 
-  if (maxHOAFilterResult) customQuery.push(maxHOAFilterResult);
   if (maxDOMFilterResult) customQuery.push(maxDOMFilterResult);
 
-  console.log("here", params, cityFilter);
+  console.log("here", JSON.stringify(customQuery), cityFilter);
   MongoClient.connect(uri)
     .then(async (client) => {
       const connect = client.db(databasename);
@@ -224,7 +230,7 @@ const getExploreData = async (req, res) => {
             // console.log("imagesCollection", imagesCollection);
             //dataCollection.push({ ...result });
           }
-          res.json({ responseData: dataCollection, params });
+          res.status(200).json({ responseData: dataCollection, params });
         });
 
       // await collection.find().forEach(async function (obj) {

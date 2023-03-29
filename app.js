@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 var cors = require("cors");
 var bodyParser = require("body-parser");
 const getExploreData = require("./getExploreData");
+const getSingleExploreData = require("./getSingleExploreData");
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -25,6 +26,7 @@ app.use(bodyParser.json({ limit: "50mb" }));
 
 //localhost:27017
 app.get("/explore", getExploreData);
+app.get("/exploreDetails", getSingleExploreData);
 
 app.listen(PORT, function (err) {
   if (err) console.log("Error in server setup");
