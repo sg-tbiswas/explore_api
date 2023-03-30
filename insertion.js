@@ -1,6 +1,3 @@
-// const admin = require("firebase-admin");
-//const serviceAccount = require("./gobyhomes-qa-firebase-adminsdk-3r0gx-ac944a27b6.json");
-
 const RETS = require("node-rets");
 const fs = require("fs");
 const feildsValues = require("./selected_feild.js");
@@ -8,12 +5,6 @@ const keyMapping = require("./name_change.js");
 const main_field = require("./main_field.js");
 const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-//   databaseURL: "https://gobyhomes-qa.firebaseio.com",
-// });
-
-// const db = admin.firestore();
 
 const client = RETS.initialize({
   loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
@@ -26,73 +17,14 @@ const client = RETS.initialize({
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
-// const addRecordsToFirestore = async (records, className) => {
-//   try {
-//     const collectionRef = db.collection("propertyData");
-//     const batchSize = 500; // Set the batch size as per your requirement
-//     let batchCount = 0;
-
-//     for (let i = 0; i < records.length; i += batchSize) {
-//       const batch = db.batch();
-
-//       for (let j = i; j < i + batchSize && j < records.length; j++) {
-//         const record = records[j];
-//         const docRef = collectionRef.doc();
-//         batch.set(docRef, {
-//           ...record,
-//           className,
-//         });
-//       }
-
-//       await batch.commit();
-//       batchCount++;
-//       console.log(
-//         `Successfully added ${batchSize} records to firestore. Batch ${batchCount}`
-//       );
-//     }
-
-//     console.log(
-//       `Successfully added all ${records.length} records to firestore.`
-//     );
-//   } catch (err) {
-//     console.error("Error adding records to firestore", err.message);
-//     return err;
-//   }
-// };
-
 async function addRecordsToMongoDB(records, className) {
-  /**
-   * Connection URI. Update <username>, <password>, and <your-cluster-url> to reflect your cluster.
-   * See https://docs.mongodb.com/ecosystem/drivers/node/ for more details
-   */
   const uri = "mongodb://localhost:27017?retryWrites=true&w=majority";
   const client = new MongoClient(uri);
-  //console.log("records", records);
-  const updatedRecords = [];
-  for (const result of records) {
-    let data = result;
-    data.listing_price = result?.listing_price
-      ? parseFloat(result.listing_price)
-      : 0;
-    data.bedrooms = result?.bedrooms ? parseInt(result.bedrooms) : 0;
-    data.bathrooms = result?.bathrooms ? parseInt(result.bathrooms) : 0;
-    data.other_data.DOM = result?.other_data?.DOM
-      ? parseInt(result?.other_data?.DOM)
-      : 0;
-
-    data.other_data.HOA_Fee = result?.other_data["HOA Fee"]
-      ? parseFloat(result?.other_data["HOA Fee"])
-      : 0;
-
-    updatedRecords.push(data);
-  }
   try {
-    // Connect to the MongoDB cluster
     await client.connect();
 
-    // Make the appropriate DB calls
     const collection = client.db("gobyHomes").collection("ptest2");
-    await collection.insertMany(updatedRecords, (err, res) => {
+    await collection.insertMany(records, (err, res) => {
       if (err) throw err;
       console.log(`${res.insertedCount} documents inserted`);
       client.close();
@@ -191,8 +123,49 @@ const fetchRecords = async (resource, className, keyMapping) => {
       return updatedRecord;
     });
     // console.log(recordsWithUpdatedFields, className);
-    await addRecordsToMongoDB(recordsWithUpdatedFields, className);
-    //await addRecordsToFirestore(recordsWithUpdatedFields, className);
+
+    const updatedRecords = [];
+    for (const result of recordsWithUpdatedFields) {
+      let data = result;
+      data.listing_price = result?.listing_price
+        ? parseFloat(result.listing_price)
+        : 0;
+      data.bedrooms = result?.bedrooms ? parseInt(result.bedrooms) : 0;
+      data.bathrooms = result?.bathrooms ? parseInt(result.bathrooms) : 0;
+      data.other_data.DOM = result?.other_data?.DOM
+        ? parseInt(result?.other_data?.DOM)
+        : 0;
+
+      data.other_data.HOA_Fee = result?.other_data["HOA Fee"]
+        ? parseFloat(result?.other_data["HOA Fee"])
+        : 0;
+
+      data.other_data["Garage_YN"] = result?.other_data["Garage YN"]
+        ? result?.other_data["Garage YN"]
+        : "0";
+      data.other_data["Fireplace_YN"] = result?.other_data["Fireplace YN"]
+        ? result?.other_data["Fireplace YN"]
+        : "0";
+      data.other_data["Basement_YN"] = result?.other_data["Basement YN"]
+        ? result?.other_data["Basement YN"]
+        : "0";
+      data.other_data["Water_View_YN"] = result?.other_data["Water View YN"]
+        ? result?.other_data["Water View YN"]
+        : "0";
+      data.other_data["HOA_Y/N"] = result?.other_data["HOA Y/N"]
+        ? result?.other_data["HOA Y/N"]
+        : "0";
+
+      delete data.other_data["HOA Fee"];
+      delete data.other_data["Garage YN"];
+      delete data.other_data["Fireplace YN"];
+      delete data.other_data["Basement YN"];
+      delete data.other_data["Water View YN"];
+      delete data.other_data["HOA Y/N"];
+
+      updatedRecords.push(data);
+    }
+    await addRecordsToMongoDB(updatedRecords, className);
   } catch (err) {
     console.error(`Error occurred in fetchRecords function: ${err.message}`);
     throw err;
@@ -220,4 +193,5 @@ const gobyHomes = async () => {
   }
 };
 
-gobyHomes();
+// gobyHomes();
+module.exports = gobyHomes;

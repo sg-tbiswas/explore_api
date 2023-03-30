@@ -35,11 +35,11 @@ const getExploreData = async (req, res) => {
   let DATA_COUNT = 36;
   let customQuery = [];
 
+  const params = req.query;
   if (params.pageno) {
     DATA_COUNT = 36 * parseInt(params.pageno);
   }
 
-  const params = req.query;
   if (!params.adtype) {
     cityFilter = { "address.city": "WASHINGTON" };
   }
@@ -253,14 +253,18 @@ const getExploreData = async (req, res) => {
       //         listing_price: obj?.listing_price
       //           ? parseFloat(obj.listing_price)
       //           : 0,
+      //         "other_data.HOA_Y/N": obj?.other_data?.HOA_Yu2f_N
+      //           ? obj?.other_data?.HOA_Yu2f_N
+      //           : 0,
       //       },
+      //       $unset: { __key__: "", __error__: "", __has_error__: "" },
+      //       $unset: { "other_data.__key__": "" },
       //     }
       //   );
       // });
       // console.log("update done");
     })
     .catch((err) => {
-      // Printing the error message
       console.log(err.Message);
     });
 };

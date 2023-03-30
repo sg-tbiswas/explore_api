@@ -2,8 +2,9 @@ const express = require("express");
 const app = express();
 const PORT = 4001;
 const mongoose = require("mongoose");
-var cors = require("cors");
-var bodyParser = require("body-parser");
+const cors = require("cors");
+const cron = require("node-cron");
+const bodyParser = require("body-parser");
 const getExploreData = require("./getExploreData");
 const getSingleExploreData = require("./getSingleExploreData");
 
@@ -24,9 +25,16 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json({ limit: "50mb" }));
 
-//localhost:27017
 app.get("/explore", getExploreData);
 app.get("/exploreDetails", getSingleExploreData);
+
+cron.schedule("*/30 * * * *", () => {
+  console.log("running a task every 30 minute");
+});
+
+cron.schedule("*/45 * * * *", () => {
+  console.log("running a task every 45 minute");
+});
 
 app.listen(PORT, function (err) {
   if (err) console.log("Error in server setup");
