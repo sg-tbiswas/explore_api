@@ -25,8 +25,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json({ limit: "50mb" }));
 
-app.get("/explore", getExploreData);
-app.get("/exploreDetails", getSingleExploreData);
+app.get("/getProperities", getExploreData);
+app.get("/getPropertyDetails", getSingleExploreData);
 
 cron.schedule("*/30 * * * *", () => {
   console.log("running a task every 30 minute");
