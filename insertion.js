@@ -5,6 +5,7 @@ const keyMapping = require("./name_change.js");
 const main_field = require("./main_field.js");
 const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
+const CONSTANTS = require("./constants");
 
 const client = RETS.initialize({
   loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
@@ -18,12 +19,11 @@ const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
 async function addRecordsToMongoDB(records, className) {
-  const uri = "mongodb://localhost:27017?retryWrites=true&w=majority";
-  const client = new MongoClient(uri);
+  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
     await client.connect();
 
-    const collection = client.db("gobyHomes").collection("ptest2");
+    const collection = client.db(CONSTANTS.DB_NAME).collection("ptest2");
     await collection.insertMany(records, (err, res) => {
       if (err) throw err;
       console.log(`${res.insertedCount} documents inserted`);
@@ -132,6 +132,10 @@ const fetchRecords = async (resource, className, keyMapping) => {
         : 0;
       data.bedrooms = result?.bedrooms ? parseInt(result.bedrooms) : 0;
       data.bathrooms = result?.bathrooms ? parseInt(result.bathrooms) : 0;
+      data.TaxTotalFinishedSqFt = result?.TaxTotalFinishedSqFt
+        ? parseInt(result.TaxTotalFinishedSqFt)
+        : 0;
+
       data.other_data.DOM = result?.other_data?.DOM
         ? parseInt(result?.other_data?.DOM)
         : 0;
@@ -154,6 +158,12 @@ const fetchRecords = async (resource, className, keyMapping) => {
         : "0";
       data.other_data["HOA_Y/N"] = result?.other_data["HOA Y/N"]
         ? result?.other_data["HOA Y/N"]
+        : "0";
+
+      data.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
+        "Condo/Coop Association Y/N"
+      ]
+        ? result?.other_data["Condo/Coop Association Y/N"]
         : "0";
 
       delete data.other_data["HOA Fee"];

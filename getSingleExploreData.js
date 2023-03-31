@@ -1,7 +1,6 @@
 const _ = require("lodash");
 const MongoClient = require("mongodb").MongoClient;
-const uri = "mongodb://localhost:27017?retryWrites=true&w=majority";
-const databasename = "gobyHomes";
+const CONSTANTS = require("./constants");
 
 const queryObjectFilter = (objData, fieldName) => {
   if (Object.keys(objData).length === 0) return "";
@@ -20,9 +19,9 @@ const getSingleExploreData = async (req, res) => {
   }
 
   console.log("here", params);
-  MongoClient.connect(uri)
+  MongoClient.connect(CONSTANTS.DB_CONNECTION_URI)
     .then(async (client) => {
-      const connect = client.db(databasename);
+      const connect = client.db(CONSTANTS.DB_NAME);
       // Connect to collection
       const collection = connect.collection("propertyData");
       const imagesCollection = connect.collection("propertyDataImages");

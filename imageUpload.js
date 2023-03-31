@@ -1,6 +1,7 @@
 const RETS = require("node-rets");
 const fs = require("fs");
 const MongoClient = require("mongodb").MongoClient;
+const CONSTANTS = require("./constants");
 
 const client = RETS.initialize({
   loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
@@ -77,11 +78,10 @@ const getListingIds = async () => {
 };
 
 const addRecordsToMongoDBImage = async (records) => {
-  const uri = "mongodb://localhost:27017?retryWrites=true&w=majority";
-  const client = new MongoClient(uri);
+  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
     await client.connect();
-    const collection = client.db("gobyHomes").collection("pImagesTest");
+    const collection = client.db(CONSTANTS.DB_NAME).collection("pImagesTest");
     await collection.insertMany(records, (err, res) => {
       if (err) throw err;
       console.log(`${res.insertedCount} documents inserted`);
@@ -92,6 +92,18 @@ const addRecordsToMongoDBImage = async (records) => {
   } finally {
     await client.close();
   }
+
+  // const connect = client.db(CONSTANTS.DB_NAME);
+  // const collection = connect.collection("propertyDataImages");
+  //   await collection.find().forEach(async function (obj) {
+  //       await collection.updateOne(
+  //         { _id: obj._id },
+  //         {
+  //           $unset: { __key__: "", __error__: "", __has_error__: "" },
+  //         }
+  //       );
+  //     });
+  //     console.log("update done");
 };
 
 // imageUpload();

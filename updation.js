@@ -6,6 +6,7 @@ const image_list = require("./image_list.js");
 const main_field = require("./main_field.js");
 const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
+const CONSTANTS = require("./constants");
 
 const client = RETS.initialize({
   loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
@@ -108,6 +109,9 @@ const crossCheckRecords = async (result) => {
     : 0;
   newData.bedrooms = result?.bedrooms ? parseInt(result.bedrooms) : 0;
   newData.bathrooms = result?.bathrooms ? parseInt(result.bathrooms) : 0;
+  newData.TaxTotalFinishedSqFt = result?.TaxTotalFinishedSqFt
+    ? parseInt(result.TaxTotalFinishedSqFt)
+    : 0;
   newData.other_data.DOM = result?.other_data?.DOM
     ? parseInt(result?.other_data?.DOM)
     : 0;
@@ -131,19 +135,24 @@ const crossCheckRecords = async (result) => {
   newData.other_data["HOA_Y/N"] = result?.other_data["HOA Y/N"]
     ? result?.other_data["HOA Y/N"]
     : "0";
+  newData.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
+    "Condo/Coop Association Y/N"
+  ]
+    ? result?.other_data["Condo/Coop Association Y/N"]
+    : "0";
+
   delete newData.other_data["HOA Fee"];
   delete newData.other_data["Garage YN"];
   delete newData.other_data["Fireplace YN"];
   delete newData.other_data["Basement YN"];
   delete newData.other_data["Water View YN"];
   delete newData.other_data["HOA Y/N"];
+  delete newData.other_data["Condo/Coop Association Y/N"];
 
-  const uri = "mongodb://localhost:27017?retryWrites=true&w=majority";
-  const client = new MongoClient(uri);
-
+  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
     await client.connect();
-    const collection = client.db("gobyHomes").collection("ptest2");
+    const collection = client.db(CONSTANTS.DB_NAME).collection("ptest2");
     await collection.updateOne(
       { listing_id: result["listing_id"] },
       {
