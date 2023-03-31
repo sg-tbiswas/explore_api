@@ -36,6 +36,7 @@ const getExploreData = async (req, res) => {
   let DATA_COUNT = 24;
   let customQuery = [];
   let homeTypeCustomQuery = [];
+  var homeTypeQueryWrap = {};
 
   const params = req.query;
   if (params.pageno) {
@@ -139,6 +140,7 @@ const getExploreData = async (req, res) => {
     if (params.homeType.indexOf("Land") > -1) {
       homeTypeCustomQuery.push({ property_type: { $eq: "Land" } });
     }
+    homeTypeQueryWrap = { $or: [...homeTypeCustomQuery] };
   }
 
   if (params.zipcode) {
@@ -259,7 +261,7 @@ const getExploreData = async (req, res) => {
       const imagesCollection = connect.collection("propertyDataImages");
       collection
         .find({
-          $and: [cityFilter, ...customQuery, ...homeTypeCustomQuery],
+          $and: [cityFilter, ...customQuery, homeTypeQueryWrap],
         })
         .limit(DATA_COUNT)
         .toArray()

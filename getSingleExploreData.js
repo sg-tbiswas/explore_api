@@ -50,28 +50,6 @@ const getSingleExploreData = async (req, res) => {
             res.status(404).json({ message: "Invalid Listing Id" });
           }
         });
-
-      // await collection.find().forEach(async function (obj) {
-      //   await collection.updateOne(
-      //     { _id: obj._id },
-      //     {
-      //       $set: {
-      //         "other_data.DOM": obj?.other_data?.DOM
-      //           ? parseInt(obj?.other_data?.DOM)
-      //           : 0,
-      //           "other_data.HOA_Fee": obj?.other_data?.HOA_Fee
-      //           ? parseInt(obj?.other_data?.HOA_Fee)
-      //           : 0,
-      //         bedrooms: obj?.bedrooms ? parseInt(obj.bedrooms) : 0,
-      //         bathrooms: obj?.bathrooms ? parseInt(obj.bathrooms) : 0,
-      //         listing_price: obj?.listing_price
-      //           ? parseFloat(obj.listing_price)
-      //           : 0,
-      //       },
-      //     }
-      //   );
-      // });
-      // console.log("update done");
     })
     .catch((err) => {
       // Printing the error message
