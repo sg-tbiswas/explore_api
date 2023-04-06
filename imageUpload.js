@@ -72,8 +72,7 @@ const getListingIds = async () => {
     const listingIds = listingIdData.Objects.map((obj) => obj.ListingId);
     return listingIds;
   } catch (err) {
-    console.error("Error getting listing IDs", err.message);
-    return err;
+    console.error("Error getting listing IDs for Property Images", err.message);
   }
 };
 
@@ -107,5 +106,4 @@ const addRecordsToMongoDBImage = async (records) => {
 };
 
 // imageUpload();
-
-exports.imageUpload = imageUpload;
+module.exports = imageUpload;
