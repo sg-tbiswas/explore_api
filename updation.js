@@ -1,5 +1,6 @@
 const RETS = require("node-rets");
 const fs = require("fs");
+const _ = require("lodash");
 const feildsValues = require("./selected_feild.js");
 const keyMapping = require("./name_change.js");
 const image_list = require("./image_list.js");
@@ -19,6 +20,10 @@ const client = RETS.initialize({
 
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
+
+const textReplace = (str) => {
+  return str.split(" ").join("_");
+};
 
 const recordUpdate = async () => {
   const now = new Date();
@@ -104,6 +109,11 @@ const mapRecord = (record, key) => {
 const crossCheckRecords = async (result) => {
   const newData = { ...result };
 
+  const renamed = _.mapKeys(newData.other_data, function (value, key) {
+    return textReplace(key);
+  });
+  newData.other_data = renamed;
+
   newData.listing_price = result?.listing_price
     ? parseFloat(result.listing_price)
     : 0;
@@ -112,42 +122,36 @@ const crossCheckRecords = async (result) => {
   newData.TaxTotalFinishedSqFt = result?.TaxTotalFinishedSqFt
     ? parseInt(result.TaxTotalFinishedSqFt)
     : 0;
+
   newData.other_data.DOM = result?.other_data?.DOM
     ? parseInt(result?.other_data?.DOM)
     : 0;
 
-  newData.other_data.HOA_Fee = result?.other_data["HOA Fee"]
-    ? parseFloat(result?.other_data["HOA Fee"])
+  newData.other_data.HOA_Fee = result?.other_data["HOA_Fee"]
+    ? parseFloat(result?.other_data["HOA_Fee"])
     : 0;
 
-  newData.other_data["Garage_YN"] = result?.other_data["Garage YN"]
-    ? result?.other_data["Garage YN"]
+  newData.other_data["Garage_YN"] = result?.other_data["Garage_YN"]
+    ? result?.other_data["Garage_YN"]
     : "0";
-  newData.other_data["Fireplace_YN"] = result?.other_data["Fireplace YN"]
-    ? result?.other_data["Fireplace YN"]
+  newData.other_data["Fireplace_YN"] = result?.other_data["Fireplace_YN"]
+    ? result?.other_data["Fireplace_YN"]
     : "0";
-  newData.other_data["Basement_YN"] = result?.other_data["Basement YN"]
-    ? result?.other_data["Basement YN"]
+  newData.other_data["Basement_YN"] = result?.other_data["Basement_YN"]
+    ? result?.other_data["Basement_YN"]
     : "0";
-  newData.other_data["Water_View_YN"] = result?.other_data["Water View YN"]
-    ? result?.other_data["Water View YN"]
+  newData.other_data["Water_View_YN"] = result?.other_data["Water_View_YN"]
+    ? result?.other_data["Water_View_YN"]
     : "0";
-  newData.other_data["HOA_Y/N"] = result?.other_data["HOA Y/N"]
-    ? result?.other_data["HOA Y/N"]
-    : "0";
-  newData.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
-    "Condo/Coop Association Y/N"
-  ]
-    ? result?.other_data["Condo/Coop Association Y/N"]
+  newData.other_data["HOA_Y/N"] = result?.other_data["HOA_Y/N"]
+    ? result?.other_data["HOA_Y/N"]
     : "0";
 
-  delete newData.other_data["HOA Fee"];
-  delete newData.other_data["Garage YN"];
-  delete newData.other_data["Fireplace YN"];
-  delete newData.other_data["Basement YN"];
-  delete newData.other_data["Water View YN"];
-  delete newData.other_data["HOA Y/N"];
-  delete newData.other_data["Condo/Coop Association Y/N"];
+  newData.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
+    "Condo/Coop_Association_Y/N"
+  ]
+    ? result?.other_data["Condo/Coop_Association_Y/N"]
+    : "0";
 
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {

@@ -32,15 +32,15 @@ app.use(bodyParser.json({ limit: "50mb" }));
 app.get("/getProperities", getExploreData);
 app.get("/getPropertyDetails", getSingleExploreData);
 
-cron.schedule("*/30 * * * *", async () => {
+cron.schedule("*/45 * * * *", async () => {
   await gobyHomes();
   await imageUpload();
-  console.log("running a task every 30 minute");
+  console.log("running a task every 45 minute");
 });
 
-cron.schedule("*/45 * * * *", async () => {
+cron.schedule("*/60 * * * *", async () => {
   await recordUpdate();
-  console.log("running a task every 45 minute");
+  console.log("running a task every 60 minute");
 });
 
 // cron.schedule("*/15 * * * *", async () => {

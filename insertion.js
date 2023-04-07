@@ -1,5 +1,6 @@
 const RETS = require("node-rets");
 const fs = require("fs");
+const _ = require("lodash");
 const feildsValues = require("./selected_feild.js");
 const keyMapping = require("./name_change.js");
 const main_field = require("./main_field.js");
@@ -35,6 +36,10 @@ async function addRecordsToMongoDB(records, className) {
     await client.close();
   }
 }
+
+const textReplace = (str) => {
+  return str.split(" ").join("_");
+};
 
 const fetchRecords = async (resource, className, keyMapping) => {
   try {
@@ -127,6 +132,12 @@ const fetchRecords = async (resource, className, keyMapping) => {
     const updatedRecords = [];
     for (const result of recordsWithUpdatedFields) {
       let data = result;
+
+      const renamed = _.mapKeys(data.other_data, function (value, key) {
+        return textReplace(key);
+      });
+      data.other_data = renamed;
+
       data.listing_price = result?.listing_price
         ? parseFloat(result.listing_price)
         : 0;
@@ -140,38 +151,31 @@ const fetchRecords = async (resource, className, keyMapping) => {
         ? parseInt(result?.other_data?.DOM)
         : 0;
 
-      data.other_data.HOA_Fee = result?.other_data["HOA Fee"]
-        ? parseFloat(result?.other_data["HOA Fee"])
+      data.other_data.HOA_Fee = result?.other_data["HOA_Fee"]
+        ? parseFloat(result?.other_data["HOA_Fee"])
         : 0;
 
-      data.other_data["Garage_YN"] = result?.other_data["Garage YN"]
-        ? result?.other_data["Garage YN"]
+      data.other_data["Garage_YN"] = result?.other_data["Garage_YN"]
+        ? result?.other_data["Garage_YN"]
         : "0";
-      data.other_data["Fireplace_YN"] = result?.other_data["Fireplace YN"]
-        ? result?.other_data["Fireplace YN"]
+      data.other_data["Fireplace_YN"] = result?.other_data["Fireplace_YN"]
+        ? result?.other_data["Fireplace_YN"]
         : "0";
-      data.other_data["Basement_YN"] = result?.other_data["Basement YN"]
-        ? result?.other_data["Basement YN"]
+      data.other_data["Basement_YN"] = result?.other_data["Basement_YN"]
+        ? result?.other_data["Basement_YN"]
         : "0";
-      data.other_data["Water_View_YN"] = result?.other_data["Water View YN"]
-        ? result?.other_data["Water View YN"]
+      data.other_data["Water_View_YN"] = result?.other_data["Water_View_YN"]
+        ? result?.other_data["Water_View_YN"]
         : "0";
-      data.other_data["HOA_Y/N"] = result?.other_data["HOA Y/N"]
-        ? result?.other_data["HOA Y/N"]
+      data.other_data["HOA_Y/N"] = result?.other_data["HOA_Y/N"]
+        ? result?.other_data["HOA_Y/N"]
         : "0";
 
       data.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
-        "Condo/Coop Association Y/N"
+        "Condo/Coop_Association_Y/N"
       ]
-        ? result?.other_data["Condo/Coop Association Y/N"]
+        ? result?.other_data["Condo/Coop_Association_Y/N"]
         : "0";
-
-      delete data.other_data["HOA Fee"];
-      delete data.other_data["Garage YN"];
-      delete data.other_data["Fireplace YN"];
-      delete data.other_data["Basement YN"];
-      delete data.other_data["Water View YN"];
-      delete data.other_data["HOA Y/N"];
 
       updatedRecords.push(data);
     }

@@ -31,18 +31,8 @@ const getSingleExploreData = async (req, res) => {
         .then(async (data) => {
           const dataCollection = [];
           for (const result of data) {
-            const propertyDataImages = [];
-            await imagesCollection
-              .find({ ListingId: { $eq: result.listing_id } })
-              .toArray()
-              .then((imageData) => {
-                imageData.forEach((elm) => {
-                  propertyDataImages.push({ ...elm });
-                });
-                dataCollection.push({ ...result, propertyDataImages });
-              });
             // console.log("imagesCollection", imagesCollection);
-            //dataCollection.push({ ...result });
+            dataCollection.push({ ...result });
           }
           if (dataCollection.length > 0) {
             res.status(200).send({ ...dataCollection[0] });

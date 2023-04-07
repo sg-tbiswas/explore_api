@@ -40,6 +40,7 @@ const getExploreData = async (req, res) => {
   var homeTypeQueryWrap = {};
 
   const params = req.query;
+  const sort = params.sort ? (params.sort === "Newest" ? -1 : 1) : -1;
   if (params.pageno) {
     DATA_COUNT = 24 * parseInt(params.pageno);
   }
@@ -283,6 +284,7 @@ const getExploreData = async (req, res) => {
           $and: [cityFilter, ...customQuery, homeTypeQueryWrap],
         })
         .limit(DATA_COUNT)
+        .sort({ "other_data.list_date": sort })
         .toArray()
         .then(async (data) => {
           const dataCollection = [];
