@@ -14,33 +14,41 @@ const client = RETS.initialize({
 
 const imageUpload = async () => {
   const listingChunks = await getListingIds();
-  let records = [];
+  if (listingChunks) {
+    let records = [];
 
-  for (let j = 0; j < listingChunks.length; j++) {
-    const id = listingChunks[j];
-    try {
-      const query = await client.search(
-        "Media",
-        "PROP_MEDIA",
-        `(ListingId=${id})`,
-        {
-          Select:
-            "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
+    for (let j = 0; j < listingChunks.length; j++) {
+      const id = listingChunks[j];
+      try {
+        const query = await client.search(
+          "Media",
+          "PROP_MEDIA",
+          `(ListingId=${id})`,
+          {
+            Select:
+              "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
+          }
+        );
+        if (query.Objects && query.Objects.length > 0) {
+          for (let k = 0; k < query.Objects.length; k++) {
+            const record = query.Objects[k];
+            records.push(record);
+          }
         }
-      );
-      if (query.Objects && query.Objects.length > 0) {
-        for (let k = 0; k < query.Objects.length; k++) {
-          const record = query.Objects[k];
-          records.push(record);
-        }
+      } catch (err) {
+        console.error(`Error searching for ListingId ${id}: ${err.message}`);
+        continue; // Skip to next iteration of the loop
       }
-    } catch (err) {
-      console.error(`Error searching for ListingId ${id}: ${err.message}`);
-      continue; // Skip to next iteration of the loop
     }
-  }
 
-  await addRecordsToMongoDBImage(records);
+    await addRecordsToMongoDBImage(records);
+
+    console.log("All images fetched and added successfully!");
+
+    return true;
+  } else {
+    return true;
+  }
 };
 
 const getListingIds = async () => {
@@ -73,6 +81,7 @@ const getListingIds = async () => {
     return listingIds;
   } catch (err) {
     console.error("Error getting listing IDs for Property Images", err.message);
+    return false;
   }
 };
 
@@ -80,7 +89,9 @@ const addRecordsToMongoDBImage = async (records) => {
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
     await client.connect();
-    const collection = client.db(CONSTANTS.DB_NAME).collection("pImagesTest");
+    const collection = client
+      .db(CONSTANTS.DB_NAME)
+      .collection("propertyDataImages");
     await collection.insertMany(records, (err, res) => {
       if (err) throw err;
       console.log(`${res.insertedCount} documents inserted`);
@@ -91,18 +102,6 @@ const addRecordsToMongoDBImage = async (records) => {
   } finally {
     await client.close();
   }
-
-  // const connect = client.db(CONSTANTS.DB_NAME);
-  // const collection = connect.collection("propertyDataImages");
-  //   await collection.find().forEach(async function (obj) {
-  //       await collection.updateOne(
-  //         { _id: obj._id },
-  //         {
-  //           $unset: { __key__: "", __error__: "", __has_error__: "" },
-  //         }
-  //       );
-  //     });
-  //     console.log("update done");
 };
 
 // imageUpload();

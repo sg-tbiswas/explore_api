@@ -9,8 +9,8 @@ function getTodayDate() {
   return `${year}-${month}-${day}`;
 }
 
-const concatePropertyImages = async () => {
-  console.log("concatePropertyImages called");
+const updateBindPropertyImages = async (data) => {
+  console.log("updateBindPropertyImages called");
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
     await client.connect();
@@ -19,11 +19,7 @@ const concatePropertyImages = async () => {
       .collection("propertyDataImages");
 
     const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
-    let count = 1;
-    const propertyDataALL = await collection
-      .find({ "other_data.list_date": { $eq: getTodayDate() } })
-      .toArray();
-    for (const result of propertyDataALL) {
+    for (const result of data) {
       const propertyDataImages = [];
       const imageData = await imagesCollection
         .find({ ListingId: { $eq: result.listing_id } })
@@ -53,4 +49,4 @@ const concatePropertyImages = async () => {
   }
 };
 
-module.exports = concatePropertyImages;
+module.exports = updateBindPropertyImages;

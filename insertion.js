@@ -24,7 +24,7 @@ async function addRecordsToMongoDB(records, className) {
   try {
     await client.connect();
 
-    const collection = client.db(CONSTANTS.DB_NAME).collection("ptest2");
+    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
     await collection.insertMany(records, (err, res) => {
       if (err) throw err;
       console.log(`${res.insertedCount} documents inserted`);
@@ -202,8 +202,10 @@ const gobyHomes = async () => {
 
     console.log("All records fetched and written successfully!");
     client.logout();
+    return true;
   } catch (err) {
     console.error(`Error occurred in gobyHomes function: ${err.message}`);
+    return true;
   }
 };
 

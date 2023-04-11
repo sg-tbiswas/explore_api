@@ -51,6 +51,7 @@ const recordUpdate = async () => {
     console.log(id);
     crossCheckRecords(item);
   });
+  return { type: true, data: recordsWithUpdatedFields };
 };
 const mapRecord = (record, key) => {
   console.log(key);
@@ -156,7 +157,7 @@ const crossCheckRecords = async (result) => {
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
     await client.connect();
-    const collection = client.db(CONSTANTS.DB_NAME).collection("ptest2");
+    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
     await collection.updateOne(
       { listing_id: result["listing_id"] },
       {

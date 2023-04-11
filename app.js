@@ -11,6 +11,7 @@ const gobyHomes = require("./insertion");
 const recordUpdate = require("./updation");
 const imageUpload = require("./imageUpload");
 const concatePropertyImages = require("./concatePropertyImages");
+const updateBindPropertyImages = require("./updateBindPropertyImages");
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -32,21 +33,23 @@ app.use(bodyParser.json({ limit: "50mb" }));
 app.get("/getProperities", getExploreData);
 app.get("/getPropertyDetails", getSingleExploreData);
 
+cron.schedule("*/30 * * * *", async () => {
+  const fromInsertData = await gobyHomes();
+  const fromInsertImage = await imageUpload();
+  if (fromInsertData === true && fromInsertImage === true) {
+    console.log("concate property images will be called");
+    await concatePropertyImages();
+  }
+  console.log("running a task every 30 minute");
+});
+
 cron.schedule("*/45 * * * *", async () => {
-  await gobyHomes();
-  await imageUpload();
+  const recordUpdateResult = await recordUpdate();
+  if (recordUpdateResult.type === true) {
+    await updateBindPropertyImages(recordUpdateResult.data);
+  }
   console.log("running a task every 45 minute");
 });
-
-cron.schedule("*/60 * * * *", async () => {
-  await recordUpdate();
-  console.log("running a task every 60 minute");
-});
-
-// cron.schedule("*/15 * * * *", async () => {
-//   await concatePropertyImages();
-//   console.log("running a task once in a day");
-// });
 
 app.listen(PORT, function (err) {
   if (err) console.log("Error in server setup");
