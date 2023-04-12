@@ -19,26 +19,31 @@ const updateBindPropertyImages = async (data) => {
       .collection("propertyDataImages");
 
     const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
+    let count = 1;
     for (const result of data) {
       const propertyDataImages = [];
       const imageData = await imagesCollection
         .find({ ListingId: { $eq: result.listing_id } })
         .toArray();
-      imageData.forEach((elm) => {
-        let element = { ...elm };
-        delete element["_id"];
-        propertyDataImages.push(element);
-      });
+      if (imageData && imageData.length > 0) {
+        imageData.forEach((elm) => {
+          let element = { ...elm };
+          delete element["_id"];
+          propertyDataImages.push(element);
+        });
+      }
 
       await collection.updateOne(
         { listing_id: result["listing_id"] },
         {
-          $set: { propertyDataImages: propertyDataImages },
+          $set: {
+            propertyDataImages: propertyDataImages,
+          },
           //   $unset: { propertyDataImages: "" },
         }
       );
       console.log(
-        `${count} DATA UPDATED" ${result["listing_id"]} => ${propertyDataImages.length}`
+        `${count} DATA UPDATED BIND IMAGE" ${result["listing_id"]} => ${propertyDataImages.length}`
       );
       count++;
       /// ENDS HERE

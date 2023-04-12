@@ -107,18 +107,28 @@ const concatePropertyImages = async () => {
     let count = 1;
     const propertyDataALL = await collection
       //   .find({ "other_data.list_date": { $eq: getTodayDate() } })
-      .find()
+      // .find({
+      //   $or: [
+      //     { propertyDataImages: { $size: 0 } },
+      //     { propertyDataImages: { $eq: null } },
+      //   ],
+      // })
+      .find({
+        $or: [{ propertyDataImages: { $eq: null } }],
+      })
       .toArray();
     for (const result of propertyDataALL) {
       const propertyDataImages = [];
       const imageData = await imagesCollection
         .find({ ListingId: { $eq: result.listing_id } })
         .toArray();
-      imageData.forEach((elm) => {
-        let element = { ...elm };
-        delete element["_id"];
-        propertyDataImages.push(element);
-      });
+      if (imageData && imageData.length > 0) {
+        imageData.forEach((elm) => {
+          let element = { ...elm };
+          delete element["_id"];
+          propertyDataImages.push(element);
+        });
+      }
 
       await collection.updateOne(
         { listing_id: result["listing_id"] },

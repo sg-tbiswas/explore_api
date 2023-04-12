@@ -31,8 +31,30 @@ const getSingleExploreData = async (req, res) => {
         .then(async (data) => {
           const dataCollection = [];
           for (const result of data) {
-            // console.log("imagesCollection", imagesCollection);
-            dataCollection.push({ ...result });
+            const newData = { ...result };
+            // const propertyDataImagesArr = newData?.propertyDataImages
+            //   ? newData?.propertyDataImages
+            //   : [];
+            // const newPropertyDataImages = [];
+            // if (
+            //   newData?.propertyDataImages &&
+            //   propertyDataImagesArr.length === 0
+            // ) {
+            //   const imageData = await imagesCollection
+            //     .find({ ListingId: { $eq: result.listing_id } })
+            //     .toArray();
+            //   if (imageData && imageData.length > 0) {
+            //     imageData.forEach((elm) => {
+            //       let element = { ...elm };
+            //       delete element["_id"];
+            //       newPropertyDataImages.push(element);
+            //     });
+            //   }
+            // }
+            // newData.propertyDataImages = newData.propertyDataImages
+            //   ? newData.propertyDataImages
+            //   : newPropertyDataImages;
+            dataCollection.push(newData);
           }
           if (dataCollection.length > 0) {
             res.status(200).send({ ...dataCollection[0] });
