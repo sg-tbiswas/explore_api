@@ -17,6 +17,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 const whitelist = [
+  "http://localhost:3000",
   "http://localhost:5000",
   "http://localhost:5001",
   "https://gobyhomes.com/",
