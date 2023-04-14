@@ -103,8 +103,6 @@ const concatePropertyImages = async () => {
       .db(CONSTANTS.DB_NAME)
       .collection("propertyDataImages");
 
-    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
-    let count = 1;
     const propertyDataALL = await collection
       //   .find({ "other_data.list_date": { $eq: getTodayDate() } })
       // .find({
@@ -149,5 +147,30 @@ const concatePropertyImages = async () => {
   }
 };
 
-concatePropertyImages();
+const removeDuplicateData = async () => {
+  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+  const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
+  let count = 1;
+  const gpdt = collection.aggregate([
+    { $group: { _id: "$listing_id", count: { $sum: 1 } } },
+    { $match: { count: { $gt: 1 } } },
+    { $unwind: "$_id" },
+    { $match: { _id: { $ne: null } } },
+  ]);
+  let cnt = 1;
+  let dupIds = [];
+
+  for (const doc of await gpdt.toArray()) {
+    const dup = await collection.find({ listing_id: doc._id }).skip(1);
+    for (const iterator of await dup.toArray()) {
+      dupIds.push(iterator._id);
+    }
+    console.log(`${cnt} data deleted ${doc._id} => ${doc.count}`);
+    cnt++;
+  }
+  collection.deleteMany({ _id: { $in: dupIds } });
+};
+
+//concatePropertyImages();
 // main();
+// removeDuplicateData();

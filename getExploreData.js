@@ -154,10 +154,10 @@ const getExploreData = async (req, res) => {
     zipcodeFilter.$eq = params.zipcode;
   }
   if (params.bathrooms) {
-    bathFilter.$gt = parseInt(params.bathrooms);
+    bathFilter.$gte = parseInt(params.bathrooms);
   }
   if (params.bedrooms) {
-    bedsFilter.$gt = parseInt(params.bedrooms);
+    bedsFilter.$gte = parseInt(params.bedrooms);
   }
   if (params.minPrice) {
     priceFilter.$gte = parseInt(params.minPrice);
