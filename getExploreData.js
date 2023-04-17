@@ -45,13 +45,10 @@ const getExploreData = async (req, res) => {
     DATA_COUNT = 24 * parseInt(params.pageno);
   }
 
-  if (params.adtype == 1 && !params.city) {
-    cityFilter = { "address.city": "WASHINGTON" };
-  }
-  if (params.adtype == 1 && params.city) {
+  if (params.city) {
     cityFilter = { "address.city": params.city };
   }
-  if (params.adtype == 1 && params.state) {
+  if (params.state) {
     stateFilter.$eq = params.state;
   }
   //   // Query for address
@@ -60,23 +57,23 @@ const getExploreData = async (req, res) => {
     fullAddressFilter.$eq = params.fullAddress;
   }
 
-  if (params.street_number) {
-    streetNumberFilter.$eq = params.street_number;
-  }
-  if (params.street) {
-    streetFilter.$eq = params.street;
-  }
-  if (params.street_suffix) {
-    streetSuffixFilter.$eq = params.street_suffix;
-  }
-  if (params.street_dir) {
-    streetDirFilter = {
-      $or: [
-        { "address.street_dir_prefix": params.street_dir },
-        { "address.street_dir_prefix": params.street_dir },
-      ],
-    };
-  }
+  // if (params.street_number) {
+  //   streetNumberFilter.$eq = params.street_number;
+  // }
+  // if (params.street) {
+  //   streetFilter.$eq = params.street;
+  // }
+  // if (params.street_suffix) {
+  //   streetSuffixFilter.$eq = params.street_suffix;
+  // }
+  // if (params.street_dir) {
+  //   streetDirFilter = {
+  //     $or: [
+  //       { "address.street_dir_prefix": params.street_dir },
+  //       { "address.street_dir_prefix": params.street_dir },
+  //     ],
+  //   };
+  // }
 
   if (params.property_type && params.property_type == "Rent") {
     propertyTypeFilter = {
@@ -250,9 +247,9 @@ const getExploreData = async (req, res) => {
   if (stateFilterResult) customQuery.push(stateFilterResult);
   if (fullAddressFilterResult) customQuery.push(fullAddressFilterResult);
 
-  if (streetNumberFilterResult) customQuery.push(streetNumberFilterResult);
-  if (streetFilterResult) customQuery.push(streetFilterResult);
-  if (streetSuffixFilterResult) customQuery.push(streetSuffixFilterResult);
+  // if (streetNumberFilterResult) customQuery.push(streetNumberFilterResult);
+  // if (streetFilterResult) customQuery.push(streetFilterResult);
+  // if (streetSuffixFilterResult) customQuery.push(streetSuffixFilterResult);
   if (zipcodeFilterResult) customQuery.push(zipcodeFilterResult);
   if (priceFilterResult) customQuery.push(priceFilterResult);
   if (minSqftFilterResult) customQuery.push(minSqftFilterResult);
