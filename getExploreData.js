@@ -54,7 +54,13 @@ const getExploreData = async (req, res) => {
   //   // Query for address
 
   if (params.fullAddress) {
-    fullAddressFilter.$eq = params.fullAddress;
+    // fullAddressFilter.$eq = params.fullAddress;
+    const regex = new RegExp(params.fullAddress, "i");
+    fullAddressFilter = {
+      "address.fullAddress": {
+        $regex: regex,
+      },
+    };
   }
 
   // if (params.street_number) {
@@ -215,10 +221,6 @@ const getExploreData = async (req, res) => {
   const bedsFilterResult = queryObjectFilter(bedsFilter, "bedrooms");
   const bathsFilterResult = queryObjectFilter(bathFilter, "bathrooms");
   const stateFilterResult = queryObjectFilter(stateFilter, "other_data.state");
-  const fullAddressFilterResult = queryObjectFilter(
-    fullAddressFilter,
-    "address.fullAddress"
-  );
 
   const priceFilterResult = queryObjectFilter(priceFilter, "listing_price");
   const minSqftFilterResult = queryObjectFilter(
@@ -245,7 +247,6 @@ const getExploreData = async (req, res) => {
   if (bedsFilterResult) customQuery.push(bedsFilterResult);
   if (bathsFilterResult) customQuery.push(bathsFilterResult);
   if (stateFilterResult) customQuery.push(stateFilterResult);
-  if (fullAddressFilterResult) customQuery.push(fullAddressFilterResult);
 
   // if (streetNumberFilterResult) customQuery.push(streetNumberFilterResult);
   // if (streetFilterResult) customQuery.push(streetFilterResult);
@@ -265,6 +266,7 @@ const getExploreData = async (req, res) => {
   if (!_.isEmpty(noHOAFilter)) customQuery.push(noHOAFilter);
   if (!_.isEmpty(maxHOAFilter)) customQuery.push(maxHOAFilter);
   if (!_.isEmpty(maxDOMFilter)) customQuery.push(maxDOMFilter);
+  if (!_.isEmpty(fullAddressFilter)) customQuery.push(fullAddressFilter);
 
   console.log("here", JSON.stringify(customQuery), cityFilter, params);
   MongoClient.connect(CONSTANTS.DB_CONNECTION_URI)

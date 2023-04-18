@@ -34,24 +34,6 @@ app.use(bodyParser.json({ limit: "50mb" }));
 app.get("/getProperities", getExploreData);
 app.get("/getPropertyDetails", getSingleExploreData);
 
-cron.schedule("*/45 * * * *", async () => {
-  const fromInsertData = await gobyHomes();
-  const fromInsertImage = await imageUpload();
-  if (fromInsertData === true && fromInsertImage === true) {
-    console.log("concate property images will be called");
-    await concatePropertyImages();
-  }
-  console.log("running a task every 45 minute.");
-});
-
-cron.schedule("*/60 * * * *", async () => {
-  const recordUpdateResult = await recordUpdate();
-  if (recordUpdateResult.type === true) {
-    await updateBindPropertyImages(recordUpdateResult.data);
-  }
-  console.log("running a task every 60 minute.");
-});
-
 app.listen(PORT, function (err) {
   if (err) console.log("Error in server setup");
   console.log("Server listening on Port", PORT);
