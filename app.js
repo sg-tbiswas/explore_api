@@ -1,17 +1,10 @@
 const express = require("express");
 const app = express();
 const PORT = 3000;
-const mongoose = require("mongoose");
 const cors = require("cors");
-const cron = require("node-cron");
 const bodyParser = require("body-parser");
 const getExploreData = require("./getExploreData");
 const getSingleExploreData = require("./getSingleExploreData");
-const gobyHomes = require("./insertion");
-const recordUpdate = require("./updation");
-const imageUpload = require("./imageUpload");
-const concatePropertyImages = require("./concatePropertyImages");
-const updateBindPropertyImages = require("./updateBindPropertyImages");
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
