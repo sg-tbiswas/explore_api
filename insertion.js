@@ -31,12 +31,30 @@ async function addRecordsToMongoDB(records, className) {
       client.close();
     });
   } catch (e) {
-    console.error(e);
+    console.error("error from addRecordsToMongoDB", e);
   } finally {
     await client.close();
   }
 }
 
+async function checkExistingRecord(data) {
+  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+  try {
+    await client.connect();
+    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
+    const ddt = await collection
+      .find({ listing_id: data.listing_id })
+      .toArray();
+    if (ddt[0]) {
+      return ddt[0];
+    } else {
+      return false;
+    }
+  } catch (e) {
+    console.error("error from checkExistingRecord", e);
+    return false;
+  }
+}
 const textReplace = (str) => {
   return str.split(" ").join("_");
 };
@@ -176,8 +194,10 @@ const fetchRecords = async (resource, className, keyMapping) => {
       ]
         ? result?.other_data["Condo/Coop_Association_Y/N"]
         : "0";
-
-      updatedRecords.push(data);
+      const chkData = await checkExistingRecord(data);
+      if (!chkData) {
+        updatedRecords.push(data);
+      }
     }
     await addRecordsToMongoDB(updatedRecords, className);
   } catch (err) {

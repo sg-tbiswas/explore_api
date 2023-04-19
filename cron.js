@@ -1,29 +1,35 @@
-const cron = require("node-cron");
+const Cron = require("croner");
 const gobyHomes = require("./insertion");
 const recordUpdate = require("./updation");
 const imageUpload = require("./imageUpload");
 const concatePropertyImages = require("./concatePropertyImages");
 const updateBindPropertyImages = require("./updateBindPropertyImages");
 
-cron.schedule("*/15 * * * *", async () => {
+Cron("*/30 * * * *", async () => {
   let fromInsertImage = false;
   let fromInsertData = false;
-  fromInsertImage = await imageUpload();
-  if (fromInsertImage === true) {
-    fromInsertData = await gobyHomes();
+  try {
+    fromInsertImage = await imageUpload();
+    if (fromInsertImage === true) {
+      fromInsertData = await gobyHomes();
+    }
+    if (fromInsertData === true && fromInsertImage === true) {
+      await concatePropertyImages();
+    }
+    console.log("running a task every 30 minute.");
+  } catch (error) {
+    console.log("Something went wrong in 30 min cron.");
   }
-
-  if (fromInsertData === true && fromInsertImage === true) {
-    console.log("concate property images will be called");
-    await concatePropertyImages();
-  }
-  console.log("running a task every 15 minute.");
 });
 
-cron.schedule("*/25 * * * *", async () => {
-  const recordUpdateResult = await recordUpdate();
-  if (recordUpdateResult.type === true) {
-    await updateBindPropertyImages(recordUpdateResult.data);
+Cron("*/50 * * * *", async () => {
+  try {
+    const recordUpdateResult = await recordUpdate();
+    if (recordUpdateResult.type === true) {
+      await updateBindPropertyImages(recordUpdateResult.data);
+    }
+    console.log("running a task every 50 minute.");
+  } catch (error) {
+    console.log("Something went wrong in 50 min cron.");
   }
-  console.log("running a task every 25 minute.");
 });
