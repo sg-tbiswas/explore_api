@@ -6,8 +6,13 @@ const concatePropertyImages = require("./concatePropertyImages");
 const updateBindPropertyImages = require("./updateBindPropertyImages");
 
 cron.schedule("*/15 * * * *", async () => {
-  const fromInsertData = await gobyHomes();
-  const fromInsertImage = await imageUpload();
+  let fromInsertImage = false;
+  let fromInsertData = false;
+  fromInsertImage = await imageUpload();
+  if (fromInsertImage === true) {
+    fromInsertData = await gobyHomes();
+  }
+
   if (fromInsertData === true && fromInsertImage === true) {
     console.log("concate property images will be called");
     await concatePropertyImages();
