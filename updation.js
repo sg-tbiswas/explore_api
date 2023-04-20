@@ -154,6 +154,41 @@ const crossCheckRecords = async (result) => {
     ? result?.other_data["Condo/Coop_Association_Y/N"]
     : "0";
 
+  const place1 = [];
+  if (newData?.address?.street_number) {
+    place1.push(newData?.address?.street_number);
+  }
+  if (newData?.address?.street) {
+    place1.push(newData?.address?.street);
+  }
+  if (newData?.address?.street_suffix) {
+    place1.push(newData?.address?.street_suffix);
+  }
+  if (newData?.address?.street_dir_suffix) {
+    place1.push(newData?.address?.street_dir_suffix);
+  }
+  if (newData?.address?.street_dir_prefix) {
+    place1.push(newData?.address?.street_dir_prefix);
+  }
+  const addrPart1 = place1.join(" ");
+  const addrArr = [];
+  let zippart;
+  if (newData?.address?.city) {
+    addrArr.push(newData?.address?.city);
+  }
+  if (newData?.other_data?.state) {
+    addrArr.push(newData?.other_data?.state);
+  }
+  if (newData?.other_data?.zipcode) {
+    zippart = newData?.other_data?.zipcode;
+  }
+  const addrPart2 = addrArr.join(", ");
+  const twoPartAddr = addrPart1.concat(", ", addrPart2);
+  const fullAddr = twoPartAddr.concat(" ", zippart);
+  // CODE TO GENERATE FULL ADDRESS
+
+  newData.address.fullAddress = fullAddr;
+
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
     await client.connect();

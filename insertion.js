@@ -194,6 +194,42 @@ const fetchRecords = async (resource, className, keyMapping) => {
       ]
         ? result?.other_data["Condo/Coop_Association_Y/N"]
         : "0";
+
+      const place1 = [];
+      if (data?.address?.street_number) {
+        place1.push(data?.address?.street_number);
+      }
+      if (data?.address?.street) {
+        place1.push(data?.address?.street);
+      }
+      if (data?.address?.street_suffix) {
+        place1.push(data?.address?.street_suffix);
+      }
+      if (data?.address?.street_dir_suffix) {
+        place1.push(data?.address?.street_dir_suffix);
+      }
+      if (data?.address?.street_dir_prefix) {
+        place1.push(data?.address?.street_dir_prefix);
+      }
+      const addrPart1 = place1.join(" ");
+      const addrArr = [];
+      let zippart;
+      if (data?.address?.city) {
+        addrArr.push(data?.address?.city);
+      }
+      if (data?.other_data?.state) {
+        addrArr.push(data?.other_data?.state);
+      }
+      if (data?.other_data?.zipcode) {
+        zippart = data?.other_data?.zipcode;
+      }
+      const addrPart2 = addrArr.join(", ");
+      const twoPartAddr = addrPart1.concat(", ", addrPart2);
+      const fullAddr = twoPartAddr.concat(" ", zippart);
+      // CODE TO GENERATE FULL ADDRESS
+
+      data.address.fullAddress = fullAddr;
+
       const chkData = await checkExistingRecord(data);
       if (!chkData) {
         updatedRecords.push(data);

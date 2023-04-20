@@ -7,6 +7,7 @@ const main = async (req, res) => {
     .then(async (client) => {
       const connect = client.db(CONSTANTS.DB_NAME);
       const collection = connect.collection("propertyData");
+      let count = 1;
       await collection.find().forEach(async function (obj) {
         // CODE TO GENERATE FULL ADDRESS
         const place1 = [];
@@ -45,47 +46,49 @@ const main = async (req, res) => {
         await collection.updateOne(
           { _id: obj._id },
           {
-            // $set: {
-            //   "address.fullAddress": fullAddr,
-            //   "other_data.DOM": obj?.other_data?.DOM
-            //     ? parseInt(obj?.other_data?.DOM)
-            //     : 0,
-            //   "other_data.HOA_Fee": obj?.other_data?.HOA_Fee
-            //     ? parseInt(obj?.other_data?.HOA_Fee)
-            //     : 0,
-            //   bedrooms: obj?.bedrooms ? parseInt(obj.bedrooms) : 0,
-            //   bathrooms: obj?.bathrooms ? parseInt(obj.bathrooms) : 0,
-            //   TaxTotalFinishedSqFt: obj?.TaxTotalFinishedSqFt
-            //     ? parseInt(obj.TaxTotalFinishedSqFt)
-            //     : 0,
-            //   listing_price: obj?.listing_price
-            //     ? parseFloat(obj.listing_price)
-            //     : 0,
-            //   "other_data.HOA_Y/N": obj?.other_data?.HOA_Yu2f_N
-            //     ? obj?.other_data?.HOA_Yu2f_N
-            //     : "0",
-            //   "other_data.Condo/Coop_Association_Y/N": obj?.other_data
-            //     ?.Condou2f_Coop_Association_Yu2f_N
-            //     ? obj?.other_data?.Condou2f_Coop_Association_Yu2f_N
-            //     : "0",
-            //   "other_data.Condo/Coop_Fee": obj?.other_data?.Condou2f_Coop_Fee
-            //     ? obj?.other_data?.Condou2f_Coop_Fee
-            //     : "",
-            //   "other_data.Condo/Coop_Fee_Frequency": obj?.other_data
-            //     ?.Condou2f_Coop_Fee_Frequency
-            //     ? obj?.other_data?.Condou2f_Coop_Fee_Frequency
-            //     : "",
-            // },
-            $unset: {
-              __key__: "",
-              __error__: "",
-              __has_error__: "",
-              "other_data.__key__": "",
-              "address.__key__": "",
-              "image.__key__": "",
+            $set: {
+              // "address.fullAddress": fullAddr,
+              // "other_data.DOM": obj?.other_data?.DOM
+              //   ? parseInt(obj?.other_data?.DOM)
+              //   : 0,
+              // "other_data.HOA_Fee": obj?.other_data?.HOA_Fee
+              //   ? parseInt(obj?.other_data?.HOA_Fee)
+              //   : 0,
+              // bedrooms: obj?.bedrooms ? parseInt(obj.bedrooms) : 0,
+              // bathrooms: obj?.bathrooms ? parseInt(obj.bathrooms) : 0,
+              // TaxTotalFinishedSqFt: obj?.TaxTotalFinishedSqFt
+              //   ? parseInt(obj.TaxTotalFinishedSqFt)
+              //   : 0,
+              // listing_price: obj?.listing_price
+              //   ? parseFloat(obj.listing_price)
+              //   : 0,
+              // "other_data.HOA_Y/N": obj?.other_data?.HOA_Yu2f_N
+              //   ? obj?.other_data?.HOA_Yu2f_N
+              //   : "0",
+              // "other_data.Condo/Coop_Association_Y/N": obj?.other_data
+              //   ?.Condou2f_Coop_Association_Yu2f_N
+              //   ? obj?.other_data?.Condou2f_Coop_Association_Yu2f_N
+              //   : "0",
+              // "other_data.Condo/Coop_Fee": obj?.other_data?.Condou2f_Coop_Fee
+              //   ? obj?.other_data?.Condou2f_Coop_Fee
+              //   : "",
+              // "other_data.Condo/Coop_Fee_Frequency": obj?.other_data
+              //   ?.Condou2f_Coop_Fee_Frequency
+              //   ? obj?.other_data?.Condou2f_Coop_Fee_Frequency
+              //   : "",
             },
+            // $unset: {
+            //   __key__: "",
+            //   __error__: "",
+            //   __has_error__: "",
+            //   "other_data.__key__": "",
+            //   "address.__key__": "",
+            //   "image.__key__": "",
+            // },
           }
         );
+        console.log("update done");
+        count++;
       });
       console.log("update done");
     })
