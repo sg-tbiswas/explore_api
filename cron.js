@@ -13,9 +13,9 @@ Cron("*/30 * * * *", async () => {
     if (fromInsertImage === true) {
       fromInsertData = await gobyHomes();
     }
-    if (fromInsertData === true && fromInsertImage === true) {
-      await concatePropertyImages();
-    }
+    // if (fromInsertData === true && fromInsertImage === true) {
+    //   await concatePropertyImages();
+    // }
     console.log("running a task every 30 minute.");
   } catch (error) {
     console.log("Something went wrong in 30 min cron.");
@@ -25,9 +25,9 @@ Cron("*/30 * * * *", async () => {
 Cron("*/50 * * * *", async () => {
   try {
     const recordUpdateResult = await recordUpdate();
-    if (recordUpdateResult.type === true) {
-      await updateBindPropertyImages(recordUpdateResult.data);
-    }
+    // if (recordUpdateResult.type === true) {
+    //   await updateBindPropertyImages(recordUpdateResult.data);
+    // }
     console.log("running a task every 50 minute.");
   } catch (error) {
     console.log("Something went wrong in 50 min cron.");
