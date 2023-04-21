@@ -43,10 +43,17 @@ const main = async (req, res) => {
         const fullAddr = twoPartAddr.concat(" ", zippart);
         // CODE TO GENERATE FULL ADDRESS
 
+        const fullBathrooms =
+          obj.bathrooms +
+          (obj.other_data.half_bathrooms
+            ? parseInt(obj?.other_data?.half_bathrooms)
+            : 0);
+
         await collection.updateOne(
           { _id: obj._id },
           {
             $set: {
+              fullBathrooms: fullBathrooms,
               // "address.fullAddress": fullAddr,
               // "other_data.DOM": obj?.other_data?.DOM
               //   ? parseInt(obj?.other_data?.DOM)
@@ -87,7 +94,7 @@ const main = async (req, res) => {
             // },
           }
         );
-        console.log("update done");
+        console.log(`${count} => update done`);
         count++;
       });
       console.log("update done");
@@ -175,5 +182,5 @@ const removeDuplicateData = async () => {
 };
 
 //concatePropertyImages();
-// main();
+main();
 // removeDuplicateData();
