@@ -187,7 +187,14 @@ const crossCheckRecords = async (result) => {
   const fullAddr = twoPartAddr.concat(" ", zippart);
   // CODE TO GENERATE FULL ADDRESS
 
+  const fullBathrooms =
+    newData.bathrooms +
+    (newData?.other_data?.half_bathrooms
+      ? parseInt(newData?.other_data?.half_bathrooms)
+      : 0);
+
   newData.address.fullAddress = fullAddr;
+  newData.fullBathrooms = fullBathrooms;
 
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {

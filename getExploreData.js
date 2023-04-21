@@ -219,7 +219,7 @@ const getExploreData = async (req, res) => {
   }
 
   const bedsFilterResult = queryObjectFilter(bedsFilter, "bedrooms");
-  const bathsFilterResult = queryObjectFilter(bathFilter, "bathrooms");
+  const bathsFilterResult = queryObjectFilter(bathFilter, "fullBathrooms");
   const stateFilterResult = queryObjectFilter(stateFilter, "other_data.state");
 
   const priceFilterResult = queryObjectFilter(priceFilter, "listing_price");
@@ -292,25 +292,20 @@ const getExploreData = async (req, res) => {
             // const propertyDataImagesArr = newData?.propertyDataImages
             //   ? newData?.propertyDataImages
             //   : [];
-            // const newPropertyDataImages = [];
-            // if (
-            //   newData?.propertyDataImages &&
-            //   propertyDataImagesArr.length === 0
-            // ) {
-            //   const imageData = await imagesCollection
-            //     .find({ ListingId: { $eq: result.listing_id } })
-            //     .toArray();
-            //   if (imageData && imageData.length > 0) {
-            //     imageData.forEach((elm) => {
-            //       let element = { ...elm };
-            //       delete element["_id"];
-            //       newPropertyDataImages.push(element);
-            //     });
-            //   }
-            // }
-            // newData.propertyDataImages = newData.propertyDataImages
-            //   ? newData.propertyDataImages
-            //   : newPropertyDataImages;
+            const newPropertyDataImages = [];
+
+            const imageData = await imagesCollection
+              .find({ ListingId: { $eq: result.listing_id } })
+              .toArray();
+            if (imageData && imageData.length > 0) {
+              imageData.forEach((elm) => {
+                let element = { ...elm };
+                delete element["_id"];
+                newPropertyDataImages.push(element);
+              });
+            }
+
+            newData.propertyDataImages = newPropertyDataImages;
             dataCollection.push(newData);
 
             // console.log("imagesCollection", imagesCollection);

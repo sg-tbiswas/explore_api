@@ -228,7 +228,14 @@ const fetchRecords = async (resource, className, keyMapping) => {
       const fullAddr = twoPartAddr.concat(" ", zippart);
       // CODE TO GENERATE FULL ADDRESS
 
+      const fullBathrooms =
+        data.bathrooms +
+        (data?.other_data?.half_bathrooms
+          ? parseInt(data?.other_data?.half_bathrooms)
+          : 0);
+
       data.address.fullAddress = fullAddr;
+      data.fullBathrooms = fullBathrooms;
 
       const chkData = await checkExistingRecord(data);
       if (!chkData) {
