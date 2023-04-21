@@ -292,20 +292,20 @@ const getExploreData = async (req, res) => {
             // const propertyDataImagesArr = newData?.propertyDataImages
             //   ? newData?.propertyDataImages
             //   : [];
-            const newPropertyDataImages = [];
+            // const newPropertyDataImages = [];
 
-            const imageData = await imagesCollection
-              .find({ ListingId: { $eq: result.listing_id } })
-              .toArray();
-            if (imageData && imageData.length > 0) {
-              imageData.forEach((elm) => {
-                let element = { ...elm };
-                delete element["_id"];
-                newPropertyDataImages.push(element);
-              });
-            }
+            // const imageData = await imagesCollection
+            //   .find({ ListingId: { $eq: result.listing_id } })
+            //   .toArray();
+            // if (imageData && imageData.length > 0) {
+            //   imageData.forEach((elm) => {
+            //     let element = { ...elm };
+            //     delete element["_id"];
+            //     newPropertyDataImages.push(element);
+            //   });
+            // }
 
-            newData.propertyDataImages = newPropertyDataImages;
+            // newData.propertyDataImages = newPropertyDataImages;
             dataCollection.push(newData);
 
             // console.log("imagesCollection", imagesCollection);
