@@ -12,6 +12,25 @@ const client = RETS.initialize({
   logLevel: "info",
 });
 
+async function checkExistingRecord(data) {
+  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+  try {
+    await client.connect();
+    const collection = client
+      .db(CONSTANTS.DB_NAME)
+      .collection("propertyDataImages");
+    const ddt = await collection.find({ MediaURL: data.MediaURL }).toArray();
+    if (ddt[0]) {
+      return ddt[0];
+    } else {
+      return false;
+    }
+  } catch (e) {
+    console.error("error from checkExistingRecord", e);
+    return false;
+  }
+}
+
 const imageUpload = async () => {
   const listingChunks = await getListingIds();
   if (listingChunks) {
@@ -30,9 +49,12 @@ const imageUpload = async () => {
           }
         );
         if (query.Objects && query.Objects.length > 0) {
-          for (let k = 0; k < query.Objects.length; k++) {
-            const record = query.Objects[k];
-            records.push(record);
+          for (const obj of query.Objects) {
+            const chkData = await checkExistingRecord(obj);
+            if (!chkData) {
+              records.push(obj);
+            }
+            //records.push(obj);
           }
         }
       } catch (err) {
@@ -40,7 +62,7 @@ const imageUpload = async () => {
         continue; // Skip to next iteration of the loop
       }
     }
-
+    console.log("records", records);
     await addRecordsToMongoDBImage(records);
 
     console.log("All images fetched and added successfully!");
@@ -104,5 +126,5 @@ const addRecordsToMongoDBImage = async (records) => {
   }
 };
 
-// imageUpload();
-module.exports = imageUpload;
+imageUpload();
+// module.exports = imageUpload;

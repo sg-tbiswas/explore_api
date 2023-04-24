@@ -188,7 +188,7 @@ const removeDuplicateImage = async () => {
     .collection("propertyDataImages");
   let count = 1;
   const gpdt = collection.aggregate([
-    { $group: { _id: "$listing_id", count: { $sum: 1 } } },
+    { $group: { _id: "$MediaURL", count: { $sum: 1 } } },
     { $match: { count: { $gt: 1 } } },
     { $unwind: "$_id" },
     { $match: { _id: { $ne: null } } },
@@ -197,7 +197,7 @@ const removeDuplicateImage = async () => {
   let dupIds = [];
 
   for (const doc of await gpdt.toArray()) {
-    const dup = await collection.find({ listing_id: doc._id }).skip(1);
+    const dup = await collection.find({ MediaURL: doc._id }).skip(1);
     for (const iterator of await dup.toArray()) {
       dupIds.push(iterator._id);
     }
@@ -205,8 +205,11 @@ const removeDuplicateImage = async () => {
     cnt++;
   }
   collection.deleteMany({ _id: { $in: dupIds } });
+  console.log("DELETE COMPLETED !!!");
 };
 
 //concatePropertyImages();
-main();
+//main();
 // removeDuplicateData();
+
+removeDuplicateImage();
