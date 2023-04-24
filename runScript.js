@@ -181,6 +181,32 @@ const removeDuplicateData = async () => {
   collection.deleteMany({ _id: { $in: dupIds } });
 };
 
+const removeDuplicateImage = async () => {
+  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+  const collection = client
+    .db(CONSTANTS.DB_NAME)
+    .collection("propertyDataImages");
+  let count = 1;
+  const gpdt = collection.aggregate([
+    { $group: { _id: "$listing_id", count: { $sum: 1 } } },
+    { $match: { count: { $gt: 1 } } },
+    { $unwind: "$_id" },
+    { $match: { _id: { $ne: null } } },
+  ]);
+  let cnt = 1;
+  let dupIds = [];
+
+  for (const doc of await gpdt.toArray()) {
+    const dup = await collection.find({ listing_id: doc._id }).skip(1);
+    for (const iterator of await dup.toArray()) {
+      dupIds.push(iterator._id);
+    }
+    console.log(`${cnt} data deleted ${doc._id} => ${doc.count}`);
+    cnt++;
+  }
+  collection.deleteMany({ _id: { $in: dupIds } });
+};
+
 //concatePropertyImages();
 main();
 // removeDuplicateData();
