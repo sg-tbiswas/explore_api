@@ -201,7 +201,7 @@ const removeDuplicateImage = async () => {
     for (const iterator of await dup.toArray()) {
       dupIds.push(iterator._id);
     }
-    console.log(`${cnt} data deleted ${doc._id} => ${doc.count}`);
+    console.log(`${cnt} deleted ${doc.count}`);
     cnt++;
   }
   collection.deleteMany({ _id: { $in: dupIds } });
