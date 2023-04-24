@@ -27,14 +27,11 @@ const textReplace = (str) => {
 
 const recordUpdate = async () => {
   const now = new Date();
-  console.log(now);
 
-  const fortyFiveMinutesAgo = new Date(now.getTime() - 30 * 60000);
-
+  const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
   const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
   const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
   console.log(formattedTime, currentDate);
-
   const temp = await client.search(
     "Property",
     "ALL",
