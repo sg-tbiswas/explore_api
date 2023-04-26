@@ -299,32 +299,32 @@ const getExploreData = async (req, res) => {
         ])
         .toArray()
         .then(async (data) => {
-          const dataCollection = [];
-          for (const result of data) {
-            const newData = { ...result };
-            // const propertyDataImagesArr = newData?.propertyDataImages
-            //   ? newData?.propertyDataImages
-            //   : [];
-            // const newPropertyDataImages = [];
+          // const dataCollection = [];
+          // for (const result of data) {
+          //   const newData = { ...result };
+          //   // const propertyDataImagesArr = newData?.propertyDataImages
+          //   //   ? newData?.propertyDataImages
+          //   //   : [];
+          //   // const newPropertyDataImages = [];
 
-            // const imageData = await imagesCollection
-            //   .find({ ListingId: { $eq: result.listing_id } })
-            //   .toArray();
-            // if (imageData && imageData.length > 0) {
-            //   imageData.forEach((elm) => {
-            //     let element = { ...elm };
-            //     delete element["_id"];
-            //     newPropertyDataImages.push(element);
-            //   });
-            // }
+          //   // const imageData = await imagesCollection
+          //   //   .find({ ListingId: { $eq: result.listing_id } })
+          //   //   .toArray();
+          //   // if (imageData && imageData.length > 0) {
+          //   //   imageData.forEach((elm) => {
+          //   //     let element = { ...elm };
+          //   //     delete element["_id"];
+          //   //     newPropertyDataImages.push(element);
+          //   //   });
+          //   // }
 
-            // newData.propertyDataImages = newPropertyDataImages;
-            dataCollection.push(newData);
+          //   // newData.propertyDataImages = newPropertyDataImages;
+          //   dataCollection.push(newData);
 
-            // console.log("imagesCollection", imagesCollection);
-            //dataCollection.push({ ...result });
-          }
-          res.status(200).json({ properities: dataCollection, totalDataCount });
+          //   // console.log("imagesCollection", imagesCollection);
+          //   //dataCollection.push({ ...result });
+          // }
+          res.status(200).json({ properities: data, totalDataCount });
         });
 
       // collection
