@@ -62,7 +62,6 @@ const imageUpload = async () => {
         continue; // Skip to next iteration of the loop
       }
     }
-    console.log("records", records);
     await addRecordsToMongoDBImage(records);
 
     console.log("All images fetched and added successfully!");
