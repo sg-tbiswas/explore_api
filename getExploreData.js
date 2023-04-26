@@ -278,12 +278,25 @@ const getExploreData = async (req, res) => {
       const totalDataCount = await collection.countDocuments({
         $and: [cityFilter, ...customQuery, homeTypeQueryWrap],
       });
+
       collection
-        .find({
-          $and: [cityFilter, ...customQuery, homeTypeQueryWrap],
-        })
-        .limit(DATA_COUNT)
-        .sort({ "other_data.list_date": sort })
+        .aggregate([
+          {
+            $match: {
+              $and: [cityFilter, ...customQuery, homeTypeQueryWrap],
+            },
+          },
+          {
+            $lookup: {
+              from: "propertyDataImages",
+              localField: "listing_id",
+              foreignField: "ListingId",
+              as: "propertyImages",
+            },
+          },
+          { $sort: { "other_data.list_date": sort } },
+          { $limit: DATA_COUNT },
+        ])
         .toArray()
         .then(async (data) => {
           const dataCollection = [];
@@ -313,6 +326,42 @@ const getExploreData = async (req, res) => {
           }
           res.status(200).json({ properities: dataCollection, totalDataCount });
         });
+
+      // collection
+      //   .find({
+      //     $and: [cityFilter, ...customQuery, homeTypeQueryWrap],
+      //   })
+      //   .limit(DATA_COUNT)
+      //   .sort({ "other_data.list_date": sort })
+      //   .toArray()
+      //   .then(async (data) => {
+      //     const dataCollection = [];
+      //     for (const result of data) {
+      //       const newData = { ...result };
+      //       // const propertyDataImagesArr = newData?.propertyDataImages
+      //       //   ? newData?.propertyDataImages
+      //       //   : [];
+      //       // const newPropertyDataImages = [];
+
+      //       // const imageData = await imagesCollection
+      //       //   .find({ ListingId: { $eq: result.listing_id } })
+      //       //   .toArray();
+      //       // if (imageData && imageData.length > 0) {
+      //       //   imageData.forEach((elm) => {
+      //       //     let element = { ...elm };
+      //       //     delete element["_id"];
+      //       //     newPropertyDataImages.push(element);
+      //       //   });
+      //       // }
+
+      //       // newData.propertyDataImages = newPropertyDataImages;
+      //       dataCollection.push(newData);
+
+      //       // console.log("imagesCollection", imagesCollection);
+      //       //dataCollection.push({ ...result });
+      //     }
+      //     res.status(200).json({ properities: dataCollection, totalDataCount });
+      //   });
     })
     .catch((err) => {
       console.log(err.Message);

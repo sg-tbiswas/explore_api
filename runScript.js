@@ -202,6 +202,7 @@ const removeDuplicateImage = async () => {
       dupIds.push(iterator._id);
     }
     console.log(`${cnt} deleted ${doc.count}`);
+    if (cnt === 500) break;
     cnt++;
   }
   collection.deleteMany({ _id: { $in: dupIds } });

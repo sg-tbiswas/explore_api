@@ -1,10 +1,7 @@
-const Cron = require("croner");
-const nodecron = require("node-cron");
+const nodeCorn = require("node-cron");
 const gobyHomes = require("./insertion");
 const recordUpdate = require("./updation");
 const imageUpload = require("./imageUpload");
-const concatePropertyImages = require("./concatePropertyImages");
-const updateBindPropertyImages = require("./updateBindPropertyImages");
 
 const cronJob1 = async () => {
   let fromInsertImage = false;
@@ -14,47 +11,41 @@ const cronJob1 = async () => {
     if (fromInsertImage === true) {
       fromInsertData = await gobyHomes();
     }
-    // if (fromInsertData === true && fromInsertImage === true) {
-    //   await concatePropertyImages();
-    // }
-    console.log("running a task every 30 minute.");
   } catch (error) {
     console.log("Something went wrong in 30 min cron.");
   }
 };
 
-let running = false;
+let corn1Running = false;
 
-nodecron.schedule("*/30 * * * *", async () => {
-  if (running) {
-    console.log(
-      "Previous execution still in progress. Skipping this execution."
-    );
+nodeCorn.schedule("*/30 * * * *", async () => {
+  if (corn1Running) {
     return;
   }
-  running = true;
-  console.log("Running cron job every two minutes");
-
-  // Simulate a long-running task
+  corn1Running = true;
   try {
     cronJob1();
   } catch (err) {
     console.log(err);
   } finally {
-    console.log("Task Completed: ");
-    running = false;
+    corn1Running = false;
   }
 });
 
-nodecron.schedule("*/50 * * * *", async () => {
+let corn2Running = false;
+
+nodeCorn.schedule("*/50 * * * *", async () => {
+  if (corn2Running) {
+    return;
+  }
+  corn2Running = true;
   try {
-    const recordUpdateResult = await recordUpdate();
-    // if (recordUpdateResult.type === true) {
-    //   await updateBindPropertyImages(recordUpdateResult.data);
-    // }
+    await recordUpdate();
     console.log("running a task every 50 minute.");
   } catch (error) {
     console.log("Something went wrong in 50 min cron.");
+  } finally {
+    corn2Running = false;
   }
 });
 
