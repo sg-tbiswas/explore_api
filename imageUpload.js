@@ -38,28 +38,30 @@ const imageUpload = async () => {
 
     for (let j = 0; j < listingChunks.length; j++) {
       const id = listingChunks[j];
-      try {
-        const query = await client.search(
-          "Media",
-          "PROP_MEDIA",
-          `(ListingId=${id})`,
-          {
-            Select:
-              "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
-          }
-        );
-        if (query.Objects && query.Objects.length > 0) {
-          for (const obj of query.Objects) {
-            const chkData = await checkExistingRecord(obj);
-            if (!chkData) {
-              records.push(obj);
+      if (id) {
+        try {
+          const query = await client.search(
+            "Media",
+            "PROP_MEDIA",
+            `(ListingId=${id})`,
+            {
+              Select:
+                "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
             }
-            //records.push(obj);
+          );
+          if (query.Objects && query.Objects.length > 0) {
+            for (const obj of query.Objects) {
+              const chkData = await checkExistingRecord(obj);
+              if (!chkData) {
+                records.push(obj);
+              }
+              //records.push(obj);
+            }
           }
+        } catch (err) {
+          console.error(`Error searching for ListingId ${id}: ${err.message}`);
+          continue; // Skip to next iteration of the loop
         }
-      } catch (err) {
-        console.error(`Error searching for ListingId ${id}: ${err.message}`);
-        continue; // Skip to next iteration of the loop
       }
     }
     await addRecordsToMongoDBImage(records);
