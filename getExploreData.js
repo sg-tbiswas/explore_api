@@ -35,14 +35,15 @@ const getExploreData = async (req, res) => {
   let maxHOAFilter = {};
   let maxDOMFilter = {};
   let DATA_COUNT = 18;
+  let SKIP_ITEM = 0;
   let customQuery = [];
   let homeTypeCustomQuery = [];
   var homeTypeQueryWrap = {};
 
   const params = req.query;
   const sort = params.sort ? (params.sort === "Newest" ? -1 : 1) : -1;
-  if (params.pageno) {
-    DATA_COUNT = 18 * parseInt(params.pageno);
+  if (params.offset) {
+    SKIP_ITEM = parseInt(params.offset);
   }
 
   if (params.city) {
@@ -295,6 +296,7 @@ const getExploreData = async (req, res) => {
             },
           },
           { $sort: { "other_data.list_date": sort } },
+          { $skip: SKIP_ITEM },
           { $limit: DATA_COUNT },
         ])
         .toArray()
