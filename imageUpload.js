@@ -95,7 +95,7 @@ const getListingIds = async () => {
     const listingIdData = await client.search(
       "Property",
       "ALL",
-      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${formattedTime}-${currentDate})`,
+      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${"2023-04-25"}) AND (ModificationTimestamp=${formattedTime}-${currentDate})`,
       {
         Select: "ListingId",
       }

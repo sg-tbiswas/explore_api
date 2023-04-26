@@ -26,7 +26,7 @@ const textReplace = (str) => {
 };
 
 const recordUpdate = async () => {
-  const now = new Date();
+  const now = new Date("2023-04-25");
 
   const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
   const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);

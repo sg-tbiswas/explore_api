@@ -83,7 +83,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
       const records = await client.search(
         resource,
         className,
-        `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${formattedTime}+)`,
+        `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${"2023-04-25"}) AND (ModificationTimestamp=${formattedTime}+)`,
         {
           limit: 500,
           offset,
