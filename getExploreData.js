@@ -34,7 +34,7 @@ const getExploreData = async (req, res) => {
   let noHOAFilter = {};
   let maxHOAFilter = {};
   let maxDOMFilter = {};
-  let DATA_COUNT = 24;
+  let DATA_COUNT = 18;
   let customQuery = [];
   let homeTypeCustomQuery = [];
   var homeTypeQueryWrap = {};
@@ -42,7 +42,7 @@ const getExploreData = async (req, res) => {
   const params = req.query;
   const sort = params.sort ? (params.sort === "Newest" ? -1 : 1) : -1;
   if (params.pageno) {
-    DATA_COUNT = 24 * parseInt(params.pageno);
+    DATA_COUNT = 18 * parseInt(params.pageno);
   }
 
   if (params.city) {
