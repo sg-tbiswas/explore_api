@@ -211,7 +211,7 @@ const removeDuplicateImage = async () => {
 };
 
 //concatePropertyImages();
-main();
+// main();
 // removeDuplicateData();
 
-//removeDuplicateImage();
+removeDuplicateImage();
