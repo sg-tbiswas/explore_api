@@ -34,7 +34,7 @@ const getExploreData = async (req, res) => {
   let noHOAFilter = {};
   let maxHOAFilter = {};
   let maxDOMFilter = {};
-  let DATA_COUNT = 15;
+  let DATA_COUNT = 36;
   let SKIP_ITEM = 0;
   let customQuery = [];
   let homeTypeCustomQuery = [];
