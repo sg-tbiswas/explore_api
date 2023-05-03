@@ -203,7 +203,7 @@ const removeDuplicateImage = async () => {
       dupIds.push(iterator._id);
     }
     console.log(`${cnt} deleted ${doc.count}`);
-    if (cnt === 2000) break;
+    if (cnt === 50000) break;
     cnt++;
   }
   console.log("cnt>>>", cnt);
