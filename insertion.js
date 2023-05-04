@@ -236,13 +236,18 @@ const fetchRecords = async (resource, className, keyMapping) => {
 
       data.address.fullAddress = fullAddr;
       data.fullBathrooms = fullBathrooms;
-
       const chkData = await checkExistingRecord(data);
       if (!chkData) {
         updatedRecords.push(data);
       }
     }
-    await addRecordsToMongoDB(updatedRecords, className);
+    if (updatedRecords.length > 0) {
+      await addRecordsToMongoDB(updatedRecords, className);
+      const listingIds = updatedRecords.map((obj) => obj.listing_id);
+      return listingIds;
+    } else {
+      return [];
+    }
   } catch (err) {
     console.error(`Error occurred in fetchRecords function: ${err.message}`);
     throw err;
@@ -263,14 +268,13 @@ const gobyHomes = async () => {
     const Resource = "ALL";
     const records = await fetchRecords(Class, Resource, keyMapping);
 
-    console.log("All records fetched and written successfully!");
+    console.log("All records fetched and written successfully!", records);
     client.logout();
-    return true;
+    return records;
   } catch (err) {
     console.error(`Error occurred in gobyHomes function: ${err.message}`);
-    return true;
+    return false;
   }
 };
 
-// gobyHomes();
 module.exports = gobyHomes;

@@ -26,13 +26,12 @@ async function checkExistingRecord(data) {
       return false;
     }
   } catch (e) {
-    console.error("error from checkExistingRecord", e);
+    console.error("error from checkExistingRecord imageUploadAfterInsert()", e);
     return false;
   }
 }
 
-const imageUpload = async () => {
-  const listingChunks = await getListingIds();
+const imageUploadAfterInsert = async (listingChunks) => {
   if (listingChunks) {
     let records = [];
 
@@ -60,7 +59,7 @@ const imageUpload = async () => {
           }
         } catch (err) {
           console.error(
-            `Error searching for ListingId ${id}: ${err.message} imageUpload()`
+            `Error searching for ListingId ${id}: ${err.message} from imageUploadAfterInsert()`
           );
           continue; // Skip to next iteration of the loop
         }
@@ -68,47 +67,15 @@ const imageUpload = async () => {
     }
     if (records.length > 0) {
       await addRecordsToMongoDBImage(records);
-      console.log("All images fetched and added successfully! imageUpload()");
+      console.log(
+        "All images fetched and added successfully! imageUploadAfterInsert()"
+      );
     } else {
-      console.log("No images available to add! imageUpload()");
+      console.log("No images available to add! imageUploadAfterInsert()");
     }
     return true;
   } else {
     return true;
-  }
-};
-
-const getListingIds = async () => {
-  try {
-    const now = new Date();
-
-    // Subtract 45 minutes from the current datetime
-    const fortyFiveMinutesAgo = new Date(now.getTime() - 45 * 60000);
-
-    // Format the datetime string without the timezone indicator
-    const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
-    const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
-
-    function getTodayDate() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = (today.getMonth() + 1).toString().padStart(2, "0");
-      const day = today.getDate().toString().padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    }
-    const listingIdData = await client.search(
-      "Property",
-      "ALL",
-      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${formattedTime}-${currentDate})`,
-      {
-        Select: "ListingId",
-      }
-    );
-    const listingIds = listingIdData.Objects.map((obj) => obj.ListingId);
-    return listingIds;
-  } catch (err) {
-    console.error("Error getting listing IDs for Property Images", err.message);
-    return false;
   }
 };
 
@@ -121,7 +88,9 @@ const addRecordsToMongoDBImage = async (records) => {
       .collection("propertyDataImages");
     await collection.insertMany(records, (err, res) => {
       if (err) throw err;
-      console.log(`${res.insertedCount} documents inserted`);
+      console.log(
+        `${res.insertedCount} documents inserted into propertyDataImages`
+      );
       client.close();
     });
   } catch (e) {
@@ -131,4 +100,4 @@ const addRecordsToMongoDBImage = async (records) => {
   }
 };
 
-module.exports = imageUpload;
+module.exports = imageUploadAfterInsert;

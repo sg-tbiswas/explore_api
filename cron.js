@@ -2,14 +2,14 @@ const nodeCorn = require("node-cron");
 const gobyHomes = require("./insertion");
 const recordUpdate = require("./updation");
 const imageUpload = require("./imageUpload");
-
+const imageUploadAfterInsert = require("./imageUploadAfterInsert");
 const cronJob1 = async () => {
-  let fromInsertImage = false;
   let fromInsertData = false;
   try {
-    fromInsertImage = await imageUpload();
-    if (fromInsertImage === true) {
-      fromInsertData = await gobyHomes();
+    console.log("running a task every 30 minute.");
+    fromInsertData = await gobyHomes();
+    if (fromInsertData && fromInsertData.length > 0) {
+      await imageUploadAfterInsert(fromInsertData);
     }
   } catch (error) {
     console.log("Something went wrong in 30 min cron.");
@@ -35,12 +35,17 @@ nodeCorn.schedule("*/30 * * * *", async () => {
 let corn2Running = false;
 
 nodeCorn.schedule("*/50 * * * *", async () => {
+  let fromRecordUpdate = false;
   if (corn2Running) {
     return;
   }
   corn2Running = true;
+
   try {
-    await recordUpdate();
+    fromRecordUpdate = await recordUpdate();
+    if (fromRecordUpdate && fromRecordUpdate.type === true) {
+      await imageUpload();
+    }
     console.log("running a task every 50 minute.");
   } catch (error) {
     console.log("Something went wrong in 50 min cron.");
