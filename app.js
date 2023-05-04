@@ -5,6 +5,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const getExploreData = require("./getExploreData");
 const getSingleExploreData = require("./getSingleExploreData");
+const getCitiesAndState = require("./getCitiesAndState");
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -26,6 +27,7 @@ app.use(bodyParser.json({ limit: "50mb" }));
 
 app.get("/getProperities", getExploreData);
 app.get("/getPropertyDetails", getSingleExploreData);
+app.get("/getCities", getCitiesAndState);
 
 app.listen(PORT, function (err) {
   if (err) console.log("Error in server setup");
