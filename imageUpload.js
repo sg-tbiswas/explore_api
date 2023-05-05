@@ -62,7 +62,7 @@ const imageUpload = async () => {
           console.error(
             `Error searching for ListingId ${id}: ${err.message} imageUpload()`
           );
-          continue; // Skip to next iteration of the loop
+          continue;
         }
       }
     }
