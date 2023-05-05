@@ -3,12 +3,14 @@ const gobyHomes = require("./insertion");
 const recordUpdate = require("./updation");
 const imageUpload = require("./imageUpload");
 const imageUploadAfterInsert = require("./imageUploadAfterInsert");
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const cronJob1 = async () => {
   let fromInsertData = false;
   try {
     console.log("running a task every 30 minute.");
     fromInsertData = await gobyHomes();
     if (fromInsertData && fromInsertData.length > 0) {
+      await sleep(10000);
       await imageUploadAfterInsert(fromInsertData);
     }
   } catch (error) {
@@ -44,6 +46,7 @@ nodeCorn.schedule("*/50 * * * *", async () => {
   try {
     fromRecordUpdate = await recordUpdate();
     if (fromRecordUpdate) {
+      await sleep(10000);
       await imageUpload();
     }
     console.log("running a task every 50 minute.");
