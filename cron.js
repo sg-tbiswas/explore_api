@@ -43,7 +43,7 @@ nodeCorn.schedule("*/50 * * * *", async () => {
 
   try {
     fromRecordUpdate = await recordUpdate();
-    if (fromRecordUpdate && fromRecordUpdate.type === true) {
+    if (fromRecordUpdate) {
       await imageUpload();
     }
     console.log("running a task every 50 minute.");

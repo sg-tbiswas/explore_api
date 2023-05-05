@@ -12,7 +12,7 @@ const client = RETS.initialize({
   logLevel: "info",
 });
 
-async function checkExistingRecord(data) {
+async function checkExistingMediaURL(data) {
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
     await client.connect();
@@ -33,7 +33,7 @@ async function checkExistingRecord(data) {
 
 const imageUpload = async () => {
   const listingChunks = await getListingIds();
-  if (listingChunks) {
+  if (listingChunks && listingChunks.length > 0) {
     let records = [];
 
     for (let j = 0; j < listingChunks.length; j++) {
@@ -51,7 +51,7 @@ const imageUpload = async () => {
           );
           if (query.Objects && query.Objects.length > 0) {
             for (const obj of query.Objects) {
-              const chkData = await checkExistingRecord(obj);
+              const chkData = await checkExistingMediaURL(obj);
               if (!chkData) {
                 records.push(obj);
               }
@@ -64,6 +64,8 @@ const imageUpload = async () => {
           );
           continue;
         }
+      } else {
+        continue;
       }
     }
     if (records.length > 0) {
@@ -72,9 +74,6 @@ const imageUpload = async () => {
     } else {
       console.log("No images available to add! imageUpload()");
     }
-    return true;
-  } else {
-    return true;
   }
 };
 

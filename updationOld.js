@@ -25,7 +25,7 @@ const textReplace = (str) => {
   return str.split(" ").join("_");
 };
 
-const recordUpdate = async () => {
+const recordUpdateOld = async () => {
   const now = new Date();
 
   const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
@@ -42,24 +42,13 @@ const recordUpdate = async () => {
     }
   );
   let allRecords = [];
-
-  if (temp.Objects && Array.isArray(temp.Objects)) {
-    allRecords = allRecords.concat(temp.Objects);
-    const recordsWithUpdatedFields = allRecords.map(mapRecord);
-    if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
-      let cnt = 1;
-      for (const item of recordsWithUpdatedFields) {
-        crossCheckRecords(item);
-        cnt++;
-      }
-      console.log(`${cnt} recordUpdate Done!`);
-      return true;
-    } else {
-      return true;
-    }
-  } else {
-    return true;
-  }
+  allRecords = allRecords.concat(temp.Objects);
+  const recordsWithUpdatedFields = allRecords.map(mapRecord);
+  recordsWithUpdatedFields.map((item, id) => {
+    console.log(id);
+    crossCheckRecords(item);
+  });
+  return { type: true, data: recordsWithUpdatedFields };
 };
 const mapRecord = (record, key) => {
   console.log(key);
@@ -214,9 +203,11 @@ const crossCheckRecords = async (result) => {
         $set: { ...newData },
       }
     );
+    console.log("update done");
   } catch (error) {
     console.log(error);
   }
 };
 
-module.exports = recordUpdate;
+//recordUpdate();
+module.exports = recordUpdateOld;

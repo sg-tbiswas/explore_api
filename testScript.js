@@ -219,4 +219,4 @@ const crossCheckRecords = async (result) => {
   }
 };
 
-module.exports = recordUpdate;
+// module.exports = recordUpdate;
