@@ -295,7 +295,7 @@ const getExploreData = async (req, res) => {
               as: "propertyImages",
             },
           },
-          { $match: { propertyImages: { $exists: true, $ne: [] } } },
+          // { $match: { propertyImages: { $exists: true, $ne: [] } } },
           { $sort: { "other_data.list_date": sort } },
           { $skip: SKIP_ITEM },
           { $limit: DATA_COUNT },
