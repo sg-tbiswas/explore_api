@@ -268,7 +268,7 @@ const gobyHomes = async () => {
     const Resource = "ALL";
     const records = await fetchRecords(Class, Resource, keyMapping);
 
-    console.log("All records fetched and written successfully!", records);
+    console.log("All records fetched and written successfully!");
     client.logout();
     return records;
   } catch (err) {
