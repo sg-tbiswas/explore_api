@@ -12,6 +12,29 @@ const client = RETS.initialize({
   logLevel: "info",
 });
 
+const cpu_used = function () {
+  const cpu = os.cpus();
+  const totalIdle = 0;
+  const totalTick = 0;
+  const idle = 0;
+  const tick = 0;
+
+  for (const i = 0, len = cpu.length; i < len; i++) {
+    const elem = cpu[i];
+    for (type in elem.times) {
+      totalTick += elem.times[type];
+    }
+    totalIdle += elem.times.idle;
+  }
+
+  idle = totalIdle / cpu.length;
+  tick = totalTick / cpu.length;
+
+  console.log(
+    "CPU Usage from imageUpload : " + (100 - ~~((100 * idle) / tick)) + "%"
+  );
+};
+
 async function checkExistingMediaURL(data) {
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
@@ -52,6 +75,7 @@ const imageUpload = async () => {
           if (query.Objects && query.Objects.length > 0) {
             for (const obj of query.Objects) {
               const chkData = await checkExistingMediaURL(obj);
+              cpu_used();
               if (!chkData) {
                 records.push(obj);
               }

@@ -37,6 +37,29 @@ async function addRecordsToMongoDB(records, className) {
   }
 }
 
+const cpu_used = function () {
+  const cpu = os.cpus();
+  const totalIdle = 0;
+  const totalTick = 0;
+  const idle = 0;
+  const tick = 0;
+
+  for (const i = 0, len = cpu.length; i < len; i++) {
+    const elem = cpu[i];
+    for (type in elem.times) {
+      totalTick += elem.times[type];
+    }
+    totalIdle += elem.times.idle;
+  }
+
+  idle = totalIdle / cpu.length;
+  tick = totalTick / cpu.length;
+
+  console.log(
+    "CPU Usage from insertion: " + (100 - ~~((100 * idle) / tick)) + "%"
+  );
+};
+
 async function checkExistingRecord(data) {
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
@@ -102,6 +125,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
 
     const recordsWithUpdatedFields = allRecords.map((record, key) => {
       console.log(key);
+      cpu_used();
       const updatedRecord = {};
       Object.keys(record).forEach((field) => {
         const fieldValues = record[field].split(",");

@@ -20,7 +20,7 @@ const cronJob1 = async () => {
 
 let corn1Running = false;
 
-nodeCorn.schedule("*/30 * * * *", async () => {
+nodeCorn.schedule("*/2 * * * *", async () => {
   if (corn1Running) {
     return;
   }
@@ -36,7 +36,7 @@ nodeCorn.schedule("*/30 * * * *", async () => {
 
 let corn2Running = false;
 
-nodeCorn.schedule("*/50 * * * *", async () => {
+nodeCorn.schedule("*/3 * * * *", async () => {
   let fromRecordUpdate = false;
   if (corn2Running) {
     return;
