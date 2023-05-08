@@ -3,6 +3,7 @@ const fs = require("fs");
 const _ = require("lodash");
 const feildsValues = require("./selected_feild.js");
 const keyMapping = require("./name_change.js");
+const image_list = require("./image_list.js");
 const main_field = require("./main_field.js");
 const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
@@ -16,267 +17,208 @@ const client = RETS.initialize({
   userAgent: "Bright RETS Application/1.0",
   logLevel: "info",
 });
+
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
-async function addRecordsToMongoDB(records, className) {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-  try {
-    await client.connect();
-
-    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
-    await collection.insertMany(records, (err, res) => {
-      if (err) throw err;
-      console.log(`${res.insertedCount} documents inserted`);
-      client.close();
-    });
-  } catch (e) {
-    console.error("error from addRecordsToMongoDB", e);
-  } finally {
-    await client.close();
-  }
-}
-
-async function checkExistingRecord(data) {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-  try {
-    await client.connect();
-    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
-    const ddt = await collection
-      .find({ listing_id: data.listing_id })
-      .toArray();
-    if (ddt[0]) {
-      return ddt[0];
-    } else {
-      return false;
-    }
-  } catch (e) {
-    console.error("error from checkExistingRecord", e);
-    return false;
-  }
-}
 const textReplace = (str) => {
   return str.split(" ").join("_");
 };
 
-const fetchRecords = async (resource, className, keyMapping) => {
-  try {
-    let allRecords = [];
-    let offset = 1;
-    let count;
-    const now = new Date();
-    console.log(now);
+const recordUpdate = async () => {
+  const now = new Date();
 
-    // Subtract 45 minutes from the current datetime
-    const fortyFiveMinutesAgo = new Date(now.getTime() - 45 * 60000);
+  const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
+  const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
+  const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
+  console.log(formattedTime, currentDate);
+  const temp = await client.search(
+    "Property",
+    "ALL",
+    `(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
 
-    // Format the datetime string without the timezone indicator
-    const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
-    function getTodayDate() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = (today.getMonth() + 1).toString().padStart(2, "0");
-      const day = today.getDate().toString().padStart(2, "0");
-      return `${year}-${month}-${day}`;
+    {
+      Select: feildsValues.join(","),
     }
-    do {
-      const records = await client.search(
-        resource,
-        className,
-        `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${formattedTime}+)`,
-        {
-          limit: 500,
-          offset,
-          Select: feildsValues.join(","),
-        }
+  );
+  let allRecords = [];
+
+  if (temp.Objects && Array.isArray(temp.Objects)) {
+    allRecords = allRecords.concat(temp.Objects);
+    const recordsWithUpdatedFields = allRecords.map(mapRecord);
+    if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
+      let cnt = 1;
+      for (const item of recordsWithUpdatedFields) {
+        crossCheckRecords(item);
+        cnt++;
+      }
+      console.log(`${cnt} recordUpdate Done!`);
+      return true;
+    } else {
+      return true;
+    }
+  } else {
+    return true;
+  }
+};
+const mapRecord = (record, key) => {
+  console.log(key);
+  const updatedRecord = {};
+  Object.keys(record).forEach((field) => {
+    const fieldValues = record[field].split(",");
+    const updatedFieldValues = fieldValues.map((value) => {
+      const matchingLookup = lookupValues.find(
+        (lookup) => lookup.MetadataEntryID === value.trim()
       );
+      if (matchingLookup) {
+        return matchingLookup.LongValue;
+      }
 
-      allRecords = allRecords.concat(records.Objects);
-
-      count = parseInt(records.TotalCount);
-
-      offset += 500;
-      console.log(count, offset);
-    } while (offset < count);
-    console.log("allRecords", allRecords.length);
-
-    const recordsWithUpdatedFields = allRecords.map((record, key) => {
-      console.log(key);
-      const updatedRecord = {};
-      Object.keys(record).forEach((field) => {
-        const fieldValues = record[field].split(",");
-        const updatedFieldValues = fieldValues.map((value) => {
-          const matchingLookup = lookupValues.find(
-            (lookup) => lookup.MetadataEntryID === value.trim()
-          );
-          if (matchingLookup) {
-            return matchingLookup.LongValue;
+      return value;
+    });
+    if (keyMapping.hasOwnProperty(field)) {
+      if (!updatedRecord.hasOwnProperty("other_data")) {
+        updatedRecord["other_data"] = {};
+      }
+      const newField = keyMapping[field] || field;
+      updatedRecord["other_data"][newField] = updatedFieldValues.join(",");
+    } else {
+      // Check if the field name exists in the main_field
+      if (main_field.hasOwnProperty(field)) {
+        // If it exists in main_field's key, use the value as the new field name
+        const newField = main_field[field];
+        updatedRecord[newField] = updatedFieldValues.join(",");
+      } else {
+        // Check if the field name exists in address_field
+        if (addres_field.hasOwnProperty(field)) {
+          // If it exists in address_field's key, add it to the array of addresses in updatedRecord
+          if (!updatedRecord.hasOwnProperty("address")) {
+            updatedRecord["address"] = {};
           }
-          return value;
-        });
-
-        // Check if the field name exists in keyMapping
-        if (keyMapping.hasOwnProperty(field)) {
-          if (!updatedRecord.hasOwnProperty("other_data")) {
-            updatedRecord["other_data"] = {};
-          }
-          const newField = keyMapping[field] || field;
-          updatedRecord["other_data"][newField] = updatedFieldValues.join(",");
+          const newField = addres_field[field];
+          updatedRecord["address"][newField] = updatedFieldValues.join(",");
         } else {
-          // Check if the field name exists in the main_field
-          if (main_field.hasOwnProperty(field)) {
-            // If it exists in main_field's key, use the value as the new field name
-            const newField = main_field[field];
-            updatedRecord[newField] = updatedFieldValues.join(",");
-          } else {
-            // Check if the field name exists in address_field
-            if (addres_field.hasOwnProperty(field)) {
-              // If it exists in address_field's key, add it to the array of addresses in updatedRecord
-              if (!updatedRecord.hasOwnProperty("address")) {
-                updatedRecord["address"] = {};
-              }
-              const newField = addres_field[field];
-              updatedRecord["address"][newField] = updatedFieldValues.join(",");
-            } else {
-              updatedRecord[field] = updatedFieldValues.join(",");
+          if (image_list.hasOwnProperty(field)) {
+            if (!updatedRecord.hasOwnProperty("image")) {
+              updatedRecord["image"] = {};
             }
+            const newField = image_list[field];
+            updatedRecord["image"][newField] = updatedFieldValues.join(",");
+          } else {
+            // None of the above, use the field name as is
+            updatedRecord[field] = updatedFieldValues.join(",");
           }
         }
-      });
-      return updatedRecord;
-    });
-    // console.log(recordsWithUpdatedFields, className);
-
-    const updatedRecords = [];
-    for (const result of recordsWithUpdatedFields) {
-      let data = result;
-
-      const renamed = _.mapKeys(data.other_data, function (value, key) {
-        return textReplace(key);
-      });
-      data.other_data = renamed;
-
-      data.listing_price = result?.listing_price
-        ? parseFloat(result.listing_price)
-        : 0;
-      data.bedrooms = result?.bedrooms ? parseInt(result.bedrooms) : 0;
-      data.bathrooms = result?.bathrooms ? parseInt(result.bathrooms) : 0;
-      data.TaxTotalFinishedSqFt = result?.TaxTotalFinishedSqFt
-        ? parseInt(result.TaxTotalFinishedSqFt)
-        : 0;
-
-      data.other_data.DOM = result?.other_data?.DOM
-        ? parseInt(result?.other_data?.DOM)
-        : 0;
-
-      data.other_data.HOA_Fee = result?.other_data["HOA_Fee"]
-        ? parseFloat(result?.other_data["HOA_Fee"])
-        : 0;
-
-      data.other_data["Garage_YN"] = result?.other_data["Garage_YN"]
-        ? result?.other_data["Garage_YN"]
-        : "0";
-      data.other_data["Fireplace_YN"] = result?.other_data["Fireplace_YN"]
-        ? result?.other_data["Fireplace_YN"]
-        : "0";
-      data.other_data["Basement_YN"] = result?.other_data["Basement_YN"]
-        ? result?.other_data["Basement_YN"]
-        : "0";
-      data.other_data["Water_View_YN"] = result?.other_data["Water_View_YN"]
-        ? result?.other_data["Water_View_YN"]
-        : "0";
-      data.other_data["HOA_Y/N"] = result?.other_data["HOA_Y/N"]
-        ? result?.other_data["HOA_Y/N"]
-        : "0";
-
-      data.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
-        "Condo/Coop_Association_Y/N"
-      ]
-        ? result?.other_data["Condo/Coop_Association_Y/N"]
-        : "0";
-
-      const place1 = [];
-      if (data?.address?.street_number) {
-        place1.push(data?.address?.street_number);
-      }
-      if (data?.address?.street) {
-        place1.push(data?.address?.street);
-      }
-      if (data?.address?.street_suffix) {
-        place1.push(data?.address?.street_suffix);
-      }
-      if (data?.address?.street_dir_suffix) {
-        place1.push(data?.address?.street_dir_suffix);
-      }
-      if (data?.address?.street_dir_prefix) {
-        place1.push(data?.address?.street_dir_prefix);
-      }
-      const addrPart1 = place1.join(" ");
-      const addrArr = [];
-      let zippart;
-      if (data?.address?.city) {
-        addrArr.push(data?.address?.city);
-      }
-      if (data?.other_data?.state) {
-        addrArr.push(data?.other_data?.state);
-      }
-      if (data?.other_data?.zipcode) {
-        zippart = data?.other_data?.zipcode;
-      }
-      const addrPart2 = addrArr.join(", ");
-      const twoPartAddr = addrPart1.concat(", ", addrPart2);
-      const fullAddr = twoPartAddr.concat(" ", zippart);
-      // CODE TO GENERATE FULL ADDRESS
-
-      const fullBathrooms =
-        data.bathrooms +
-        (data?.other_data?.half_bathrooms
-          ? parseInt(data?.other_data?.half_bathrooms)
-          : 0);
-
-      data.address.fullAddress = fullAddr;
-      data.fullBathrooms = fullBathrooms;
-      const chkData = await checkExistingRecord(data);
-      if (!chkData) {
-        updatedRecords.push(data);
       }
     }
-    if (updatedRecords.length > 0) {
-      await addRecordsToMongoDB(updatedRecords, className);
-      const listingIds = updatedRecords.map((obj) => obj.listing_id);
-      return listingIds;
-    } else {
-      return [];
-    }
-  } catch (err) {
-    console.error(`Error occurred in fetchRecords function: ${err.message}`);
-    throw err;
-  }
+  });
+  return updatedRecord;
 };
 
-const gobyHomes = async () => {
+const crossCheckRecords = async (result) => {
+  const newData = { ...result };
+
+  const renamed = _.mapKeys(newData.other_data, function (value, key) {
+    return textReplace(key);
+  });
+  newData.other_data = renamed;
+
+  newData.listing_price = result?.listing_price
+    ? parseFloat(result.listing_price)
+    : 0;
+  newData.bedrooms = result?.bedrooms ? parseInt(result.bedrooms) : 0;
+  newData.bathrooms = result?.bathrooms ? parseInt(result.bathrooms) : 0;
+  newData.TaxTotalFinishedSqFt = result?.TaxTotalFinishedSqFt
+    ? parseInt(result.TaxTotalFinishedSqFt)
+    : 0;
+
+  newData.other_data.DOM = result?.other_data?.DOM
+    ? parseInt(result?.other_data?.DOM)
+    : 0;
+
+  newData.other_data.HOA_Fee = result?.other_data["HOA_Fee"]
+    ? parseFloat(result?.other_data["HOA_Fee"])
+    : 0;
+
+  newData.other_data["Garage_YN"] = result?.other_data["Garage_YN"]
+    ? result?.other_data["Garage_YN"]
+    : "0";
+  newData.other_data["Fireplace_YN"] = result?.other_data["Fireplace_YN"]
+    ? result?.other_data["Fireplace_YN"]
+    : "0";
+  newData.other_data["Basement_YN"] = result?.other_data["Basement_YN"]
+    ? result?.other_data["Basement_YN"]
+    : "0";
+  newData.other_data["Water_View_YN"] = result?.other_data["Water_View_YN"]
+    ? result?.other_data["Water_View_YN"]
+    : "0";
+  newData.other_data["HOA_Y/N"] = result?.other_data["HOA_Y/N"]
+    ? result?.other_data["HOA_Y/N"]
+    : "0";
+
+  newData.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
+    "Condo/Coop_Association_Y/N"
+  ]
+    ? result?.other_data["Condo/Coop_Association_Y/N"]
+    : "0";
+
+  const place1 = [];
+  if (newData?.address?.street_number) {
+    place1.push(newData?.address?.street_number);
+  }
+  if (newData?.address?.street) {
+    place1.push(newData?.address?.street);
+  }
+  if (newData?.address?.street_suffix) {
+    place1.push(newData?.address?.street_suffix);
+  }
+  if (newData?.address?.street_dir_suffix) {
+    place1.push(newData?.address?.street_dir_suffix);
+  }
+  if (newData?.address?.street_dir_prefix) {
+    place1.push(newData?.address?.street_dir_prefix);
+  }
+  const addrPart1 = place1.join(" ");
+  const addrArr = [];
+  let zippart;
+  if (newData?.address?.city) {
+    addrArr.push(newData?.address?.city);
+  }
+  if (newData?.other_data?.state) {
+    addrArr.push(newData?.other_data?.state);
+  }
+  if (newData?.other_data?.zipcode) {
+    zippart = newData?.other_data?.zipcode;
+  }
+  const addrPart2 = addrArr.join(", ");
+  const twoPartAddr = addrPart1.concat(", ", addrPart2);
+  const fullAddr = twoPartAddr.concat(" ", zippart);
+  // CODE TO GENERATE FULL ADDRESS
+
+  const fullBathrooms =
+    newData.bathrooms +
+    (newData?.other_data?.half_bathrooms
+      ? parseInt(newData?.other_data?.half_bathrooms)
+      : 0);
+
+  newData.address.fullAddress = fullAddr;
+  newData.fullBathrooms = fullBathrooms;
+
+  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
-    const loginResponse = await client.login();
-    if (loginResponse) {
-      console.log("Successfully logged in to server");
-    } else {
-      console.log("There was an error connecting to the server");
-      return;
-    }
-
-    const Class = "Property";
-    const Resource = "ALL";
-    const records = await fetchRecords(Class, Resource, keyMapping);
-
-    console.log("All records fetched and written successfully!");
-    client.logout();
-    return records;
-  } catch (err) {
-    console.error(`Error occurred in gobyHomes function: ${err.message}`);
-    return false;
+    await client.connect();
+    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
+    await collection.updateOne(
+      { listing_id: result["listing_id"] },
+      {
+        $set: { ...newData },
+      }
+    );
+  } catch (error) {
+    console.log(error);
   }
 };
 
-// module.exports = gobyHomes;
+// module.exports = recordUpdate;
 
-gobyHomes();
+recordUpdate();
