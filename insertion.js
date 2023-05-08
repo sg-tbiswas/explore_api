@@ -7,7 +7,7 @@ const main_field = require("./main_field.js");
 const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
-const os = require("os");
+var os = require("os");
 
 const client = RETS.initialize({
   loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
@@ -38,15 +38,15 @@ async function addRecordsToMongoDB(records, className) {
   }
 }
 
-const cpu_used = function () {
-  const cpu = os.cpus();
-  const totalIdle = 0;
-  const totalTick = 0;
-  const idle = 0;
-  const tick = 0;
+function cpu_used() {
+  let cpu = os.cpus();
+  let totalIdle = 0;
+  let totalTick = 0;
+  let idle = 0;
+  let tick = 0;
 
-  for (const i = 0, len = cpu.length; i < len; i++) {
-    const elem = cpu[i];
+  for (let i = 0, len = cpu.length; i < len; i++) {
+    let elem = cpu[i];
     for (type in elem.times) {
       totalTick += elem.times[type];
     }
@@ -59,7 +59,7 @@ const cpu_used = function () {
   console.log(
     "CPU Usage from insertion: " + (100 - ~~((100 * idle) / tick)) + "%"
   );
-};
+}
 
 async function checkExistingRecord(data) {
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
@@ -302,4 +302,5 @@ const gobyHomes = async () => {
   }
 };
 
-module.exports = gobyHomes;
+// module.exports = gobyHomes;
+gobyHomes();
