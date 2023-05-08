@@ -12,10 +12,8 @@ const client = RETS.initialize({
   logLevel: "info",
 });
 
-async function checkExistingRecord(data) {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+async function checkExistingRecord(data, client) {
   try {
-    await client.connect();
     const collection = client
       .db(CONSTANTS.DB_NAME)
       .collection("propertyDataImages");
@@ -82,7 +80,10 @@ const imageUploadAfterInsert = async () => {
           );
           if (query.Objects && query.Objects.length > 0) {
             for (const obj of query.Objects) {
-              const chkData = await checkExistingRecord(obj);
+              const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+              await client.connect();
+              const chkData = await checkExistingRecord(obj, client);
+
               if (!chkData) {
                 records.push(obj);
               }

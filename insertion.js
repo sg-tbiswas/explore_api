@@ -1,4 +1,3 @@
-const RETS = require("node-rets");
 const fs = require("fs");
 const _ = require("lodash");
 const feildsValues = require("./selected_feild.js");
@@ -7,23 +6,13 @@ const main_field = require("./main_field.js");
 const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
+const { RETS_CLIENT } = require("./utils");
 
-const client = RETS.initialize({
-  loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
-  username: "3348441",
-  password: "vUjeyasAmepri7eqehIPhifib",
-  version: "RETS/1.8",
-  userAgent: "Bright RETS Application/1.0",
-  logLevel: "info",
-});
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
-async function addRecordsToMongoDB(records, className) {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+async function addRecordsToMongoDB(records, client) {
   try {
-    await client.connect();
-
     const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
     await collection.insertMany(records, (err, res) => {
       if (err) throw err;
@@ -37,10 +26,8 @@ async function addRecordsToMongoDB(records, className) {
   }
 }
 
-async function checkExistingRecord(data) {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+async function checkExistingRecord(data, client) {
   try {
-    await client.connect();
     const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
     const ddt = await collection
       .find({ listing_id: data.listing_id })
@@ -48,7 +35,7 @@ async function checkExistingRecord(data) {
     if (ddt[0]) {
       return ddt[0];
     } else {
-      return false;
+      return {};
     }
   } catch (e) {
     console.error("error from checkExistingRecord", e);
@@ -61,6 +48,9 @@ const textReplace = (str) => {
 
 const fetchRecords = async (resource, className, keyMapping) => {
   try {
+    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+    await client.connect();
+
     let allRecords = [];
     let offset = 1;
     let count;
@@ -80,7 +70,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
       return `${year}-${month}-${day}`;
     }
     do {
-      const records = await client.search(
+      const records = await RETS_CLIENT.search(
         resource,
         className,
         `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${formattedTime}+)`,
@@ -236,13 +226,16 @@ const fetchRecords = async (resource, className, keyMapping) => {
 
       data.address.fullAddress = fullAddr;
       data.fullBathrooms = fullBathrooms;
-      const chkData = await checkExistingRecord(data);
+
+      const chkData = await checkExistingRecord(data, client);
       if (!chkData) {
+        continue;
+      } else if (_.isEmpty(chkData)) {
         updatedRecords.push(data);
       }
     }
     if (updatedRecords.length > 0) {
-      await addRecordsToMongoDB(updatedRecords, className);
+      await addRecordsToMongoDB(updatedRecords, client);
       const listingIds = updatedRecords.map((obj) => obj.listing_id);
       return listingIds;
     } else {
@@ -256,7 +249,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
 
 const gobyHomes = async () => {
   try {
-    const loginResponse = await client.login();
+    const loginResponse = await RETS_CLIENT.login();
     if (loginResponse) {
       console.log("Successfully logged in to server");
     } else {
@@ -269,7 +262,7 @@ const gobyHomes = async () => {
     const records = await fetchRecords(Class, Resource, keyMapping);
 
     console.log("All records fetched and written successfully!");
-    client.logout();
+    RETS_CLIENT.logout();
     return records;
   } catch (err) {
     console.error(`Error occurred in gobyHomes function: ${err.message}`);

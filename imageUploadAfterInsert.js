@@ -1,21 +1,11 @@
-const RETS = require("node-rets");
 const fs = require("fs");
+const _ = require("lodash");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
+const { RETS_CLIENT } = require("./utils");
 
-const client = RETS.initialize({
-  loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
-  username: "3348441",
-  password: "vUjeyasAmepri7eqehIPhifib",
-  version: "RETS/1.8",
-  userAgent: "Bright RETS Application/1.0",
-  logLevel: "info",
-});
-
-async function checkExistingRecord(data) {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+async function checkExistingMediaURL(data, client) {
   try {
-    await client.connect();
     const collection = client
       .db(CONSTANTS.DB_NAME)
       .collection("propertyDataImages");
@@ -23,66 +13,77 @@ async function checkExistingRecord(data) {
     if (ddt[0]) {
       return ddt[0];
     } else {
-      return false;
+      return {};
     }
   } catch (e) {
-    console.error("error from checkExistingRecord imageUploadAfterInsert()", e);
+    console.error(
+      "error from checkExistingMediaURL imageUploadAfterInsert()",
+      e
+    );
     return false;
   }
 }
 
 const imageUploadAfterInsert = async (listingChunks) => {
-  if (listingChunks) {
-    let records = [];
+  try {
+    if (listingChunks) {
+      const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+      await client.connect();
 
-    for (let j = 0; j < listingChunks.length; j++) {
-      const id = listingChunks[j];
-      if (id) {
-        try {
-          const query = await client.search(
-            "Media",
-            "PROP_MEDIA",
-            `(ListingId=${id})`,
-            {
-              Select:
-                "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
-            }
-          );
-          if (query.Objects && query.Objects.length > 0) {
-            for (const obj of query.Objects) {
-              const chkData = await checkExistingRecord(obj);
-              if (!chkData) {
-                records.push(obj);
+      let records = [];
+      let queryObjects = [];
+      for (const id of listingChunks) {
+        if (id) {
+          try {
+            const query = await RETS_CLIENT.search(
+              "Media",
+              "PROP_MEDIA",
+              `(ListingId=${id})`,
+              {
+                Select:
+                  "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
               }
-              //records.push(obj);
+            );
+            if (query.Objects && query.Objects.length > 0) {
+              queryObjects.concat(query.Objects);
             }
+          } catch (err) {
+            console.error(
+              `Error searching for ListingId ${id}: ${err.message} from imageUploadAfterInsert()`
+            );
+            continue; // Skip to next iteration of the loop
           }
-        } catch (err) {
-          console.error(
-            `Error searching for ListingId ${id}: ${err.message} from imageUploadAfterInsert()`
-          );
-          continue; // Skip to next iteration of the loop
         }
       }
+
+      if (queryObjects.length > 0) {
+        for (const obj of queryObjects) {
+          const chkData = await checkExistingMediaURL(obj, client);
+          if (!chkData) {
+            continue;
+          } else if (_.isEmpty(chkData)) {
+            records.push(obj);
+          }
+          //records.push(obj);
+        }
+      }
+
+      if (records.length > 0) {
+        await addRecordsToMongoDBImage(records, client);
+        console.log(
+          "All images fetched and added successfully! imageUploadAfterInsert()"
+        );
+      } else {
+        console.log("No images available to add! imageUploadAfterInsert()");
+      }
     }
-    if (records.length > 0) {
-      await addRecordsToMongoDBImage(records);
-      console.log(
-        "All images fetched and added successfully! imageUploadAfterInsert()"
-      );
-    } else {
-      console.log("No images available to add! imageUploadAfterInsert()");
-    }
-    return true;
-  } else {
-    return true;
+  } catch (error) {
+    console.error(`Error occurred in imageUpload function: ${error.message}`);
   }
 };
 
-const addRecordsToMongoDBImage = async (records) => {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+const addRecordsToMongoDBImage = async (records, client) => {
   try {
-    await client.connect();
     const collection = client
       .db(CONSTANTS.DB_NAME)
       .collection("propertyDataImages");

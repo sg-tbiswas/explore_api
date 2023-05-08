@@ -1,22 +1,12 @@
-const RETS = require("node-rets");
 const fs = require("fs");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
+const { RETS_CLIENT } = require("./utils");
 var os = require("os");
+const _ = require("lodash");
 
-const client = RETS.initialize({
-  loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
-  username: "3348441",
-  password: "vUjeyasAmepri7eqehIPhifib",
-  version: "RETS/1.8",
-  userAgent: "Bright RETS Application/1.0",
-  logLevel: "info",
-});
-
-async function checkExistingMediaURL(data) {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+async function checkExistingMediaURL(data, client) {
   try {
-    await client.connect();
     const collection = client
       .db(CONSTANTS.DB_NAME)
       .collection("propertyDataImages");
@@ -24,57 +14,71 @@ async function checkExistingMediaURL(data) {
     if (ddt[0]) {
       return ddt[0];
     } else {
-      return false;
+      return {};
     }
   } catch (e) {
-    console.error("error from checkExistingRecord", e);
+    console.error("error from checkExistingMediaURL", e);
     return false;
   }
 }
 
 const imageUpload = async () => {
-  const listingChunks = await getListingIds();
-  if (listingChunks && listingChunks.length > 0) {
-    let records = [];
+  try {
+    const nodeClient = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+    await nodeClient.connect();
 
-    for (let j = 0; j < listingChunks.length; j++) {
-      const id = listingChunks[j];
-      if (id) {
-        try {
-          const query = await client.search(
-            "Media",
-            "PROP_MEDIA",
-            `(ListingId=${id})`,
-            {
-              Select:
-                "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
-            }
-          );
-          if (query.Objects && query.Objects.length > 0) {
-            for (const obj of query.Objects) {
-              const chkData = await checkExistingMediaURL(obj);
-              if (!chkData) {
-                records.push(obj);
+    const listingChunks = await getListingIds();
+    if (listingChunks && listingChunks.length > 0) {
+      let records = [];
+      let queryObjects = [];
+
+      for (const id of listingChunks) {
+        if (id) {
+          try {
+            const query = await RETS_CLIENT.search(
+              "Media",
+              "PROP_MEDIA",
+              `(ListingId=${id})`,
+              {
+                Select:
+                  "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
               }
-              //records.push(obj);
+            );
+            if (query.Objects && query.Objects.length > 0) {
+              queryObjects.concat(query.Objects);
             }
+          } catch (err) {
+            console.error(
+              `Error searching for ListingId ${id}: ${err.message} imageUpload()`
+            );
+            continue;
           }
-        } catch (err) {
-          console.error(
-            `Error searching for ListingId ${id}: ${err.message} imageUpload()`
-          );
+        } else {
           continue;
         }
+      }
+
+      if (queryObjects.length > 0) {
+        for (const obj of queryObjects) {
+          const chkData = await checkExistingMediaURL(obj, nodeClient);
+          if (!chkData) {
+            continue;
+          } else if (_.isEmpty(chkData)) {
+            records.push(obj);
+          }
+          //records.push(obj);
+        }
+      }
+
+      if (records.length > 0) {
+        await addRecordsToMongoDBImage(records, nodeClient);
+        console.log("All images fetched and added successfully! imageUpload()");
       } else {
-        continue;
+        console.log("No images available to add! imageUpload()");
       }
     }
-    if (records.length > 0) {
-      await addRecordsToMongoDBImage(records);
-      console.log("All images fetched and added successfully! imageUpload()");
-    } else {
-      console.log("No images available to add! imageUpload()");
-    }
+  } catch (error) {
+    console.error(`Error occurred in imageUpload function: ${error.message}`);
   }
 };
 
@@ -96,7 +100,7 @@ const getListingIds = async () => {
       const day = today.getDate().toString().padStart(2, "0");
       return `${year}-${month}-${day}`;
     }
-    const listingIdData = await client.search(
+    const listingIdData = await RETS_CLIENT.search(
       "Property",
       "ALL",
       `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${formattedTime}-${currentDate})`,
@@ -112,10 +116,8 @@ const getListingIds = async () => {
   }
 };
 
-const addRecordsToMongoDBImage = async (records) => {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+const addRecordsToMongoDBImage = async (records, client) => {
   try {
-    await client.connect();
     const collection = client
       .db(CONSTANTS.DB_NAME)
       .collection("propertyDataImages");

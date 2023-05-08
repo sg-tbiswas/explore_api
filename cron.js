@@ -3,7 +3,7 @@ const gobyHomes = require("./insertion");
 const recordUpdate = require("./updation");
 const imageUpload = require("./imageUpload");
 const imageUploadAfterInsert = require("./imageUploadAfterInsert");
-
+const Cron = require("croner");
 const os = require("os");
 
 setInterval(() => {
@@ -44,7 +44,7 @@ const cronJob1 = async () => {
 
 let corn1Running = false;
 
-nodeCorn.schedule("*/2 * * * *", async () => {
+Cron("*/2 * * * *", async () => {
   if (corn1Running) {
     return;
   }
@@ -60,7 +60,7 @@ nodeCorn.schedule("*/2 * * * *", async () => {
 
 let corn2Running = false;
 
-nodeCorn.schedule("*/2 * * * *", async () => {
+Cron("*/2 * * * *", async () => {
   let fromRecordUpdate = false;
   if (corn2Running) {
     return;

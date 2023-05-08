@@ -1,4 +1,3 @@
-const RETS = require("node-rets");
 const fs = require("fs");
 const _ = require("lodash");
 const feildsValues = require("./selected_feild.js");
@@ -8,16 +7,7 @@ const main_field = require("./main_field.js");
 const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
-var os = require("os");
-
-const client = RETS.initialize({
-  loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
-  username: "3348441",
-  password: "vUjeyasAmepri7eqehIPhifib",
-  version: "RETS/1.8",
-  userAgent: "Bright RETS Application/1.0",
-  logLevel: "info",
-});
+const { RETS_CLIENT } = require("./utils");
 
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
@@ -27,38 +17,45 @@ const textReplace = (str) => {
 };
 
 const recordUpdate = async () => {
-  const now = new Date();
+  try {
+    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+    await client.connect();
+    const now = new Date();
 
-  const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
-  const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
-  const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
-  console.log(formattedTime, currentDate);
-  const temp = await client.search(
-    "Property",
-    "ALL",
-    `(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
+    const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
+    const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
+    const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
+    console.log(formattedTime, currentDate);
+    const temp = await RETS_CLIENT.search(
+      "Property",
+      "ALL",
+      `(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
 
-    {
-      Select: feildsValues.join(","),
-    }
-  );
-  let allRecords = [];
-
-  if (temp.Objects && Array.isArray(temp.Objects)) {
-    allRecords = allRecords.concat(temp.Objects);
-    const recordsWithUpdatedFields = allRecords.map(mapRecord);
-    if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
-      let cnt = 1;
-      for (const item of recordsWithUpdatedFields) {
-        crossCheckRecords(item);
-        cnt++;
+      {
+        Select: feildsValues.join(","),
       }
-      console.log(`${cnt} recordUpdate Done!`);
-      return true;
+    );
+    let allRecords = [];
+
+    if (temp.Objects && Array.isArray(temp.Objects)) {
+      allRecords = allRecords.concat(temp.Objects);
+      const recordsWithUpdatedFields = allRecords.map(mapRecord);
+      if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
+        let cnt = 1;
+        for (const item of recordsWithUpdatedFields) {
+          crossCheckRecords(item, client);
+          cnt++;
+        }
+        console.log(`${cnt} recordUpdate Done!`);
+        return true;
+      } else {
+        return true;
+      }
     } else {
       return true;
     }
-  } else {
+  } catch (error) {
+    console.error(`Error occurred in recordUpdate function: ${error.message}`);
     return true;
   }
 };
@@ -116,7 +113,7 @@ const mapRecord = (record, key) => {
   return updatedRecord;
 };
 
-const crossCheckRecords = async (result) => {
+const crossCheckRecords = async (result, client) => {
   const newData = { ...result };
 
   const renamed = _.mapKeys(newData.other_data, function (value, key) {
@@ -205,9 +202,7 @@ const crossCheckRecords = async (result) => {
   newData.address.fullAddress = fullAddr;
   newData.fullBathrooms = fullBathrooms;
 
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
-    await client.connect();
     const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
     await collection.updateOne(
       { listing_id: result["listing_id"] },
@@ -216,7 +211,7 @@ const crossCheckRecords = async (result) => {
       }
     );
   } catch (error) {
-    console.log(error);
+    console.error("error while updating data from crossCheckRecords()", error);
   }
 };
 
