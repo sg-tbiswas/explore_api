@@ -8,6 +8,7 @@ const main_field = require("./main_field.js");
 const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
+const os = require("os");
 
 const client = RETS.initialize({
   loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
@@ -63,6 +64,9 @@ const recordUpdate = async () => {
 };
 const mapRecord = (record, key) => {
   console.log(key);
+  console.log("CPU USEAGE=>", os.cpus());
+  console.log("totalmem=>", os.totalmem());
+  console.log("freemem=>", os.freemem());
   const updatedRecord = {};
   Object.keys(record).forEach((field) => {
     const fieldValues = record[field].split(",");
