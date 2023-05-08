@@ -15,7 +15,7 @@ const cronJob1 = async () => {
       await imageUploadAfterInsert(fromInsertData);
     }
   } catch (error) {
-    console.log("Something went wrong in 2 min cron.");
+    console.log("Something went wrong in 2 min Insert cron.");
   }
 };
 
@@ -52,7 +52,7 @@ nodeCorn.schedule("*/2 * * * *", async () => {
       await imageUpload();
     }
   } catch (error) {
-    console.log("Something went wrong in 3 min cron.");
+    console.log("Something went wrong in 3 min Update cron.");
   } finally {
     corn2Running = false;
   }
