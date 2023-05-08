@@ -43,23 +43,23 @@ const cronJob1 = async () => {
 
 let corn1Running = false;
 
-// Cron("*/5 * * * *", async () => {
-//   if (corn1Running) {
-//     return;
-//   }
-//   corn1Running = true;
-//   try {
-//     cronJob1();
-//   } catch (err) {
-//     console.log(err);
-//   } finally {
-//     corn1Running = false;
-//   }
-// });
+Cron("*/30 * * * *", async () => {
+  if (corn1Running) {
+    return;
+  }
+  corn1Running = true;
+  try {
+    cronJob1();
+  } catch (err) {
+    console.log(err);
+  } finally {
+    corn1Running = false;
+  }
+});
 
 let corn2Running = false;
 
-Cron("*/5 * * * *", async () => {
+Cron("*/55 * * * *", async () => {
   let fromRecordUpdate = false;
   if (corn2Running) {
     return;
