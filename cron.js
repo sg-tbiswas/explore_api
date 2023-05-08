@@ -8,14 +8,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const cronJob1 = async () => {
   let fromInsertData = false;
   try {
-    console.log("running a task every 30 minute.", new Date().toISOString());
+    console.log("running a task every 2 minute.", new Date().toISOString());
     fromInsertData = await gobyHomes();
     if (fromInsertData && fromInsertData.length > 0) {
       await sleep(10000);
       await imageUploadAfterInsert(fromInsertData);
     }
   } catch (error) {
-    console.log("Something went wrong in 30 min cron.");
+    console.log("Something went wrong in 2 min cron.");
   }
 };
 
@@ -45,14 +45,14 @@ nodeCorn.schedule("*/3 * * * *", async () => {
   corn2Running = true;
 
   try {
-    console.log("running a task every 50 minute.", new Date().toISOString());
+    console.log("running a task every 3 minute.", new Date().toISOString());
     fromRecordUpdate = await recordUpdate();
     if (fromRecordUpdate) {
       await sleep(10000);
       await imageUpload();
     }
   } catch (error) {
-    console.log("Something went wrong in 50 min cron.");
+    console.log("Something went wrong in 3 min cron.");
   } finally {
     corn2Running = false;
   }
