@@ -13,28 +13,6 @@ const client = RETS.initialize({
   logLevel: "info",
 });
 
-function cpu_used() {
-  let cpu = os.cpus();
-  let totalIdle = 0;
-  let totalTick = 0;
-  let idle = 0;
-  let tick = 0;
-
-  for (let i = 0, len = cpu.length; i < len; i++) {
-    let elem = cpu[i];
-    for (type in elem.times) {
-      totalTick += elem.times[type];
-    }
-    totalIdle += elem.times.idle;
-  }
-
-  idle = totalIdle / cpu.length;
-  tick = totalTick / cpu.length;
-
-  console.log(
-    "CPU Usage from insertion: " + (100 - ~~((100 * idle) / tick)) + "%"
-  );
-}
 async function checkExistingRecord(data) {
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
@@ -74,7 +52,6 @@ const imageUploadAfterInsert = async (listingChunks) => {
           if (query.Objects && query.Objects.length > 0) {
             for (const obj of query.Objects) {
               const chkData = await checkExistingRecord(obj);
-              cpu_used();
               if (!chkData) {
                 records.push(obj);
               }

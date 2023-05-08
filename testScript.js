@@ -1,14 +1,7 @@
 const RETS = require("node-rets");
 const fs = require("fs");
-const _ = require("lodash");
-const feildsValues = require("./selected_feild.js");
-const keyMapping = require("./name_change.js");
-const image_list = require("./image_list.js");
-const main_field = require("./main_field.js");
-const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
-const os = require("os");
 
 const client = RETS.initialize({
   loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
@@ -19,234 +12,125 @@ const client = RETS.initialize({
   logLevel: "info",
 });
 
-const temp = fs.readFileSync("metaDataLookup.json");
-const lookupValues = JSON.parse(temp);
-
-const textReplace = (str) => {
-  return str.split(" ").join("_");
-};
-
-var cpu_used = function () {
-  var cpu = os.cpus();
-  var totalIdle = 0;
-  var totalTick = 0;
-  var idle = 0;
-  var tick = 0;
-
-  for (var i = 0, len = cpu.length; i < len; i++) {
-    var elem = cpu[i];
-    for (type in elem.times) {
-      totalTick += elem.times[type];
-    }
-    totalIdle += elem.times.idle;
-  }
-
-  idle = totalIdle / cpu.length;
-  tick = totalTick / cpu.length;
-
-  console.log("CPU Usage : " + (100 - ~~((100 * idle) / tick)) + "%");
-};
-
-const cpus = os.cpus();
-const cpu = cpus[0];
-
-const recordUpdate = async () => {
-  const now = new Date();
-
-  const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
-  const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
-  const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
-  console.log(formattedTime, currentDate);
-  const temp = await client.search(
-    "Property",
-    "ALL",
-    `(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
-
-    {
-      Select: feildsValues.join(","),
-    }
-  );
-  let allRecords = [];
-
-  if (temp.Objects && Array.isArray(temp.Objects)) {
-    allRecords = allRecords.concat(temp.Objects);
-    const recordsWithUpdatedFields = allRecords.map(mapRecord);
-    if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
-      let cnt = 1;
-      for (const item of recordsWithUpdatedFields) {
-        crossCheckRecords(item);
-        cnt++;
-      }
-      console.log(`${cnt} recordUpdate Done!`);
-      return true;
+async function checkExistingRecord(data) {
+  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+  try {
+    await client.connect();
+    const collection = client
+      .db(CONSTANTS.DB_NAME)
+      .collection("propertyDataImages");
+    const ddt = await collection.find({ MediaURL: data.MediaURL }).toArray();
+    if (ddt[0]) {
+      return ddt[0];
     } else {
-      return true;
+      return false;
     }
+  } catch (e) {
+    console.error("error from checkExistingRecord imageUploadAfterInsert()", e);
+    return false;
+  }
+}
+
+const imageUploadAfterInsert = async () => {
+  const listingChunks = [
+    "DCDC2093888",
+    "DCDC2094896",
+    "DCDC2094706",
+    "DCDC2094568",
+    "DCDC2093676",
+    "DCDC2094442",
+    "DCDC2092906",
+    "DCDC2093544",
+    "DCDC2094434",
+    "DCDC2094198",
+    "DCDC2094484",
+    "DCDC2093358",
+    "DCDC2093438",
+    "DCDC2094550",
+    "DCDC2093576",
+    "DCDC2093130",
+    "DCDC2092496",
+    "DCDC2094464",
+    "DCDC2094268",
+    "DCDC2092264",
+    "DCDC2093686",
+    "DCDC2092244",
+    "DCDC2093378",
+    "DCDC2094770",
+    "DCDC2094852",
+    "DCDC2094854",
+    "DCDC2093848",
+    "DCDC2081616",
+    "DCDC2093958",
+    "DCDC2094846",
+  ];
+  if (listingChunks) {
+    let records = [];
+
+    for (let j = 0; j < listingChunks.length; j++) {
+      const id = listingChunks[j];
+      if (id) {
+        try {
+          const query = await client.search(
+            "Media",
+            "PROP_MEDIA",
+            `(ListingId=${id})`,
+            {
+              Select:
+                "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
+            }
+          );
+          if (query.Objects && query.Objects.length > 0) {
+            for (const obj of query.Objects) {
+              const chkData = await checkExistingRecord(obj);
+              if (!chkData) {
+                records.push(obj);
+              }
+              //records.push(obj);
+            }
+          }
+        } catch (err) {
+          console.error(
+            `Error searching for ListingId ${id}: ${err.message} from imageUploadAfterInsert()`
+          );
+          continue; // Skip to next iteration of the loop
+        }
+      }
+    }
+    if (records.length > 0) {
+      await addRecordsToMongoDBImage(records);
+      console.log(
+        "All images fetched and added successfully! imageUploadAfterInsert()"
+      );
+    } else {
+      console.log("No images available to add! imageUploadAfterInsert()");
+    }
+    return true;
   } else {
     return true;
   }
 };
-const mapRecord = (record, key) => {
-  console.log(key);
-  cpu_used();
-  console.log("totalmem=>", os.totalmem());
-  console.log("freemem=>", os.freemem());
-  const updatedRecord = {};
-  Object.keys(record).forEach((field) => {
-    const fieldValues = record[field].split(",");
-    const updatedFieldValues = fieldValues.map((value) => {
-      const matchingLookup = lookupValues.find(
-        (lookup) => lookup.MetadataEntryID === value.trim()
-      );
-      if (matchingLookup) {
-        return matchingLookup.LongValue;
-      }
 
-      return value;
-    });
-    if (keyMapping.hasOwnProperty(field)) {
-      if (!updatedRecord.hasOwnProperty("other_data")) {
-        updatedRecord["other_data"] = {};
-      }
-      const newField = keyMapping[field] || field;
-      updatedRecord["other_data"][newField] = updatedFieldValues.join(",");
-    } else {
-      // Check if the field name exists in the main_field
-      if (main_field.hasOwnProperty(field)) {
-        // If it exists in main_field's key, use the value as the new field name
-        const newField = main_field[field];
-        updatedRecord[newField] = updatedFieldValues.join(",");
-      } else {
-        // Check if the field name exists in address_field
-        if (addres_field.hasOwnProperty(field)) {
-          // If it exists in address_field's key, add it to the array of addresses in updatedRecord
-          if (!updatedRecord.hasOwnProperty("address")) {
-            updatedRecord["address"] = {};
-          }
-          const newField = addres_field[field];
-          updatedRecord["address"][newField] = updatedFieldValues.join(",");
-        } else {
-          if (image_list.hasOwnProperty(field)) {
-            if (!updatedRecord.hasOwnProperty("image")) {
-              updatedRecord["image"] = {};
-            }
-            const newField = image_list[field];
-            updatedRecord["image"][newField] = updatedFieldValues.join(",");
-          } else {
-            // None of the above, use the field name as is
-            updatedRecord[field] = updatedFieldValues.join(",");
-          }
-        }
-      }
-    }
-  });
-  return updatedRecord;
-};
-
-const crossCheckRecords = async (result) => {
-  const newData = { ...result };
-
-  const renamed = _.mapKeys(newData.other_data, function (value, key) {
-    return textReplace(key);
-  });
-  newData.other_data = renamed;
-
-  newData.listing_price = result?.listing_price
-    ? parseFloat(result.listing_price)
-    : 0;
-  newData.bedrooms = result?.bedrooms ? parseInt(result.bedrooms) : 0;
-  newData.bathrooms = result?.bathrooms ? parseInt(result.bathrooms) : 0;
-  newData.TaxTotalFinishedSqFt = result?.TaxTotalFinishedSqFt
-    ? parseInt(result.TaxTotalFinishedSqFt)
-    : 0;
-
-  newData.other_data.DOM = result?.other_data?.DOM
-    ? parseInt(result?.other_data?.DOM)
-    : 0;
-
-  newData.other_data.HOA_Fee = result?.other_data["HOA_Fee"]
-    ? parseFloat(result?.other_data["HOA_Fee"])
-    : 0;
-
-  newData.other_data["Garage_YN"] = result?.other_data["Garage_YN"]
-    ? result?.other_data["Garage_YN"]
-    : "0";
-  newData.other_data["Fireplace_YN"] = result?.other_data["Fireplace_YN"]
-    ? result?.other_data["Fireplace_YN"]
-    : "0";
-  newData.other_data["Basement_YN"] = result?.other_data["Basement_YN"]
-    ? result?.other_data["Basement_YN"]
-    : "0";
-  newData.other_data["Water_View_YN"] = result?.other_data["Water_View_YN"]
-    ? result?.other_data["Water_View_YN"]
-    : "0";
-  newData.other_data["HOA_Y/N"] = result?.other_data["HOA_Y/N"]
-    ? result?.other_data["HOA_Y/N"]
-    : "0";
-
-  newData.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
-    "Condo/Coop_Association_Y/N"
-  ]
-    ? result?.other_data["Condo/Coop_Association_Y/N"]
-    : "0";
-
-  const place1 = [];
-  if (newData?.address?.street_number) {
-    place1.push(newData?.address?.street_number);
-  }
-  if (newData?.address?.street) {
-    place1.push(newData?.address?.street);
-  }
-  if (newData?.address?.street_suffix) {
-    place1.push(newData?.address?.street_suffix);
-  }
-  if (newData?.address?.street_dir_suffix) {
-    place1.push(newData?.address?.street_dir_suffix);
-  }
-  if (newData?.address?.street_dir_prefix) {
-    place1.push(newData?.address?.street_dir_prefix);
-  }
-  const addrPart1 = place1.join(" ");
-  const addrArr = [];
-  let zippart;
-  if (newData?.address?.city) {
-    addrArr.push(newData?.address?.city);
-  }
-  if (newData?.other_data?.state) {
-    addrArr.push(newData?.other_data?.state);
-  }
-  if (newData?.other_data?.zipcode) {
-    zippart = newData?.other_data?.zipcode;
-  }
-  const addrPart2 = addrArr.join(", ");
-  const twoPartAddr = addrPart1.concat(", ", addrPart2);
-  const fullAddr = twoPartAddr.concat(" ", zippart);
-  // CODE TO GENERATE FULL ADDRESS
-
-  const fullBathrooms =
-    newData.bathrooms +
-    (newData?.other_data?.half_bathrooms
-      ? parseInt(newData?.other_data?.half_bathrooms)
-      : 0);
-
-  newData.address.fullAddress = fullAddr;
-  newData.fullBathrooms = fullBathrooms;
-
+const addRecordsToMongoDBImage = async (records) => {
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
     await client.connect();
-    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
-    await collection.updateOne(
-      { listing_id: result["listing_id"] },
-      {
-        $set: { ...newData },
-      }
-    );
-  } catch (error) {
-    console.log(error);
+    const collection = client
+      .db(CONSTANTS.DB_NAME)
+      .collection("propertyDataImages");
+    await collection.insertMany(records, (err, res) => {
+      if (err) throw err;
+      console.log(
+        `${res.insertedCount} documents inserted into propertyDataImages`
+      );
+      client.close();
+    });
+  } catch (e) {
+    console.error(e);
+  } finally {
+    await client.close();
   }
 };
 
-// module.exports = recordUpdate;
-
-recordUpdate();
+imageUploadAfterInsert();
+// module.exports = imageUploadAfterInsert;

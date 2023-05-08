@@ -26,29 +26,6 @@ const textReplace = (str) => {
   return str.split(" ").join("_");
 };
 
-function cpu_used() {
-  let cpu = os.cpus();
-  let totalIdle = 0;
-  let totalTick = 0;
-  let idle = 0;
-  let tick = 0;
-
-  for (let i = 0, len = cpu.length; i < len; i++) {
-    let elem = cpu[i];
-    for (type in elem.times) {
-      totalTick += elem.times[type];
-    }
-    totalIdle += elem.times.idle;
-  }
-
-  idle = totalIdle / cpu.length;
-  tick = totalTick / cpu.length;
-
-  console.log(
-    "CPU Usage from insertion: " + (100 - ~~((100 * idle) / tick)) + "%"
-  );
-}
-
 const recordUpdate = async () => {
   const now = new Date();
 
@@ -87,7 +64,6 @@ const recordUpdate = async () => {
 };
 const mapRecord = (record, key) => {
   console.log(key);
-  cpu_used();
   const updatedRecord = {};
   Object.keys(record).forEach((field) => {
     const fieldValues = record[field].split(",");
