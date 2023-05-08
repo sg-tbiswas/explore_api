@@ -3,6 +3,7 @@ const gobyHomes = require("./insertion");
 const recordUpdate = require("./updation");
 const imageUpload = require("./imageUpload");
 const imageUploadAfterInsert = require("./imageUploadAfterInsert");
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const cronJob1 = async () => {
   let fromInsertData = false;
