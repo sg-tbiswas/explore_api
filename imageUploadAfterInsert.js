@@ -2,7 +2,6 @@ const RETS = require("node-rets");
 const fs = require("fs");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
-var os = require("os");
 
 const client = RETS.initialize({
   loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
