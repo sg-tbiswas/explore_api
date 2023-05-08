@@ -31,20 +31,20 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const cronJob1 = async () => {
   let fromInsertData = false;
   try {
-    console.log("running a task every 2 minute.", new Date().toISOString());
+    console.log("running a task every 10 minute.", new Date().toISOString());
     fromInsertData = await gobyHomes();
     if (fromInsertData && fromInsertData.length > 0) {
       await sleep(10000);
       await imageUploadAfterInsert(fromInsertData);
     }
   } catch (error) {
-    console.log("Something went wrong in 2 min Insert cron.");
+    console.log("Something went wrong in 10 min Insert cron.");
   }
 };
 
 let corn1Running = false;
 
-Cron("*/2 * * * *", async () => {
+Cron("*/10 * * * *", async () => {
   if (corn1Running) {
     return;
   }
@@ -60,7 +60,7 @@ Cron("*/2 * * * *", async () => {
 
 let corn2Running = false;
 
-Cron("*/2 * * * *", async () => {
+Cron("*/25 * * * *", async () => {
   let fromRecordUpdate = false;
   if (corn2Running) {
     return;
@@ -68,14 +68,14 @@ Cron("*/2 * * * *", async () => {
   corn2Running = true;
 
   try {
-    console.log("running a task every 3 minute.", new Date().toISOString());
+    console.log("running a task every 25 minute.", new Date().toISOString());
     fromRecordUpdate = await recordUpdate();
     if (fromRecordUpdate) {
       await sleep(10000);
       await imageUpload();
     }
   } catch (error) {
-    console.log("Something went wrong in 3 min Update cron.");
+    console.log("Something went wrong in 25 min Update cron.");
   } finally {
     corn2Running = false;
   }
