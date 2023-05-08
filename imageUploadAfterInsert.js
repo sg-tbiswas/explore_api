@@ -13,7 +13,7 @@ async function checkExistingMediaURL(data, client) {
     if (ddt[0]) {
       return ddt[0];
     } else {
-      return {};
+      return false;
     }
   } catch (e) {
     console.error(
@@ -31,7 +31,6 @@ const imageUploadAfterInsert = async (listingChunks) => {
       await client.connect();
 
       let records = [];
-      let queryObjects = [];
       for (const id of listingChunks) {
         if (id) {
           try {
@@ -44,8 +43,15 @@ const imageUploadAfterInsert = async (listingChunks) => {
                   "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
               }
             );
+
             if (query.Objects && query.Objects.length > 0) {
-              queryObjects.concat(query.Objects);
+              for (const obj of query.Objects) {
+                const chkData = await checkExistingMediaURL(obj, client);
+                if (!chkData) {
+                  records.push(obj);
+                }
+                //records.push(obj);
+              }
             }
           } catch (err) {
             console.error(
@@ -55,19 +61,6 @@ const imageUploadAfterInsert = async (listingChunks) => {
           }
         }
       }
-
-      if (queryObjects.length > 0) {
-        for (const obj of queryObjects) {
-          const chkData = await checkExistingMediaURL(obj, client);
-          if (!chkData) {
-            continue;
-          } else if (_.isEmpty(chkData)) {
-            records.push(obj);
-          }
-          //records.push(obj);
-        }
-      }
-
       if (records.length > 0) {
         await addRecordsToMongoDBImage(records, client);
         console.log(
@@ -78,7 +71,9 @@ const imageUploadAfterInsert = async (listingChunks) => {
       }
     }
   } catch (error) {
-    console.error(`Error occurred in imageUpload function: ${error.message}`);
+    console.error(
+      `Error occurred in imageUploadAfterInsert function: ${error.message}`
+    );
   }
 };
 
@@ -100,5 +95,4 @@ const addRecordsToMongoDBImage = async (records, client) => {
     await client.close();
   }
 };
-
 module.exports = imageUploadAfterInsert;

@@ -43,7 +43,7 @@ const cronJob1 = async () => {
 
 let corn1Running = false;
 
-Cron("*/30 * * * *", async () => {
+Cron("*/5 * * * *", async () => {
   if (corn1Running) {
     return;
   }
@@ -59,7 +59,7 @@ Cron("*/30 * * * *", async () => {
 
 let corn2Running = false;
 
-Cron("*/55 * * * *", async () => {
+Cron("*/15 * * * *", async () => {
   let fromRecordUpdate = false;
   if (corn2Running) {
     return;

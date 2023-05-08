@@ -14,7 +14,7 @@ async function checkExistingMediaURL(data, client) {
     if (ddt[0]) {
       return ddt[0];
     } else {
-      return {};
+      return false;
     }
   } catch (e) {
     console.error("error from checkExistingMediaURL", e);
@@ -30,7 +30,6 @@ const imageUpload = async () => {
     const listingChunks = await getListingIds();
     if (listingChunks && listingChunks.length > 0) {
       let records = [];
-      let queryObjects = [];
 
       for (const id of listingChunks) {
         if (id) {
@@ -45,7 +44,13 @@ const imageUpload = async () => {
               }
             );
             if (query.Objects && query.Objects.length > 0) {
-              queryObjects.concat(query.Objects);
+              for (const obj of query.Objects) {
+                const chkData = await checkExistingMediaURL(obj, nodeClient);
+                if (!chkData) {
+                  records.push(obj);
+                }
+                //records.push(obj);
+              }
             }
           } catch (err) {
             console.error(
@@ -55,18 +60,6 @@ const imageUpload = async () => {
           }
         } else {
           continue;
-        }
-      }
-
-      if (queryObjects.length > 0) {
-        for (const obj of queryObjects) {
-          const chkData = await checkExistingMediaURL(obj, nodeClient);
-          if (!chkData) {
-            continue;
-          } else if (_.isEmpty(chkData)) {
-            records.push(obj);
-          }
-          //records.push(obj);
         }
       }
 
