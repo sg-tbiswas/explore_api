@@ -37,7 +37,7 @@ nodeCorn.schedule("*/2 * * * *", async () => {
 
 let corn2Running = false;
 
-nodeCorn.schedule("*/3 * * * *", async () => {
+nodeCorn.schedule("*/2 * * * *", async () => {
   let fromRecordUpdate = false;
   if (corn2Running) {
     return;
