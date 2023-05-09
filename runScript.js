@@ -160,6 +160,6 @@ const removeDuplicateImage = async () => {
 
 //concatePropertyImages();
 // main();
-// removeDuplicateData();
+removeDuplicateData();
 
 // removeDuplicateImage();

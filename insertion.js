@@ -35,7 +35,7 @@ async function checkExistingRecord(data, client) {
     if (ddt[0]) {
       return ddt[0];
     } else {
-      return {};
+      return false;
     }
   } catch (e) {
     console.error("error from checkExistingRecord", e);
@@ -223,8 +223,6 @@ const fetchRecords = async (resource, className, keyMapping) => {
 
       const chkData = await checkExistingRecord(data, client);
       if (!chkData) {
-        continue;
-      } else if (_.isEmpty(chkData)) {
         updatedRecords.push(data);
       }
     }
