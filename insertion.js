@@ -6,7 +6,7 @@ const main_field = require("./main_field.js");
 const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
-const { RETS_CLIENT } = require("./utils");
+const { RETS_CLIENT, getTodayDate } = require("./utils");
 
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
@@ -62,13 +62,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
 
     // Format the datetime string without the timezone indicator
     const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
-    function getTodayDate() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = (today.getMonth() + 1).toString().padStart(2, "0");
-      const day = today.getDate().toString().padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    }
+
     do {
       const records = await RETS_CLIENT.search(
         resource,

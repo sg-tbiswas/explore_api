@@ -1,7 +1,7 @@
 const fs = require("fs");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
-const { RETS_CLIENT } = require("./utils");
+const { RETS_CLIENT, getTodayDate } = require("./utils");
 var os = require("os");
 const _ = require("lodash");
 
@@ -86,13 +86,6 @@ const getListingIds = async () => {
     const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
 
-    function getTodayDate() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = (today.getMonth() + 1).toString().padStart(2, "0");
-      const day = today.getDate().toString().padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    }
     const listingIdData = await RETS_CLIENT.search(
       "Property",
       "ALL",
