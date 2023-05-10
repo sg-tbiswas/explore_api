@@ -10,10 +10,10 @@ async function checkExistingMediaURL(data, client) {
       .db(CONSTANTS.DB_NAME)
       .collection("propertyDataImages");
     const ddt = await collection.find({ MediaURL: data.MediaURL }).toArray();
-    if (ddt[0]) {
-      return ddt[0];
+    if (ddt) {
+      return ddt;
     } else {
-      return false;
+      return [];
     }
   } catch (e) {
     console.error(
@@ -48,9 +48,12 @@ const imageUploadAfterInsert = async (listingChunks) => {
               for (const obj of query.Objects) {
                 const chkData = await checkExistingMediaURL(obj, client);
                 if (!chkData) {
-                  records.push(obj);
+                  continue;
+                } else if (Array.isArray(chkData)) {
+                  if (chkData.length < 1) {
+                    records.push(obj);
+                  }
                 }
-                //records.push(obj);
               }
             }
           } catch (err) {

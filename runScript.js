@@ -158,8 +158,26 @@ const removeDuplicateImage = async () => {
   console.log("DELETE COMPLETED !!!");
 };
 
+async function checkExistingRecord(data) {
+  try {
+    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
+    const ddt = await collection
+      .find({ listing_id: data.listing_id })
+      .toArray();
+    if (ddt) {
+      return ddt;
+    } else {
+      return [];
+    }
+  } catch (e) {
+    console.error("error from checkExistingRecord", e);
+    return false;
+  }
+}
+
 //concatePropertyImages();
 // main();
-removeDuplicateData();
+// removeDuplicateData();
 
 // removeDuplicateImage();

@@ -32,10 +32,10 @@ async function checkExistingRecord(data, client) {
     const ddt = await collection
       .find({ listing_id: data.listing_id })
       .toArray();
-    if (ddt[0]) {
-      return ddt[0];
+    if (ddt) {
+      return ddt;
     } else {
-      return false;
+      return [];
     }
   } catch (e) {
     console.error("error from checkExistingRecord", e);
@@ -223,7 +223,11 @@ const fetchRecords = async (resource, className, keyMapping) => {
 
       const chkData = await checkExistingRecord(data, client);
       if (!chkData) {
-        updatedRecords.push(data);
+        continue;
+      } else if (Array.isArray(chkData)) {
+        if (chkData.length < 1) {
+          updatedRecords.push(data);
+        }
       }
     }
     if (updatedRecords.length > 0) {
