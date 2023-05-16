@@ -178,6 +178,6 @@ async function checkExistingRecord(data) {
 
 //concatePropertyImages();
 // main();
-// removeDuplicateData();
+removeDuplicateData();
 
 // removeDuplicateImage();
