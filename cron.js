@@ -4,6 +4,7 @@ const imageUpload = require("./imageUpload");
 const imageUploadAfterInsert = require("./imageUploadAfterInsert");
 const Cron = require("croner");
 const os = require("os");
+const { exec } = require("child_process");
 
 // setInterval(() => {
 //   const cpuUsage = os
@@ -43,39 +44,53 @@ const cronJob1 = async () => {
 
 let corn1Running = false;
 
-Cron("*/30 * * * *", async () => {
-  if (corn1Running) {
-    return;
-  }
-  corn1Running = true;
-  try {
-    cronJob1();
-  } catch (err) {
-    console.log(err);
-  } finally {
-    corn1Running = false;
-  }
-});
+// Cron("*/30 * * * *", async () => {
+//   if (corn1Running) {
+//     return;
+//   }
+//   corn1Running = true;
+//   try {
+//     cronJob1();
+//   } catch (err) {
+//     console.log(err);
+//   } finally {
+//     corn1Running = false;
+//   }
+// });
 
 let corn2Running = false;
 
-Cron("*/55 * * * *", async () => {
-  let fromRecordUpdate = false;
-  if (corn2Running) {
-    return;
-  }
-  corn2Running = true;
+// Cron("*/55 * * * *", async () => {
+//   let fromRecordUpdate = false;
+//   if (corn2Running) {
+//     return;
+//   }
+//   corn2Running = true;
 
-  try {
-    console.log("running a task every 55 minute.", new Date());
-    fromRecordUpdate = await recordUpdate();
-    if (fromRecordUpdate) {
-      await sleep(10000);
-      await imageUpload();
+//   try {
+//     console.log("running a task every 55 minute.", new Date());
+//     fromRecordUpdate = await recordUpdate();
+//     if (fromRecordUpdate) {
+//       await sleep(10000);
+//       await imageUpload();
+//     }
+//   } catch (error) {
+//     console.log("Something went wrong in 55 min Update cron.", error.message);
+//   } finally {
+//     corn2Running = false;
+//   }
+// });
+
+Cron("*/1 * * * *", async () => {
+  exec("pm2 list", (error, stdout, stderr) => {
+    if (error) {
+      console.log(`error: ${error.message}`);
+      return;
     }
-  } catch (error) {
-    console.log("Something went wrong in 55 min Update cron.", error.message);
-  } finally {
-    corn2Running = false;
-  }
+    if (stderr) {
+      console.log(`stderr: ${stderr}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+  });
 });
