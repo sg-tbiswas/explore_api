@@ -81,7 +81,7 @@ Cron("*/55 * * * *", async () => {
   }
 });
 
-Cron("*0 1 * * *", async () => {
+Cron("*/1 * * * *", async () => {
   console.log(`Cron Job and MongoDB restarted at ${new Date()}`);
   exec("pm2 stop 1", (error, stdout, stderr) => {
     if (error) {
