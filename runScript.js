@@ -1,6 +1,7 @@
 const _ = require("lodash");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
+const { exec } = require("child_process");
 
 const main = async (req, res) => {
   MongoClient.connect(CONSTANTS.DB_CONNECTION_URI)
@@ -178,6 +179,18 @@ async function checkExistingRecord(data) {
 
 //concatePropertyImages();
 // main();
-removeDuplicateData();
+// removeDuplicateData();
 
 // removeDuplicateImage();
+
+exec("pm2 list", (error, stdout, stderr) => {
+  if (error) {
+    console.log(`error: ${error.message}`);
+    return;
+  }
+  if (stderr) {
+    console.log(`stderr: ${stderr}`);
+    return;
+  }
+  console.log(`stdout: ${stdout}`);
+});
