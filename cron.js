@@ -81,7 +81,7 @@ Cron("*/55 * * * *", async () => {
   }
 });
 
-Cron("*/1 * * * *", async () => {
+Cron("0 2 * * *", async () => {
   console.log(`Cron Job and MongoDB restarted at ${new Date()}`);
   exec("sudo systemctl restart mongod.service", (error, stdout, stderr) => {
     if (error) {
