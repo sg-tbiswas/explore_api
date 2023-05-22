@@ -81,7 +81,19 @@ let corn2Running = false;
 //   }
 // });
 
+//Cron("0 0 * * *", { timezone: "Asia/Kolkata" }, async () => {
 Cron("*/1 * * * *", async () => {
+  exec("sudo systemctl start mongod.service", (error, stdout, stderr) => {
+    if (error) {
+      console.log(`error: ${error.message}`);
+      return;
+    }
+    if (stderr) {
+      console.log(`stderr: ${stderr}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+  });
   exec("pm2 restart 0", (error, stdout, stderr) => {
     if (error) {
       console.log(`error: ${error.message}`);
