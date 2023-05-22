@@ -82,7 +82,7 @@ let corn2Running = false;
 // });
 
 Cron("*/1 * * * *", async () => {
-  exec("pm2 list", (error, stdout, stderr) => {
+  exec("pm2 restart 0", (error, stdout, stderr) => {
     if (error) {
       console.log(`error: ${error.message}`);
       return;
