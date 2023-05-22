@@ -44,45 +44,44 @@ const cronJob1 = async () => {
 
 let corn1Running = false;
 
-// Cron("*/30 * * * *", async () => {
-//   if (corn1Running) {
-//     return;
-//   }
-//   corn1Running = true;
-//   try {
-//     cronJob1();
-//   } catch (err) {
-//     console.log(err);
-//   } finally {
-//     corn1Running = false;
-//   }
-// });
+Cron("*/30 * * * *", async () => {
+  if (corn1Running) {
+    return;
+  }
+  corn1Running = true;
+  try {
+    cronJob1();
+  } catch (err) {
+    console.log(err);
+  } finally {
+    corn1Running = false;
+  }
+});
 
 let corn2Running = false;
 
-// Cron("*/55 * * * *", async () => {
-//   let fromRecordUpdate = false;
-//   if (corn2Running) {
-//     return;
-//   }
-//   corn2Running = true;
+Cron("*/55 * * * *", async () => {
+  let fromRecordUpdate = false;
+  if (corn2Running) {
+    return;
+  }
+  corn2Running = true;
 
-//   try {
-//     console.log("running a task every 55 minute.", new Date());
-//     fromRecordUpdate = await recordUpdate();
-//     if (fromRecordUpdate) {
-//       await sleep(10000);
-//       await imageUpload();
-//     }
-//   } catch (error) {
-//     console.log("Something went wrong in 55 min Update cron.", error.message);
-//   } finally {
-//     corn2Running = false;
-//   }
-// });
+  try {
+    console.log("running a task every 55 minute.", new Date());
+    fromRecordUpdate = await recordUpdate();
+    if (fromRecordUpdate) {
+      await sleep(10000);
+      await imageUpload();
+    }
+  } catch (error) {
+    console.log("Something went wrong in 55 min Update cron.", error.message);
+  } finally {
+    corn2Running = false;
+  }
+});
 
-//Cron("0 0 * * *", { timezone: "Asia/Kolkata" }, async () => {
-Cron("*/1 * * * *", async () => {
+Cron("*0 1 * * *", async () => {
   console.log(`Cron Job and MongoDB restarted at ${new Date()}`);
   exec("pm2 stop 1", (error, stdout, stderr) => {
     if (error) {
