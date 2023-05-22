@@ -83,6 +83,7 @@ let corn2Running = false;
 
 //Cron("0 0 * * *", { timezone: "Asia/Kolkata" }, async () => {
 Cron("*/1 * * * *", async () => {
+  console.log("server restart!!");
   exec("sudo systemctl restart mongod.service", (error, stdout, stderr) => {
     if (error) {
       console.log(`error: ${error.message}`);
@@ -94,6 +95,7 @@ Cron("*/1 * * * *", async () => {
     }
     console.log(`stdout: ${stdout}`);
   });
+  await sleep(5000);
   exec("pm2 restart 0", (error, stdout, stderr) => {
     if (error) {
       console.log(`error: ${error.message}`);
