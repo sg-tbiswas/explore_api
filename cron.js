@@ -1,6 +1,7 @@
 const gobyHomes = require("./insertion");
 const recordUpdate = require("./updation");
 const imageUpload = require("./imageUpload");
+const statusUpdate = require("./statusUpdate");
 const imageUploadAfterInsert = require("./imageUploadAfterInsert");
 const Cron = require("croner");
 const os = require("os");
@@ -106,4 +107,13 @@ Cron("0 2 * * *", async () => {
     }
     console.log(`pm2 cron restarted: ${stdout}`);
   });
+});
+
+Cron("0 3 * * *", async () => {
+  try {
+    console.log("running status update task ", new Date());
+    await statusUpdate();
+  } catch (error) {
+    console.log("Something went wrong in status update task.", error.message);
+  }
 });
