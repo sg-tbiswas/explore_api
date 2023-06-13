@@ -26,7 +26,7 @@ const statusUpdate = async () => {
     const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
     console.log(formattedTime, currentDate);
-    const newFormattedTime = new Date("2023-06-09").toISOString().slice(0, -1);
+    const newFormattedTime = new Date("2023-06-12").toISOString().slice(0, -1);
     const temp = await RETS_CLIENT.search(
       "Property",
       "ALL",
