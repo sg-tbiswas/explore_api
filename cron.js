@@ -74,6 +74,8 @@ Cron("*/55 * * * *", async () => {
     if (fromRecordUpdate) {
       await sleep(10000);
       await imageUpload();
+      await sleep(10000);
+      await statusUpdate();
     }
   } catch (error) {
     console.log("Something went wrong in 55 min Update cron.", error.message);
@@ -107,13 +109,4 @@ Cron("0 2 * * *", async () => {
     }
     console.log(`pm2 cron restarted: ${stdout}`);
   });
-});
-
-Cron("0 3 * * *", async () => {
-  try {
-    console.log("running status update task ", new Date());
-    await statusUpdate();
-  } catch (error) {
-    console.log("Something went wrong in status update task.", error.message);
-  }
 });

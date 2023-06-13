@@ -22,50 +22,14 @@ const statusUpdate = async () => {
     await client.connect();
     const now = new Date();
 
-    const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
-    const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
-    console.log(formattedTime, currentDate);
-    console.log("TimeZone", Intl.DateTimeFormat().resolvedOptions().timeZone);
-
-    let date_ob = new Date();
-    // current date
-    // adjust 0 before single digit date
-    let date = ("0" + date_ob.getDate()).slice(-2);
-    // current month
-    let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
-    // current year
-    let year = date_ob.getFullYear();
-    // current hours
-    let hours = date_ob.getHours();
-    // current minutes
-    let minutes = date_ob.getMinutes();
-    // current seconds
-    let seconds = date_ob.getSeconds();
-
-    // prints date & time in YYYY-MM-DD HH:MM:SS format
-    console.log(
-      year +
-        "-" +
-        month +
-        "-" +
-        date +
-        " " +
-        hours +
-        ":" +
-        minutes +
-        ":" +
-        seconds
-    );
-    // prints time in HH:MM format
-    console.log(hours + ":" + minutes);
-
-    const newFormattedTime = new Date().toISOString().slice(0, -1);
     const temp = await RETS_CLIENT.search(
       "Property",
       "ALL",
-      `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${newFormattedTime}+)`,
+      `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${currentDate}+)`,
       {
+        limit: 500,
+        offset,
         Select: feildsValues.join(","),
       }
     );
@@ -158,5 +122,4 @@ const crossCheckRecords = async (result, client) => {
   }
 };
 
-// module.exports = statusUpdate;
-statusUpdate();
+module.exports = statusUpdate;
