@@ -26,6 +26,8 @@ const statusUpdate = async () => {
     const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
     console.log(formattedTime, currentDate);
+    console.log("TimeZone", Intl.DateTimeFormat().resolvedOptions().timeZone);
+
     const newFormattedTime = new Date().toISOString().slice(0, -1);
     const temp = await RETS_CLIENT.search(
       "Property",
