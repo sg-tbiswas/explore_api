@@ -26,11 +26,11 @@ const statusUpdate = async () => {
     const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
     console.log(formattedTime, currentDate);
-
+    const newFormattedTime = new Date("2023-06-09").toISOString().slice(0, -1);
     const temp = await RETS_CLIENT.search(
       "Property",
       "ALL",
-      `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
+      `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${newFormattedTime}+)`,
       {
         Select: feildsValues.join(","),
       }
@@ -57,6 +57,7 @@ const statusUpdate = async () => {
   }
 };
 const mapRecord = (record, key) => {
+  console.log(key);
   const updatedRecord = {};
   Object.keys(record).forEach((field) => {
     const fieldValues = record[field].split(",");
@@ -123,4 +124,5 @@ const crossCheckRecords = async (result, client) => {
   }
 };
 
-module.exports = statusUpdate;
+// module.exports = statusUpdate;
+statusUpdate();
