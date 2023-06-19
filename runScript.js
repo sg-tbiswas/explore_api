@@ -1,196 +1,127 @@
+const fs = require("fs");
 const _ = require("lodash");
+const feildsValues = require("./selected_feild.js");
+const keyMapping = require("./name_change.js");
+const image_list = require("./image_list.js");
+const main_field = require("./main_field.js");
+const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
-const CONSTANTS = require("./constants");
-const { exec } = require("child_process");
+const CONSTANTS = require("./constants.js");
+const { RETS_CLIENT } = require("./utils.js");
 
-const main = async (req, res) => {
-  MongoClient.connect(CONSTANTS.DB_CONNECTION_URI)
-    .then(async (client) => {
-      const connect = client.db(CONSTANTS.DB_NAME);
-      const collection = connect.collection("propertyData");
-      let count = 1;
-      await collection.find().forEach(async function (obj) {
-        // CODE TO GENERATE FULL ADDRESS
-        // const place1 = [];
-        // if (obj?.address?.street_number) {
-        //   place1.push(obj?.address?.street_number);
-        // }
-        // if (obj?.address?.street) {
-        //   place1.push(obj?.address?.street);
-        // }
-        // if (obj?.address?.street_suffix) {
-        //   place1.push(obj?.address?.street_suffix);
-        // }
-        // if (obj?.address?.street_dir_suffix) {
-        //   place1.push(obj?.address?.street_dir_suffix);
-        // }
-        // if (obj?.address?.street_dir_prefix) {
-        //   place1.push(obj?.address?.street_dir_prefix);
-        // }
-        // const addrPart1 = place1.join(" ");
-        // const addrArr = [];
-        // let zippart;
-        // if (obj?.address?.city) {
-        //   addrArr.push(obj?.address?.city);
-        // }
-        // if (obj?.other_data?.state) {
-        //   addrArr.push(obj?.other_data?.state);
-        // }
-        // if (obj?.other_data?.zipcode) {
-        //   zippart = obj?.other_data?.zipcode;
-        // }
-        // const addrPart2 = addrArr.join(", ");
-        // const twoPartAddr = addrPart1.concat(", ", addrPart2);
-        // const fullAddr = twoPartAddr.concat(" ", zippart);
-        // CODE TO GENERATE FULL ADDRESS
+const temp = fs.readFileSync("metaDataLookup.json");
+const lookupValues = JSON.parse(temp);
 
-        // const fullBathrooms =
-        //   obj.bathrooms +
-        //   (obj.other_data.half_bathrooms
-        //     ? parseInt(obj?.other_data?.half_bathrooms)
-        //     : 0);
-
-        await collection.updateOne(
-          { _id: obj._id },
-          {
-            $set: {
-              // fullBathrooms: fullBathrooms,
-              // "address.fullAddress": fullAddr,
-              // "other_data.DOM": obj?.other_data?.DOM
-              //   ? parseInt(obj?.other_data?.DOM)
-              //   : 0,
-              // "other_data.HOA_Fee": obj?.other_data?.HOA_Fee
-              //   ? parseInt(obj?.other_data?.HOA_Fee)
-              //   : 0,
-              // bedrooms: obj?.bedrooms ? parseInt(obj.bedrooms) : 0,
-              // bathrooms: obj?.bathrooms ? parseInt(obj.bathrooms) : 0,
-              // TaxTotalFinishedSqFt: obj?.TaxTotalFinishedSqFt
-              //   ? parseInt(obj.TaxTotalFinishedSqFt)
-              //   : 0,
-              // listing_price: obj?.listing_price
-              //   ? parseFloat(obj.listing_price)
-              //   : 0,
-              // "other_data.HOA_Y/N": obj?.other_data?.HOA_Yu2f_N
-              //   ? obj?.other_data?.HOA_Yu2f_N
-              //   : "0",
-              // "other_data.Condo/Coop_Association_Y/N": obj?.other_data
-              //   ?.Condou2f_Coop_Association_Yu2f_N
-              //   ? obj?.other_data?.Condou2f_Coop_Association_Yu2f_N
-              //   : "0",
-              // "other_data.Condo/Coop_Fee": obj?.other_data?.Condou2f_Coop_Fee
-              //   ? obj?.other_data?.Condou2f_Coop_Fee
-              //   : "",
-              // "other_data.Condo/Coop_Fee_Frequency": obj?.other_data
-              //   ?.Condou2f_Coop_Fee_Frequency
-              //   ? obj?.other_data?.Condou2f_Coop_Fee_Frequency
-              //   : "",
-            },
-            $unset: {
-              //   __key__: "",
-              //   __error__: "",
-              //   __has_error__: "",
-              //   "other_data.__key__": "",
-              //   "address.__key__": "",
-              //   "image.__key__": "",
-              propertyDataImages: "",
-            },
-          }
-        );
-        console.log(`${count} => update done`);
-        count++;
-      });
-      console.log("update done");
-    })
-    .catch((err) => {
-      console.log(err.Message);
-    });
-};
-
-const removeDuplicateData = async () => {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-  const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
-  let count = 1;
-  const gpdt = collection.aggregate([
-    { $group: { _id: "$listing_id", count: { $sum: 1 } } },
-    { $match: { count: { $gt: 1 } } },
-    { $unwind: "$_id" },
-    { $match: { _id: { $ne: null } } },
-  ]);
-  let cnt = 1;
-  let dupIds = [];
-
-  for (const doc of await gpdt.toArray()) {
-    const dup = await collection.find({ listing_id: doc._id }).skip(1);
-    for (const iterator of await dup.toArray()) {
-      dupIds.push(iterator._id);
-    }
-    console.log(`${cnt} data deleted ${doc._id} => ${doc.count}`);
-    cnt++;
-  }
-  collection.deleteMany({ _id: { $in: dupIds } });
-};
-
-const removeDuplicateImage = async () => {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-  const collection = client
-    .db(CONSTANTS.DB_NAME)
-    .collection("propertyDataImages");
-  let count = 1;
-  const gpdt = collection.aggregate([
-    { $group: { _id: "$MediaURL", count: { $sum: 1 } } },
-    { $match: { count: { $gt: 1 } } },
-    { $unwind: "$_id" },
-    { $match: { _id: { $ne: null } } },
-  ]);
-  let cnt = 1;
-  let dupIds = [];
-
-  for (const doc of await gpdt.toArray()) {
-    const dup = await collection.find({ MediaURL: doc._id }).skip(1);
-    for (const iterator of await dup.toArray()) {
-      dupIds.push(iterator._id);
-    }
-    console.log(`${cnt} deleted ${doc.count}`);
-    if (cnt === 70000) break;
-    cnt++;
-  }
-  console.log("cnt>>>", cnt);
-  collection.deleteMany({ _id: { $in: dupIds } });
-  console.log("DELETE COMPLETED !!!");
-};
-
-async function checkExistingRecord(data) {
+const statusUpdate = async () => {
   try {
     const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
-    const ddt = await collection
-      .find({ listing_id: data.listing_id })
-      .toArray();
-    if (ddt) {
-      return ddt;
-    } else {
-      return [];
+    await client.connect();
+    const now = new Date("2023-06-08");
+
+    const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
+    const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
+    const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
+    console.log(formattedTime, currentDate);
+
+    const temp = await RETS_CLIENT.search(
+      "Property",
+      "ALL",
+      `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
+      {
+        limit: 250,
+        offset: 500,
+        Select: feildsValues.join(","),
+      }
+    );
+    let allRecords = [];
+
+    if (temp.Objects && Array.isArray(temp.Objects)) {
+      allRecords = allRecords.concat(temp.Objects);
+      console.log("getting formated record", new Date(now.getTime()));
+      const recordsWithUpdatedFields = allRecords.map(mapRecord);
+
+      if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
+        let cnt = 1;
+        for (const item of recordsWithUpdatedFields) {
+          crossCheckRecords(item, client);
+          cnt++;
+        }
+        console.log(`${cnt} statusUpdate Done!`);
+      }
     }
-  } catch (e) {
-    console.error("error from checkExistingRecord", e);
-    return false;
+  } catch (error) {
+    console.error(`Error occurred in statusUpdate function: ${error.message}`);
+    return true;
   }
-}
+};
+const mapRecord = (record, key) => {
+  console.log(key);
+  const updatedRecord = {};
+  Object.keys(record).forEach((field) => {
+    const fieldValues = record[field].split(",");
+    const updatedFieldValues = fieldValues.map((value) => {
+      const matchingLookup = lookupValues.find(
+        (lookup) => lookup.MetadataEntryID === value.trim()
+      );
+      if (matchingLookup) {
+        return matchingLookup.LongValue;
+      }
 
-//concatePropertyImages();
-// main();
-// removeDuplicateData();
+      return value;
+    });
+    if (keyMapping.hasOwnProperty(field)) {
+      if (!updatedRecord.hasOwnProperty("other_data")) {
+        updatedRecord["other_data"] = {};
+      }
+      const newField = keyMapping[field] || field;
+      updatedRecord["other_data"][newField] = updatedFieldValues.join(",");
+    } else {
+      // Check if the field name exists in the main_field
+      if (main_field.hasOwnProperty(field)) {
+        // If it exists in main_field's key, use the value as the new field name
+        const newField = main_field[field];
+        updatedRecord[newField] = updatedFieldValues.join(",");
+      } else {
+        // Check if the field name exists in address_field
+        if (addres_field.hasOwnProperty(field)) {
+          // If it exists in address_field's key, add it to the array of addresses in updatedRecord
+          if (!updatedRecord.hasOwnProperty("address")) {
+            updatedRecord["address"] = {};
+          }
+          const newField = addres_field[field];
+          updatedRecord["address"][newField] = updatedFieldValues.join(",");
+        } else {
+          if (image_list.hasOwnProperty(field)) {
+            if (!updatedRecord.hasOwnProperty("image")) {
+              updatedRecord["image"] = {};
+            }
+            const newField = image_list[field];
+            updatedRecord["image"][newField] = updatedFieldValues.join(",");
+          } else {
+            // None of the above, use the field name as is
+            updatedRecord[field] = updatedFieldValues.join(",");
+          }
+        }
+      }
+    }
+  });
+  return updatedRecord;
+};
 
-// removeDuplicateImage();
-
-exec("pm2 list", (error, stdout, stderr) => {
-  if (error) {
-    console.log(`error: ${error.message}`);
-    return;
+const crossCheckRecords = async (result, client) => {
+  try {
+    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
+    await collection.updateOne(
+      { listing_id: result["listing_id"] },
+      {
+        $set: { status: result["status"] },
+      }
+    );
+  } catch (error) {
+    console.error("error while updating data from crossCheckRecords()", error);
   }
-  if (stderr) {
-    console.log(`stderr: ${stderr}`);
-    return;
-  }
-  console.log(`stdout: ${stdout}`);
-});
+};
+
+statusUpdate();
+
+// module.exports = statusUpdate;

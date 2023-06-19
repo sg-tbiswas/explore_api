@@ -22,16 +22,16 @@ const statusUpdate = async () => {
     await client.connect();
     const now = new Date();
 
+    const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
+    const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
+    console.log(formattedTime, currentDate);
+
     const temp = await RETS_CLIENT.search(
       "Property",
       "ALL",
-      `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${currentDate}+)`,
-      {
-        limit: 500,
-        offset,
-        Select: feildsValues.join(","),
-      }
+      `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
+      { limit: 2500, offset: 1, Select: feildsValues.join(",") }
     );
     let allRecords = [];
 
@@ -43,7 +43,7 @@ const statusUpdate = async () => {
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
         let cnt = 1;
         for (const item of recordsWithUpdatedFields) {
-          crossCheckRecords(item, client);
+          //crossCheckRecords(item, client);
           cnt++;
         }
         console.log(`${cnt} statusUpdate Done!`);

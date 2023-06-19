@@ -74,13 +74,23 @@ Cron("*/55 * * * *", async () => {
     if (fromRecordUpdate) {
       await sleep(10000);
       await imageUpload();
-      await sleep(10000);
-      await statusUpdate();
     }
   } catch (error) {
     console.log("Something went wrong in 55 min Update cron.", error.message);
   } finally {
     corn2Running = false;
+  }
+});
+
+Cron("0 */3 * * *", async () => {
+  try {
+    console.log("running a task every 3 hour.", new Date());
+    await statusUpdate();
+  } catch (error) {
+    console.log(
+      "Something went wrong in 3 hour status Update cron.",
+      error.message
+    );
   }
 });
 
