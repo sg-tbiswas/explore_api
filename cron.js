@@ -82,41 +82,41 @@ Cron("*/55 * * * *", async () => {
   }
 });
 
-Cron("0 */3 * * *", async () => {
-  try {
-    console.log("running a task every 3 hour.", new Date());
-    await statusUpdate();
-  } catch (error) {
-    console.log(
-      "Something went wrong in 3 hour status Update cron.",
-      error.message
-    );
-  }
-});
+// Cron("0 */3 * * *", async () => {
+//   try {
+//     console.log("running a task every 3 hour.", new Date());
+//     await statusUpdate();
+//   } catch (error) {
+//     console.log(
+//       "Something went wrong in 3 hour status Update cron.",
+//       error.message
+//     );
+//   }
+// });
 
-Cron("0 2 * * *", async () => {
-  console.log(`Cron Job and MongoDB restarted at ${new Date()}`);
-  exec("sudo systemctl restart mongod.service", (error, stdout, stderr) => {
-    if (error) {
-      console.log(`error: ${error.message}`);
-      return;
-    }
-    if (stderr) {
-      console.log(`stderr: ${stderr}`);
-      return;
-    }
-    console.log(`mongodb restarted: ${stdout}`);
-  });
-  await sleep(5000);
-  exec("pm2 restart 1", (error, stdout, stderr) => {
-    if (error) {
-      console.log(`error: ${error.message}`);
-      return;
-    }
-    if (stderr) {
-      console.log(`stderr: ${stderr}`);
-      return;
-    }
-    console.log(`pm2 cron restarted: ${stdout}`);
-  });
-});
+// Cron("0 2 * * *", async () => {
+//   console.log(`Cron Job and MongoDB restarted at ${new Date()}`);
+//   exec("sudo systemctl restart mongod.service", (error, stdout, stderr) => {
+//     if (error) {
+//       console.log(`error: ${error.message}`);
+//       return;
+//     }
+//     if (stderr) {
+//       console.log(`stderr: ${stderr}`);
+//       return;
+//     }
+//     console.log(`mongodb restarted: ${stdout}`);
+//   });
+//   await sleep(5000);
+//   exec("pm2 restart 1", (error, stdout, stderr) => {
+//     if (error) {
+//       console.log(`error: ${error.message}`);
+//       return;
+//     }
+//     if (stderr) {
+//       console.log(`stderr: ${stderr}`);
+//       return;
+//     }
+//     console.log(`pm2 cron restarted: ${stdout}`);
+//   });
+// });
