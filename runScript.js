@@ -28,6 +28,8 @@ const statusUpdate = async () => {
       "ALL",
       `~(StandardStatus=|Active,Pending,Active Under Contract)`,
       {
+        limit: 100000,
+        offset: 1,
         Select: feildsValues.join(","),
       }
     );
