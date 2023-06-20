@@ -12,11 +12,29 @@ const { RETS_CLIENT } = require("./utils.js");
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
+const textReplace = (str) => {
+  return str.split(" ").join("_");
+};
+
 const statusUpdate = async () => {
   try {
     const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
     await client.connect();
-    const now = new Date("2023-06-08");
+    const now = new Date("2023-02-20");
+    let offset = 1;
+    const trackRecordUpdateCollection = client
+      .db(CONSTANTS.DB_NAME)
+      .collection("trackRecordUpdate");
+
+    const trackRecordUpdateData = await trackRecordUpdateCollection
+      .find({
+        itemId: { $eq: "20062023" },
+      })
+      .toArray();
+    if (trackRecordUpdateData && trackRecordUpdateData.length > 0) {
+      const statusUpdateOffset = trackRecordUpdateData[0]?.statusUpdateOffset;
+      offset = statusUpdateOffset;
+    }
 
     const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
     const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
@@ -26,28 +44,38 @@ const statusUpdate = async () => {
     const temp = await RETS_CLIENT.search(
       "Property",
       "ALL",
-      `~(StandardStatus=|Active,Pending,Active Under Contract)`,
-      {
-        limit: 100000,
-        offset: 1,
-        Select: feildsValues.join(","),
-      }
+      `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
+      { limit: 10000, offset, Select: feildsValues.join(",") }
     );
+
+    count = parseInt(temp.TotalCount);
+    console.log("Total Data count>>>>>>>>>", count);
+    console.log("currentOffset>>>>>", offset);
+
     let allRecords = [];
 
     if (temp.Objects && Array.isArray(temp.Objects)) {
       allRecords = allRecords.concat(temp.Objects);
       console.log("getting formated record", new Date(now.getTime()));
-      console.log("allRecords@@>>>", allRecords.length);
       const recordsWithUpdatedFields = allRecords.map(mapRecord);
 
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
-        let cnt = 1;
+        let cnt = 0;
         for (const item of recordsWithUpdatedFields) {
           crossCheckRecords(item, client);
           cnt++;
         }
-        console.log(`${cnt} statusUpdate Done!`);
+        const nextOffset = offset + cnt;
+        console.log(`${nextOffset} statusUpdate Done!`);
+        const collection = client
+          .db(CONSTANTS.DB_NAME)
+          .collection("trackRecordUpdate");
+        await collection.updateOne(
+          { itemId: "20062023" },
+          {
+            $set: { statusUpdateOffset: nextOffset },
+          }
+        );
       }
     }
   } catch (error) {
@@ -56,6 +84,7 @@ const statusUpdate = async () => {
   }
 };
 const mapRecord = (record, key) => {
+  console.log(key);
   const updatedRecord = {};
   Object.keys(record).forEach((field) => {
     const fieldValues = record[field].split(",");
@@ -122,6 +151,6 @@ const crossCheckRecords = async (result, client) => {
   }
 };
 
-statusUpdate();
+//module.exports = statusUpdate;
 
-// module.exports = statusUpdate;
+statusUpdate();
