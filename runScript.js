@@ -26,10 +26,10 @@ const statusUpdate = async () => {
     const temp = await RETS_CLIENT.search(
       "Property",
       "ALL",
-      `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
+      `~(StandardStatus=|Active,Pending,Active Under Contract)`,
       {
-        limit: 250,
-        offset: 500,
+        limit: 100000,
+        offset: 1,
         Select: feildsValues.join(","),
       }
     );
@@ -38,6 +38,8 @@ const statusUpdate = async () => {
     if (temp.Objects && Array.isArray(temp.Objects)) {
       allRecords = allRecords.concat(temp.Objects);
       console.log("getting formated record", new Date(now.getTime()));
+      console.log("allRecords@@>>>", allRecords.length);
+      return;
       const recordsWithUpdatedFields = allRecords.map(mapRecord);
 
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
