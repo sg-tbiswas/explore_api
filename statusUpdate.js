@@ -43,7 +43,7 @@ const statusUpdate = async () => {
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
         let cnt = 1;
         for (const item of recordsWithUpdatedFields) {
-          //crossCheckRecords(item, client);
+          crossCheckRecords(item, client);
           cnt++;
         }
         console.log(`${cnt} statusUpdate Done!`);
