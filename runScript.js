@@ -28,8 +28,6 @@ const statusUpdate = async () => {
       "ALL",
       `~(StandardStatus=|Active,Pending,Active Under Contract)`,
       {
-        limit: 100000,
-        offset: 1,
         Select: feildsValues.join(","),
       }
     );
@@ -39,7 +37,6 @@ const statusUpdate = async () => {
       allRecords = allRecords.concat(temp.Objects);
       console.log("getting formated record", new Date(now.getTime()));
       console.log("allRecords@@>>>", allRecords.length);
-      return;
       const recordsWithUpdatedFields = allRecords.map(mapRecord);
 
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
@@ -57,7 +54,6 @@ const statusUpdate = async () => {
   }
 };
 const mapRecord = (record, key) => {
-  console.log(key);
   const updatedRecord = {};
   Object.keys(record).forEach((field) => {
     const fieldValues = record[field].split(",");
