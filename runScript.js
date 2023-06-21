@@ -45,7 +45,7 @@ const statusUpdate = async () => {
       "Property",
       "ALL",
       `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
-      { limit: 10000, offset, Select: feildsValues.join(",") }
+      { limit: 50, offset, Select: feildsValues.join(",") }
     );
 
     count = parseInt(temp.TotalCount);
@@ -62,7 +62,7 @@ const statusUpdate = async () => {
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
         let cnt = 0;
         for (const item of recordsWithUpdatedFields) {
-          crossCheckRecords(item, client);
+          await crossCheckRecords(item, client);
           cnt++;
         }
         const nextOffset = offset + cnt;
