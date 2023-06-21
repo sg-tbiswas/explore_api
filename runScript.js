@@ -45,7 +45,7 @@ const statusUpdate = async () => {
       "Property",
       "ALL",
       `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
-      { limit: 2500, offset, Select: feildsValues.join(",") }
+      { limit: 40000, offset, Select: feildsValues.join(",") }
     );
 
     count = parseInt(temp.TotalCount);
