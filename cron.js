@@ -82,13 +82,13 @@ Cron("*/55 * * * *", async () => {
   }
 });
 
-Cron("0 */3 * * *", async () => {
+Cron("0 */2 * * *", async () => {
   try {
-    console.log("running a task every 3 hour.", new Date());
+    console.log("running a task every 2 hour.", new Date());
     await statusUpdate();
   } catch (error) {
     console.log(
-      "Something went wrong in 3 hour status Update cron.",
+      "Something went wrong in 2 hour status Update cron.",
       error.message
     );
   }
