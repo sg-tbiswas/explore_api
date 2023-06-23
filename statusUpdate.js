@@ -12,10 +12,6 @@ const { RETS_CLIENT } = require("./utils.js");
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
-const textReplace = (str) => {
-  return str.split(" ").join("_");
-};
-
 const statusUpdate = async () => {
   try {
     const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
@@ -31,7 +27,7 @@ const statusUpdate = async () => {
       "Property",
       "ALL",
       `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
-      { limit: 2500, offset: 1, Select: feildsValues.join(",") }
+      { Select: feildsValues.join(",") }
     );
     let allRecords = [];
 
@@ -43,7 +39,7 @@ const statusUpdate = async () => {
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
         let cnt = 1;
         for (const item of recordsWithUpdatedFields) {
-          crossCheckRecords(item, client);
+          await crossCheckRecords(item, client);
           cnt++;
         }
         console.log(`${cnt} statusUpdate Done!`);
