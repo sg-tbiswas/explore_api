@@ -44,6 +44,8 @@ const cronJob1 = async () => {
 };
 
 let corn1Running = false;
+let corn2Running = false;
+let cron3Running = false;
 
 Cron("*/30 * * * *", async () => {
   if (corn1Running) {
@@ -58,8 +60,6 @@ Cron("*/30 * * * *", async () => {
     corn1Running = false;
   }
 });
-
-let corn2Running = false;
 
 Cron("*/55 * * * *", async () => {
   let fromRecordUpdate = false;
@@ -82,15 +82,21 @@ Cron("*/55 * * * *", async () => {
   }
 });
 
-Cron("0 */2 * * *", async () => {
+Cron("*/20 * * * *", async () => {
+  if (cron3Running) {
+    return;
+  }
+  cron3Running = true;
   try {
-    console.log("running a task every 2 hour.", new Date());
+    console.log("running a task every 20 min.", new Date());
     await statusUpdate();
   } catch (error) {
     console.log(
-      "Something went wrong in 2 hour status Update cron.",
+      "Something went wrong in 20 min status Update cron.",
       error.message
     );
+  } finally {
+    cron3Running = false;
   }
 });
 
