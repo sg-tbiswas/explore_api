@@ -20,7 +20,7 @@ const statusUpdate = async () => {
   try {
     const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
     await client.connect();
-    const now = new Date("2023-02-20");
+    const now = new Date("2023-06-24");
     let offset = 1;
     const trackRecordUpdateCollection = client
       .db(CONSTANTS.DB_NAME)
@@ -38,6 +38,7 @@ const statusUpdate = async () => {
 
     const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
     const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
+
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
     console.log(formattedTime, currentDate);
 
@@ -45,7 +46,7 @@ const statusUpdate = async () => {
       "Property",
       "ALL",
       `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
-      { limit: 40000, offset, Select: feildsValues.join(",") }
+      { Select: feildsValues.join(",") }
     );
 
     count = parseInt(temp.TotalCount);
@@ -67,6 +68,7 @@ const statusUpdate = async () => {
         }
         const nextOffset = offset + cnt;
         console.log(`${nextOffset} statusUpdate Done!`);
+        /*
         const collection = client
           .db(CONSTANTS.DB_NAME)
           .collection("trackRecordUpdate");
@@ -76,6 +78,7 @@ const statusUpdate = async () => {
             $set: { statusUpdateOffset: nextOffset },
           }
         );
+        */
       }
     }
   } catch (error) {
