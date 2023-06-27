@@ -1,137 +1,134 @@
-const RETS = require("node-rets");
 const fs = require("fs");
+const _ = require("lodash");
+const feildsValues = require("./selected_feild.js");
+const keyMapping = require("./name_change.js");
+const image_list = require("./image_list.js");
+const main_field = require("./main_field.js");
+const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
-const CONSTANTS = require("./constants");
+const CONSTANTS = require("./constants.js");
+const { RETS_CLIENT } = require("./utils.js");
 
-const client = RETS.initialize({
-  loginUrl: "http://bright-rets.brightmls.com:6103/cornerstone/login",
-  username: "3348441",
-  password: "vUjeyasAmepri7eqehIPhifib",
-  version: "RETS/1.8",
-  userAgent: "Bright RETS Application/1.0",
-  logLevel: "info",
-});
+const temp = fs.readFileSync("metaDataLookup.json");
+const lookupValues = JSON.parse(temp);
 
-async function checkExistingRecord(data, client) {
+const dataUpdate = async () => {
+  let propertyDataCollectionData;
   try {
-    const collection = client
+    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+    await client.connect();
+    const propertyDataCollection = client
       .db(CONSTANTS.DB_NAME)
-      .collection("propertyDataImages");
-    const ddt = await collection.find({ MediaURL: data.MediaURL }).toArray();
-    if (ddt[0]) {
-      return ddt[0];
-    } else {
-      return false;
-    }
-  } catch (e) {
-    console.error("error from checkExistingRecord imageUploadAfterInsert()", e);
-    return false;
+      .collection("propertyData");
+    propertyDataCollectionData = await propertyDataCollection
+      .find({
+        status: { $eq: "Active" },
+      })
+      .skip(0)
+      .limit(20000)
+      .toArray();
+  } catch (error) {
+    console.error(
+      `Error occurred in data fetching from mongodb: ${error.message}`
+    );
+    return true;
   }
-}
 
-const imageUploadAfterInsert = async () => {
-  const listingChunks = [
-    "DCDC2093888",
-    "DCDC2094896",
-    "DCDC2094706",
-    "DCDC2094568",
-    "DCDC2093676",
-    "DCDC2094442",
-    "DCDC2092906",
-    "DCDC2093544",
-    "DCDC2094434",
-    "DCDC2094198",
-    "DCDC2094484",
-    "DCDC2093358",
-    "DCDC2093438",
-    "DCDC2094550",
-    "DCDC2093576",
-    "DCDC2093130",
-    "DCDC2092496",
-    "DCDC2094464",
-    "DCDC2094268",
-    "DCDC2092264",
-    "DCDC2093686",
-    "DCDC2092244",
-    "DCDC2093378",
-    "DCDC2094770",
-    "DCDC2094852",
-    "DCDC2094854",
-    "DCDC2093848",
-    "DCDC2081616",
-    "DCDC2093958",
-    "DCDC2094846",
-  ];
-  if (listingChunks) {
-    let records = [];
+  if (propertyDataCollectionData && propertyDataCollectionData.length > 0) {
+    let dcnt = 0;
+    let icnt = 0;
+    for (const listing of propertyDataCollectionData) {
+      try {
+        icnt++;
+        const chkData = await compareWithRets(listing.listing_id);
+        console.log("temp", chkData, "totalCount>>", icnt);
+      } catch (error) {
+        console.log(
+          `Error occurred in compare with RETS client: ${error.message}, ListingID:${listing.listing_id}`
+        );
+        dcnt++;
+        const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+        const propertyDataCollection = client
+          .db(CONSTANTS.DB_NAME)
+          .collection("propertyData");
+        await propertyDataCollection.deleteOne({
+          listing_id: listing.listing_id,
+        });
+        console.log("deleteCount>>", dcnt);
+        continue;
+      }
+    }
+    console.log("deleteCount>>", dcnt);
+  }
+};
 
-    for (let j = 0; j < listingChunks.length; j++) {
-      const id = listingChunks[j];
-      if (id) {
-        try {
-          const query = await client.search(
-            "Media",
-            "PROP_MEDIA",
-            `(ListingId=${id})`,
-            {
-              Select:
-                "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
-            }
-          );
-          if (query.Objects && query.Objects.length > 0) {
-            for (const obj of query.Objects) {
-              const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-              await client.connect();
-              const chkData = await checkExistingRecord(obj, client);
+const compareWithRets = async (listing_id) => {
+  const temp = await RETS_CLIENT.search(
+    "Property",
+    "ALL",
+    `(StandardStatus=|Active) AND (ListingId=${listing_id})`,
+    { Select: feildsValues.join(",") }
+  );
+  let allRecords = [];
+  if (temp.Objects && Array.isArray(temp.Objects)) {
+    return temp.Objects[0]?.ListingId;
+  } else {
+    return {};
+  }
+};
 
-              if (!chkData) {
-                records.push(obj);
-              }
-              //records.push(obj);
-            }
+const mapRecord = (record, key) => {
+  console.log(key);
+  const updatedRecord = {};
+  Object.keys(record).forEach((field) => {
+    const fieldValues = record[field].split(",");
+    const updatedFieldValues = fieldValues.map((value) => {
+      const matchingLookup = lookupValues.find(
+        (lookup) => lookup.MetadataEntryID === value.trim()
+      );
+      if (matchingLookup) {
+        return matchingLookup.LongValue;
+      }
+
+      return value;
+    });
+    if (keyMapping.hasOwnProperty(field)) {
+      if (!updatedRecord.hasOwnProperty("other_data")) {
+        updatedRecord["other_data"] = {};
+      }
+      const newField = keyMapping[field] || field;
+      updatedRecord["other_data"][newField] = updatedFieldValues.join(",");
+    } else {
+      // Check if the field name exists in the main_field
+      if (main_field.hasOwnProperty(field)) {
+        // If it exists in main_field's key, use the value as the new field name
+        const newField = main_field[field];
+        updatedRecord[newField] = updatedFieldValues.join(",");
+      } else {
+        // Check if the field name exists in address_field
+        if (addres_field.hasOwnProperty(field)) {
+          // If it exists in address_field's key, add it to the array of addresses in updatedRecord
+          if (!updatedRecord.hasOwnProperty("address")) {
+            updatedRecord["address"] = {};
           }
-        } catch (err) {
-          console.error(
-            `Error searching for ListingId ${id}: ${err.message} from imageUploadAfterInsert()`
-          );
-          continue; // Skip to next iteration of the loop
+          const newField = addres_field[field];
+          updatedRecord["address"][newField] = updatedFieldValues.join(",");
+        } else {
+          if (image_list.hasOwnProperty(field)) {
+            if (!updatedRecord.hasOwnProperty("image")) {
+              updatedRecord["image"] = {};
+            }
+            const newField = image_list[field];
+            updatedRecord["image"][newField] = updatedFieldValues.join(",");
+          } else {
+            // None of the above, use the field name as is
+            updatedRecord[field] = updatedFieldValues.join(",");
+          }
         }
       }
     }
-    if (records.length > 0) {
-      await addRecordsToMongoDBImage(records);
-      console.log(
-        "All images fetched and added successfully! imageUploadAfterInsert()"
-      );
-    } else {
-      console.log("No images available to add! imageUploadAfterInsert()");
-    }
-    return true;
-  } else {
-    return true;
-  }
+  });
+  return updatedRecord;
 };
 
-const addRecordsToMongoDBImage = async (records) => {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-  try {
-    await client.connect();
-    const collection = client
-      .db(CONSTANTS.DB_NAME)
-      .collection("propertyDataImages");
-    await collection.insertMany(records, (err, res) => {
-      if (err) throw err;
-      console.log(
-        `${res.insertedCount} documents inserted into propertyDataImages`
-      );
-      client.close();
-    });
-  } catch (e) {
-    console.error(e);
-  } finally {
-    await client.close();
-  }
-};
-
-imageUploadAfterInsert();
-// module.exports = imageUploadAfterInsert;
+dataUpdate();
