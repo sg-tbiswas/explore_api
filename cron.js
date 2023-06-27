@@ -61,7 +61,7 @@ Cron("*/30 * * * *", async () => {
   }
 });
 
-Cron("*/55 * * * *", async () => {
+Cron("*/45 * * * *", async () => {
   let fromRecordUpdate = false;
   if (corn2Running) {
     return;
@@ -69,7 +69,7 @@ Cron("*/55 * * * *", async () => {
   corn2Running = true;
 
   try {
-    console.log("running a task every 55 minute.", new Date());
+    console.log("running a task every 45 minute.", new Date());
     fromRecordUpdate = await recordUpdate();
     if (fromRecordUpdate) {
       await sleep(10000);
