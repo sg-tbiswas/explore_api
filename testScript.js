@@ -24,7 +24,7 @@ const dataUpdate = async () => {
       .find({
         status: { $eq: "Active" },
       })
-      .skip(20000)
+      .skip(40000)
       .limit(20000)
       .toArray();
   } catch (error) {
