@@ -45,6 +45,7 @@ const statusUpdate = async () => {
         console.log(`${cnt} statusUpdate Done!`);
       }
     }
+    return true;
   } catch (error) {
     console.error(`Error occurred in statusUpdate function: ${error.message}`);
     return true;
