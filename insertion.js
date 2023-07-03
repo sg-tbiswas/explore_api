@@ -55,7 +55,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
     let offset = 1;
     let count;
     const now = new Date();
-    console.log(now);
+    console.log(now.toUTCString());
 
     // Subtract 45 minutes from the current datetime
     const fortyFiveMinutesAgo = new Date(now.getTime() - 45 * 60000);

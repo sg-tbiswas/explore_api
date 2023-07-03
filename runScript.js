@@ -57,7 +57,10 @@ const statusUpdate = async () => {
 
     if (temp.Objects && Array.isArray(temp.Objects)) {
       allRecords = allRecords.concat(temp.Objects);
-      console.log("getting formated record", new Date(now.getTime()));
+      console.log(
+        "getting formated record",
+        new Date(now.getTime()).toUTCString()
+      );
       const recordsWithUpdatedFields = allRecords.map(mapRecord);
 
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
