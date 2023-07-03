@@ -32,7 +32,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const cronJob1 = async () => {
   let fromInsertData = false;
   try {
-    console.log("running a task every 30 minute.", new Date());
+    console.log("running a task every 30 minute.", new Date().toUTCString());
     fromInsertData = await gobyHomes();
     if (fromInsertData && fromInsertData.length > 0) {
       await sleep(10000);
@@ -45,6 +45,7 @@ const cronJob1 = async () => {
 
 let corn1Running = false;
 let corn2Running = false;
+let corn3Running = false;
 
 Cron("*/30 * * * *", async () => {
   if (corn1Running) {
@@ -68,7 +69,7 @@ Cron("*/45 * * * *", async () => {
   corn2Running = true;
 
   try {
-    console.log("running a task every 45 minute.", new Date());
+    console.log("running a task every 45 minute.", new Date().toUTCString());
     fromRecordUpdate = await recordUpdate();
     if (fromRecordUpdate) {
       await sleep(10000);
@@ -81,7 +82,11 @@ Cron("*/45 * * * *", async () => {
   }
 });
 
-Cron("*/5 * * * *", async () => {
+Cron("*/20 * * * *", async () => {
+  if (corn3Running) {
+    return;
+  }
+  corn3Running = true;
   try {
     console.log("running a task every 20 min.", new Date().toUTCString());
     await statusUpdate();
@@ -90,11 +95,13 @@ Cron("*/5 * * * *", async () => {
       "Something went wrong in 20 min status Update cron.",
       error.message
     );
+  } finally {
+    corn3Running = false;
   }
 });
 
 Cron("0 2 * * *", async () => {
-  console.log(`Cron Job and MongoDB restarted at ${new Date()}`);
+  console.log(`Cron Job and MongoDB restarted at ${new Date().toUTCString()}`);
   exec("sudo systemctl restart mongod.service", (error, stdout, stderr) => {
     if (error) {
       console.log(`error: ${error.message}`);
