@@ -19,8 +19,11 @@ async function addRecordsToMongoDB(records, client) {
       console.log(`${res.insertedCount} documents inserted`);
       client.close();
     });
-  } catch (e) {
-    console.error("error from addRecordsToMongoDB", e);
+  } catch (error) {
+    console.error(
+      `error from addRecordsToMongoDB ${new Date().toUTCString()}`,
+      error.message
+    );
   } finally {
     await client.close();
   }
@@ -37,8 +40,11 @@ async function checkExistingRecord(data, client) {
     } else {
       return [];
     }
-  } catch (e) {
-    console.error("error from checkExistingRecord", e);
+  } catch (error) {
+    console.error(
+      `error from checkExistingRecord: ${new Date().toUTCString()}`,
+      error.message
+    );
     return false;
   }
 }
@@ -238,7 +244,11 @@ const fetchRecords = async (resource, className, keyMapping) => {
       return [];
     }
   } catch (err) {
-    console.error(`Error occurred in fetchRecords function: ${err.message}`);
+    console.error(
+      `Error occurred in fetchRecords function: ${new Date().toUTCString()} ${
+        err.message
+      }`
+    );
     throw err;
   }
 };
@@ -261,7 +271,11 @@ const gobyHomes = async () => {
     RETS_CLIENT.logout();
     return records;
   } catch (err) {
-    console.error(`Error occurred in gobyHomes function: ${err.message}`);
+    console.error(
+      `Error occurred in gobyHomes function: ${new Date().toUTCString()} ${
+        err.message
+      }`
+    );
     return false;
   }
 };

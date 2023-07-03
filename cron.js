@@ -39,7 +39,10 @@ const cronJob1 = async () => {
       await imageUploadAfterInsert(fromInsertData);
     }
   } catch (error) {
-    console.log("Something went wrong in 30 min Insert cron.", error.message);
+    console.log(
+      `Something went wrong in 30 min Insert cron.${new Date().toUTCString()}`,
+      error.message
+    );
   }
 };
 
@@ -76,7 +79,10 @@ Cron("*/45 * * * *", async () => {
       await imageUpload();
     }
   } catch (error) {
-    console.log("Something went wrong in 55 min Update cron.", error.message);
+    console.log(
+      `Something went wrong in 55 min Update cron.${new Date().toUTCString()}`,
+      error.message
+    );
   } finally {
     corn2Running = false;
   }
@@ -92,7 +98,7 @@ Cron("*/20 * * * *", async () => {
     await statusUpdate();
   } catch (error) {
     console.log(
-      "Something went wrong in 20 min status Update cron.",
+      `Something went wrong in 20 min status Update cron.${new Date().toUTCString()}`,
       error.message
     );
   } finally {

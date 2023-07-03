@@ -42,7 +42,9 @@ const getSingleExploreData = async (req, res) => {
         });
     })
     .catch((err) => {
-      console.log(err.Message);
+      console.log(
+        `error occured at ${new Date().toUTCString()} ${err.Message}`
+      );
     });
 };
 

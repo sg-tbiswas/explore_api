@@ -17,8 +17,8 @@ async function checkExistingMediaURL(data, client) {
     }
   } catch (e) {
     console.error(
-      "error from checkExistingMediaURL imageUploadAfterInsert()",
-      e
+      `error from checkExistingMediaURL imageUploadAfterInsert() ${new Date().toUTCString()}`,
+      e.message
     );
     return false;
   }
@@ -75,7 +75,9 @@ const imageUploadAfterInsert = async (listingChunks) => {
     }
   } catch (error) {
     console.error(
-      `Error occurred in imageUploadAfterInsert function: ${error.message}`
+      `Error occurred in imageUploadAfterInsert function: ${new Date().toUTCString()} ${
+        error.message
+      }`
     );
   }
 };
@@ -92,8 +94,11 @@ const addRecordsToMongoDBImage = async (records, client) => {
       );
       client.close();
     });
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error(
+      `error occurred add record to DBImage ${new Date().toUTCString()}`,
+      error.message
+    );
   } finally {
     await client.close();
   }

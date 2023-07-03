@@ -367,7 +367,7 @@ const getExploreData = async (req, res) => {
       //   });
     })
     .catch((err) => {
-      console.log(err.Message);
+      console.log(`error occur at ${new Date().toUTCString()} ${err.Message} `);
     });
 };
 

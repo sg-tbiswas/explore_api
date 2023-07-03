@@ -17,7 +17,10 @@ async function checkExistingMediaURL(data, client) {
       return [];
     }
   } catch (e) {
-    console.error("error from checkExistingMediaURL", e);
+    console.error(
+      `error from checkExistingMediaURL ${new Date().toUTCString()}`,
+      e
+    );
     return false;
   }
 }
@@ -57,7 +60,9 @@ const imageUpload = async () => {
             }
           } catch (err) {
             console.error(
-              `Error searching for ListingId ${id}: ${err.message} imageUpload()`
+              `Error searching for ListingId ${id}: ${
+                err.message
+              } imageUpload() ${new Date().toUTCString()}`
             );
             continue;
           }
@@ -74,7 +79,11 @@ const imageUpload = async () => {
       }
     }
   } catch (error) {
-    console.error(`Error occurred in imageUpload function: ${error.message}`);
+    console.error(
+      `Error occurred in imageUpload function: ${new Date().toUTCString()} ${
+        error.message
+      }`
+    );
   }
 };
 
@@ -100,7 +109,10 @@ const getListingIds = async () => {
     const listingIds = listingIdData.Objects.map((obj) => obj.ListingId);
     return listingIds;
   } catch (err) {
-    console.error("Error getting listing IDs for Property Images", err.message);
+    console.error(
+      `Error getting listing IDs for Property Images: ${new Date().toUTCString()}`,
+      err.message
+    );
     return false;
   }
 };
@@ -116,7 +128,7 @@ const addRecordsToMongoDBImage = async (records, client) => {
       client.close();
     });
   } catch (e) {
-    console.error(e);
+    console.error(`error occur ${new Date().toUTCString()}`, e.message);
   } finally {
     await client.close();
   }

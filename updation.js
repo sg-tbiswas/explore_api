@@ -55,7 +55,11 @@ const recordUpdate = async () => {
       return true;
     }
   } catch (error) {
-    console.error(`Error occurred in recordUpdate function: ${error.message}`);
+    console.error(
+      `Error occurred in recordUpdate function: ${new Date().toUTCString()} ${
+        error.message
+      }`
+    );
     return true;
   }
 };
@@ -211,7 +215,10 @@ const crossCheckRecords = async (result, client) => {
       }
     );
   } catch (error) {
-    console.error("error while updating data from crossCheckRecords()", error);
+    console.error(
+      `error while updating data from crossCheckRecords() ${new Date().toUTCString()}`,
+      error
+    );
   }
 };
 
