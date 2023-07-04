@@ -115,7 +115,7 @@ const getListingIds = async () => {
     const listingIdData = await RETS_CLIENT.search(
       "Property",
       "ALL",
-      `(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${newFormattedTime}+})`,
+      `(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${newFormattedTime}+)`,
       {
         Select: "ListingId",
       }
