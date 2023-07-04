@@ -103,8 +103,7 @@ const getListingIds = async () => {
       "ALL",
       `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-06-25+)`,
       {
-        limit: 5000,
-        offset: 1,
+        offset: 5000,
         Select: "ListingId",
       }
     );
