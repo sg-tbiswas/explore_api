@@ -65,6 +65,7 @@ const imageUpload = async () => {
               }
               if (records.length > 0) {
                 await addRecordsToMongoDBImage(records, nodeClient);
+                console.log(`image added for listingID ${id}`);
               } else {
                 console.log("No images available to add! imageUpload()");
               }
