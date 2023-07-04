@@ -149,5 +149,3 @@ const addRecordsToMongoDBImage = async (records, client) => {
 };
 
 module.exports = imageUpload;
-
-imageUpload();
