@@ -32,8 +32,6 @@ const imageUpload = async () => {
 
     const listingChunks = await getListingIds();
     if (listingChunks && listingChunks.length > 0) {
-      let records = [];
-
       for (const id of listingChunks) {
         if (id) {
           try {
@@ -47,6 +45,7 @@ const imageUpload = async () => {
               }
             );
             if (query.Objects && query.Objects.length > 0) {
+              let records = [];
               for (const obj of query.Objects) {
                 const chkData = await checkExistingMediaURL(obj, nodeClient);
                 if (!chkData) {
@@ -56,6 +55,15 @@ const imageUpload = async () => {
                     records.push(obj);
                   }
                 }
+              }
+
+              if (records.length > 0) {
+                await addRecordsToMongoDBImage(records, nodeClient);
+                console.log(`Image added for listingID ${id}`);
+              } else {
+                console.log(
+                  `No images available for listingID ${id} to add! imageUpload()`
+                );
               }
             }
           } catch (err) {
@@ -70,13 +78,7 @@ const imageUpload = async () => {
           continue;
         }
       }
-
-      if (records.length > 0) {
-        await addRecordsToMongoDBImage(records, nodeClient);
-        console.log("All images fetched and added successfully! imageUpload()");
-      } else {
-        console.log("No images available to add! imageUpload()");
-      }
+      console.log(`All images fetched and added successfully! imageUpload()`);
     }
   } catch (error) {
     console.error(
@@ -97,7 +99,10 @@ const getListingIds = async () => {
     // Format the datetime string without the timezone indicator
     const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
+    const midnight = new Date(new Date().setHours(0, 0, 0, 0));
+    const newFormattedTime = midnight.toISOString().slice(0, -1);
 
+    /*
     const listingIdData = await RETS_CLIENT.search(
       "Property",
       "ALL",
@@ -106,6 +111,16 @@ const getListingIds = async () => {
         Select: "ListingId",
       }
     );
+*/
+    const listingIdData = await RETS_CLIENT.search(
+      "Property",
+      "ALL",
+      `(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${newFormattedTime}+})`,
+      {
+        Select: "ListingId",
+      }
+    );
+
     const listingIds = listingIdData.Objects.map((obj) => obj.ListingId);
     return listingIds;
   } catch (err) {

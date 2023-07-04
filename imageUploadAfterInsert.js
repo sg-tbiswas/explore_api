@@ -30,7 +30,6 @@ const imageUploadAfterInsert = async (listingChunks) => {
       const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
       await client.connect();
 
-      let records = [];
       for (const id of listingChunks) {
         if (id) {
           try {
@@ -45,6 +44,7 @@ const imageUploadAfterInsert = async (listingChunks) => {
             );
 
             if (query.Objects && query.Objects.length > 0) {
+              let records = [];
               for (const obj of query.Objects) {
                 const chkData = await checkExistingMediaURL(obj, client);
                 if (!chkData) {
@@ -55,6 +55,14 @@ const imageUploadAfterInsert = async (listingChunks) => {
                   }
                 }
               }
+              if (records.length > 0) {
+                await addRecordsToMongoDBImage(records, client);
+                console.log(`Image added for listingID ${id}`);
+              } else {
+                console.log(
+                  `No images available for listingID ${id} to add! imageUploadAfterInsert()`
+                );
+              }
             }
           } catch (err) {
             console.error(
@@ -64,14 +72,9 @@ const imageUploadAfterInsert = async (listingChunks) => {
           }
         }
       }
-      if (records.length > 0) {
-        await addRecordsToMongoDBImage(records, client);
-        console.log(
-          "All images fetched and added successfully! imageUploadAfterInsert()"
-        );
-      } else {
-        console.log("No images available to add! imageUploadAfterInsert()");
-      }
+      console.log(
+        `All images fetched and added successfully! imageUploadAfterInsert()`
+      );
     }
   } catch (error) {
     console.error(
