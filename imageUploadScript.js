@@ -27,9 +27,6 @@ async function checkExistingMediaURL(data, client) {
 
 const imageUpload = async () => {
   try {
-    const nodeClient = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-    await nodeClient.connect();
-
     //const listingChunks = ["DCDC2102806"];
     const listingChunks = await getListingIds();
     console.log("listingChunks>>", listingChunks);
@@ -42,6 +39,8 @@ const imageUpload = async () => {
         console.log(pcnt, id);
         if (id) {
           try {
+            const nodeClient = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+            await nodeClient.connect();
             const query = await RETS_CLIENT.search(
               "Media",
               "PROP_MEDIA",
@@ -70,9 +69,6 @@ const imageUpload = async () => {
                 console.log("No images available to add! imageUpload()");
               }
             }
-            console.log(
-              "All images fetched and added successfully! imageUpload()"
-            );
           } catch (err) {
             console.error(
               `Error searching for ListingId ${id}: ${
@@ -85,7 +81,9 @@ const imageUpload = async () => {
           continue;
         }
       }
-      console.log(`${gcn} image added`);
+      console.log(
+        `All images fetched and added successfully! imageUpload()=> ${gcn}`
+      );
     }
   } catch (error) {
     console.error(
