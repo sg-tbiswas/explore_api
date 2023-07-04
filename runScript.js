@@ -8,6 +8,7 @@ const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
 const { RETS_CLIENT, getTodayDate } = require("./utils");
 const imageUploadAfterInsert = require("./imageUploadAfterInsert.js");
+const { exec } = require("child_process");
 
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
@@ -264,16 +265,28 @@ const gobyHomes = async () => {
     await imageUploadAfterInsert(records);
     console.log("All records fetched and written successfully!");
     RETS_CLIENT.logout();
-    return records;
+    await autoStopPM2();
   } catch (err) {
     console.error(
       `Error occurred in gobyHomes function: ${new Date().toUTCString()} ${
         err.message
       }`
     );
-    return false;
   }
 };
 
+const autoStopPM2 = async () => {
+  exec("pm2 stop 2", (error, stdout, stderr) => {
+    if (error) {
+      console.log(`error: ${error.message}`);
+      return;
+    }
+    if (stderr) {
+      console.log(`stderr: ${stderr}`);
+      return;
+    }
+    console.log(`pm2 cron restarted: ${stdout}`);
+  });
+};
 // module.exports = gobyHomes;
 gobyHomes();
