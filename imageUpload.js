@@ -27,14 +27,13 @@ async function checkExistingMediaURL(data, client) {
 
 const imageUpload = async () => {
   try {
-    const nodeClient = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-    await nodeClient.connect();
-
     const listingChunks = await getListingIds();
     if (listingChunks && listingChunks.length > 0) {
       for (const id of listingChunks) {
         if (id) {
           try {
+            const nodeClient = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+            await nodeClient.connect();
             const query = await RETS_CLIENT.search(
               "Media",
               "PROP_MEDIA",
@@ -150,3 +149,5 @@ const addRecordsToMongoDBImage = async (records, client) => {
 };
 
 module.exports = imageUpload;
+
+imageUpload();

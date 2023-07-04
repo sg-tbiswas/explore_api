@@ -27,12 +27,11 @@ async function checkExistingMediaURL(data, client) {
 const imageUploadAfterInsert = async (listingChunks) => {
   try {
     if (listingChunks) {
-      const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-      await client.connect();
-
       for (const id of listingChunks) {
         if (id) {
           try {
+            const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+            await client.connect();
             const query = await RETS_CLIENT.search(
               "Media",
               "PROP_MEDIA",
