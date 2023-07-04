@@ -60,7 +60,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
     await client.connect();
 
     let allRecords = [];
-    let offset = 1;
+    let offset = 5000;
     let count;
     const now = new Date();
     console.log(now.toUTCString());
@@ -76,7 +76,6 @@ const fetchRecords = async (resource, className, keyMapping) => {
       className,
       `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-06-25+)`,
       {
-        limit: 5000,
         offset,
         Select: feildsValues.join(","),
       }
@@ -265,7 +264,6 @@ const gobyHomes = async () => {
     await imageUploadAfterInsert(records);
     console.log("All records fetched and written successfully!");
     RETS_CLIENT.logout();
-    await autoStopPM2();
   } catch (err) {
     console.error(
       `Error occurred in gobyHomes function: ${new Date().toUTCString()} ${
@@ -275,18 +273,5 @@ const gobyHomes = async () => {
   }
 };
 
-const autoStopPM2 = async () => {
-  exec("pm2 stop 2", (error, stdout, stderr) => {
-    if (error) {
-      console.log(`error: ${error.message}`);
-      return;
-    }
-    if (stderr) {
-      console.log(`stderr: ${stderr}`);
-      return;
-    }
-    console.log(`pm2 cron restarted: ${stdout}`);
-  });
-};
 // module.exports = gobyHomes;
 gobyHomes();
