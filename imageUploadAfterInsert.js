@@ -56,7 +56,6 @@ const imageUploadAfterInsert = async (listingChunks) => {
               }
               if (records.length > 0) {
                 await addRecordsToMongoDBImage(records, client);
-                console.log(`Image added for listingID ${id}`);
               } else {
                 console.log(
                   `No images available for listingID ${id} to add! imageUploadAfterInsert()`
