@@ -73,7 +73,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
       const records = await RETS_CLIENT.search(
         resource,
         className,
-        `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${formattedTime}+)`,
+        `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()})`,
         {
           limit: 500,
           offset,
