@@ -60,7 +60,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
     await client.connect();
 
     let allRecords = [];
-    let offset = 0;
+    let offset = 1;
     let count;
     const now = new Date();
     console.log(now.toUTCString());
@@ -70,7 +70,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
 
     // Format the datetime string without the timezone indicator
     const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
-
+    console.log("Fetching records....");
     const records = await RETS_CLIENT.search(
       resource,
       className,
