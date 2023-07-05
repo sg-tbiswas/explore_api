@@ -296,10 +296,11 @@ const getExploreData = async (req, res) => {
             },
           },
           { $match: { propertyImages: { $exists: true, $ne: [] } } },
-          { $sort: { "other_data.list_date": sort } },
+          // { $sort: { "other_data.list_date": sort } },
           { $skip: SKIP_ITEM },
           { $limit: DATA_COUNT },
         ])
+        .sort({ "other_data.list_date": sort })
         .toArray()
         .then(async (data) => {
           // const dataCollection = [];
