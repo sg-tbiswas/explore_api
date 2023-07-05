@@ -60,7 +60,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
     await client.connect();
 
     let allRecords = [];
-    let offset = 5000;
+    let offset = 1;
     let count;
     const now = new Date();
     console.log(now.toUTCString());
@@ -74,7 +74,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
     const records = await RETS_CLIENT.search(
       resource,
       className,
-      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-06-25+)`,
+      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-07-03+)`,
       {
         offset,
         Select: feildsValues.join(","),

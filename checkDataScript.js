@@ -49,9 +49,8 @@ const fetchRecord = async (resource, className, keyMapping) => {
     const records = await RETS_CLIENT.search(
       resource,
       className,
-      `(ListingId=DCDC2102806)`,
+      `(ListingId=DCDC2102860)`,
       {
-        offset,
         Select: feildsValues.join(","),
       }
     );
@@ -178,5 +177,5 @@ const fetchRecordWithListingId = async () => {
   await fetchRecord(Class, Resource, keyMapping);
 };
 
-//fetchRecordWithListingId();
+fetchRecordWithListingId();
 //fetchImagesWithListingId("DCDC2102806");
