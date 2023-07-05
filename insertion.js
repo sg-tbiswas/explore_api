@@ -68,26 +68,19 @@ const fetchRecords = async (resource, className, keyMapping) => {
 
     // Format the datetime string without the timezone indicator
     const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
+    const records = await RETS_CLIENT.search(
+      resource,
+      className,
+      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()})`,
+      {
+        Select: feildsValues.join(","),
+      }
+    );
 
-    do {
-      const records = await RETS_CLIENT.search(
-        resource,
-        className,
-        `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()})`,
-        {
-          limit: 500,
-          offset,
-          Select: feildsValues.join(","),
-        }
-      );
+    allRecords = allRecords.concat(records.Objects);
 
-      allRecords = allRecords.concat(records.Objects);
+    count = parseInt(records.TotalCount);
 
-      count = parseInt(records.TotalCount);
-
-      offset += 500;
-      console.log(count, offset);
-    } while (offset < count);
     console.log("allRecords", allRecords.length);
 
     const recordsWithUpdatedFields = allRecords.map((record, key) => {
