@@ -14,8 +14,8 @@ const whitelist = [
   "http://localhost:3000",
   "http://localhost:5000",
   "http://localhost:5001",
-  "https://gobyhomes.com/",
-  "https://goby-homes-qa-v2.web.app/"
+  "https://gobyhomes.com",
+  "https://goby-homes-qa-v2.web.app"
 ];
 
 const corsOptions = {
@@ -24,14 +24,6 @@ const corsOptions = {
   optionSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
-
-app.use((req, res, next) => {
-  console.log("Request received:", req.headers.origin);
-  res.header("Access-Control-Allow-Origin", "*"); // Temporarily set to "*" for debugging
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-
 app.use(bodyParser.json({ limit: "50mb" }));
 
 app.get("/getProperities", getExploreData);
