@@ -28,6 +28,8 @@ const getPropertiesByOfficeId = async (req, res) => {
               as: "propertyImages",
             },
           },
+          { $sort: { "other_data.list_date": -1 } },
+          { $limit: 10 },
         ])
         .toArray()
         .then((data) => {
