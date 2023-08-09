@@ -6,7 +6,7 @@ const getProperitiesByOfficeId = async (req, res) => {
   const params = req.query;
   const { officeId } = params;
   if (!officeId) {
-    res.status(400).json({ message: "Please provide Agent Id" });
+    res.status(400).json({ message: "Please provide Office Id" });
     return;
   }
 
