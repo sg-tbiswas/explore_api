@@ -2,7 +2,7 @@ const _ = require("lodash");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
 
-const getProperitiesByOfficeId = async (req, res) => {
+const getPropertiesByOfficeId = async (req, res) => {
   const params = req.query;
   const { officeId } = params;
   if (!officeId) {
@@ -45,4 +45,4 @@ const getProperitiesByOfficeId = async (req, res) => {
     });
 };
 
-module.exports = getProperitiesByOfficeId;
+module.exports = getPropertiesByOfficeId;
