@@ -25,7 +25,7 @@ const removeData = async () => {
         status: { $eq: "Closed" },
       })
       .skip(0)
-      .limit(50000)
+      .limit(5000)
       .toArray();
   } catch (error) {
     console.error(
