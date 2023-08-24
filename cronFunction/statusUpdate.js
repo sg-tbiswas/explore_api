@@ -1,13 +1,13 @@
 const fs = require("fs");
 const _ = require("lodash");
-const feildsValues = require("./selected_feild.js");
-const keyMapping = require("./name_change.js");
-const image_list = require("./image_list.js");
-const main_field = require("./main_field.js");
-const addres_field = require("./addres_field.js");
+const feildsValues = require("../selected_feild.js");
+const keyMapping = require("../name_change.js");
+const image_list = require("../image_list.js");
+const main_field = require("../main_field.js");
+const addres_field = require("../addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
-const CONSTANTS = require("./constants.js");
-const { RETS_CLIENT } = require("./utils.js");
+const CONSTANTS = require("../constants.js");
+const { RETS_CLIENT } = require("../utils.js");
 
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
@@ -115,12 +115,26 @@ const mapRecord = (record, key) => {
 const crossCheckRecords = async (result, client) => {
   try {
     const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
-    await collection.updateOne(
-      { listing_id: result["listing_id"] },
-      {
-        $set: { status: result["status"] },
-      }
-    );
+
+    const imageCollection = client
+      .db(CONSTANTS.DB_NAME)
+      .collection("propertyDataImages");
+
+    if (result["status"] == "Closed") {
+      await collection.deleteOne({
+        listing_id: result["listing_id"],
+      });
+      await imageCollection.deleteMany({
+        ListingId: result["listing_id"],
+      });
+    } else {
+      await collection.updateOne(
+        { listing_id: result["listing_id"] },
+        {
+          $set: { status: result["status"] },
+        }
+      );
+    }
   } catch (error) {
     console.error(
       `error while updating data from crossCheckRecords() ${new Date().toUTCString()}`,

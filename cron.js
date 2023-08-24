@@ -1,8 +1,8 @@
-const gobyHomes = require("./insertion");
-const recordUpdate = require("./updation");
-const imageUpload = require("./imageUpload");
-const statusUpdate = require("./statusUpdate");
-const imageUploadAfterInsert = require("./imageUploadAfterInsert");
+const gobyHomes = require("./cronFunction/insertion");
+const recordUpdate = require("./cronFunction/updation");
+const imageUpload = require("./cronFunction/imageUpload");
+const statusUpdate = require("./cronFunction/statusUpdate");
+const imageUploadAfterInsert = require("./cronFunction/imageUploadAfterInsert");
 const Cron = require("croner");
 const os = require("os");
 const { exec } = require("child_process");
@@ -15,10 +15,12 @@ let corn3Running = false;
 
 Cron("*/30 * * * *", async () => {
   let fromInsertData = false;
+  
   if (corn1Running) {
     console.warn("Already running 30 minute cron.", new Date().toUTCString());
     return;
   }
+
   corn1Running = true;
   try {
     console.log("running a task every 30 minute.", new Date().toUTCString());
@@ -68,6 +70,7 @@ Cron("*/20 * * * *", async () => {
     return;
   }
   corn3Running = true;
+
   try {
     console.log("running a task every 20 min.", new Date().toUTCString());
     await statusUpdate();
@@ -79,6 +82,7 @@ Cron("*/20 * * * *", async () => {
     );
     corn3Running = false;
   }
+
 });
 
 Cron("0 */2 * * *", async () => {

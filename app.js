@@ -3,11 +3,11 @@ const app = express();
 const PORT = 3000;
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const getExploreData = require("./getExploreData");
-const getSingleExploreData = require("./getSingleExploreData");
-const getCitiesAndState = require("./getCitiesAndState");
-const getPropertiesByAgentId = require("./getPropertiesByAgentId");
-const getPropertiesByOfficeId = require("./getPropertiesByOfficeId");
+const getExploreData = require("./api/getExploreData");
+const getSingleExploreData = require("./api/getSingleExploreData");
+const getCitiesAndState = require("./api/getCitiesAndState");
+const getPropertiesByAgentId = require("./api/getPropertiesByAgentId");
+const getPropertiesByOfficeId = require("./api/getPropertiesByOfficeId");
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));

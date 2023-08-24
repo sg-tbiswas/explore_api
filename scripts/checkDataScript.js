@@ -1,12 +1,12 @@
 const fs = require("fs");
 const _ = require("lodash");
-const feildsValues = require("./selected_feild.js");
-const keyMapping = require("./name_change.js");
-const main_field = require("./main_field.js");
-const addres_field = require("./addres_field.js");
+const feildsValues = require("../selected_feild.js");
+const keyMapping = require("../name_change.js");
+const main_field = require("../main_field.js");
+const addres_field = require("../addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
-const CONSTANTS = require("./constants");
-const { RETS_CLIENT, getTodayDate } = require("./utils");
+const CONSTANTS = require("../constants.js");
+const { RETS_CLIENT, getTodayDate } = require("../utils.js");
 const imageUploadAfterInsert = require("./imageUploadAfterInsert.js");
 const { exec } = require("child_process");
 

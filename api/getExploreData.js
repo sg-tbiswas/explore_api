@@ -1,6 +1,6 @@
 const _ = require("lodash");
-const MongoClient = require("mongodb").MongoClient;
-const CONSTANTS = require("./constants");
+const CONSTANTS = require("../constants");
+const { connectToDatabase } = require("../utils");
 
 const queryObjectFilter = (objData, fieldName) => {
   if (Object.keys(objData).length === 0) return "";
@@ -63,24 +63,6 @@ const getExploreData = async (req, res) => {
       },
     };
   }
-
-  // if (params.street_number) {
-  //   streetNumberFilter.$eq = params.street_number;
-  // }
-  // if (params.street) {
-  //   streetFilter.$eq = params.street;
-  // }
-  // if (params.street_suffix) {
-  //   streetSuffixFilter.$eq = params.street_suffix;
-  // }
-  // if (params.street_dir) {
-  //   streetDirFilter = {
-  //     $or: [
-  //       { "address.street_dir_prefix": params.street_dir },
-  //       { "address.street_dir_prefix": params.street_dir },
-  //     ],
-  //   };
-  // }
 
   if (params.property_type && params.property_type == "Rent") {
     propertyTypeFilter = {
@@ -249,9 +231,6 @@ const getExploreData = async (req, res) => {
   if (bathsFilterResult) customQuery.push(bathsFilterResult);
   if (stateFilterResult) customQuery.push(stateFilterResult);
 
-  // if (streetNumberFilterResult) customQuery.push(streetNumberFilterResult);
-  // if (streetFilterResult) customQuery.push(streetFilterResult);
-  // if (streetSuffixFilterResult) customQuery.push(streetSuffixFilterResult);
   if (zipcodeFilterResult) customQuery.push(zipcodeFilterResult);
   if (priceFilterResult) customQuery.push(priceFilterResult);
   if (minSqftFilterResult) customQuery.push(minSqftFilterResult);
@@ -270,105 +249,41 @@ const getExploreData = async (req, res) => {
   if (!_.isEmpty(fullAddressFilter)) customQuery.push(fullAddressFilter);
 
   console.log("here", JSON.stringify(customQuery), cityFilter, params);
-  MongoClient.connect(CONSTANTS.DB_CONNECTION_URI)
-    .then(async (client) => {
-      const connect = client.db(CONSTANTS.DB_NAME);
-      // Connect to collection
-      const collection = connect.collection("propertyData");
-      const imagesCollection = connect.collection("propertyDataImages");
-      const totalDataCount = await collection.countDocuments({
-        $and: [cityFilter, ...customQuery, homeTypeQueryWrap],
-      });
-
-      collection
-        .aggregate([
-          {
-            $match: {
-              $and: [cityFilter, ...customQuery, homeTypeQueryWrap],
-            },
-          },
-          {
-            $lookup: {
-              from: "propertyDataImages",
-              localField: "listing_id",
-              foreignField: "ListingId",
-              as: "propertyImages",
-            },
-          },
-          { $match: { propertyImages: { $exists: true, $ne: [] } } },
-          { $sort: { "other_data.list_date": sort } },
-          { $skip: SKIP_ITEM },
-          { $limit: DATA_COUNT },
-        ])
-        .toArray()
-        .then(async (data) => {
-          // const dataCollection = [];
-          // for (const result of data) {
-          //   const newData = { ...result };
-          //   // const propertyDataImagesArr = newData?.propertyDataImages
-          //   //   ? newData?.propertyDataImages
-          //   //   : [];
-          //   // const newPropertyDataImages = [];
-
-          //   // const imageData = await imagesCollection
-          //   //   .find({ ListingId: { $eq: result.listing_id } })
-          //   //   .toArray();
-          //   // if (imageData && imageData.length > 0) {
-          //   //   imageData.forEach((elm) => {
-          //   //     let element = { ...elm };
-          //   //     delete element["_id"];
-          //   //     newPropertyDataImages.push(element);
-          //   //   });
-          //   // }
-
-          //   // newData.propertyDataImages = newPropertyDataImages;
-          //   dataCollection.push(newData);
-
-          //   // console.log("imagesCollection", imagesCollection);
-          //   //dataCollection.push({ ...result });
-          // }
-          res.status(200).json({ properities: data, totalDataCount });
-        });
-
-      // collection
-      //   .find({
-      //     $and: [cityFilter, ...customQuery, homeTypeQueryWrap],
-      //   })
-      //   .limit(DATA_COUNT)
-      //   .sort({ "other_data.list_date": sort })
-      //   .toArray()
-      //   .then(async (data) => {
-      //     const dataCollection = [];
-      //     for (const result of data) {
-      //       const newData = { ...result };
-      //       // const propertyDataImagesArr = newData?.propertyDataImages
-      //       //   ? newData?.propertyDataImages
-      //       //   : [];
-      //       // const newPropertyDataImages = [];
-
-      //       // const imageData = await imagesCollection
-      //       //   .find({ ListingId: { $eq: result.listing_id } })
-      //       //   .toArray();
-      //       // if (imageData && imageData.length > 0) {
-      //       //   imageData.forEach((elm) => {
-      //       //     let element = { ...elm };
-      //       //     delete element["_id"];
-      //       //     newPropertyDataImages.push(element);
-      //       //   });
-      //       // }
-
-      //       // newData.propertyDataImages = newPropertyDataImages;
-      //       dataCollection.push(newData);
-
-      //       // console.log("imagesCollection", imagesCollection);
-      //       //dataCollection.push({ ...result });
-      //     }
-      //     res.status(200).json({ properities: dataCollection, totalDataCount });
-      //   });
-    })
-    .catch((err) => {
-      console.log(`error occur at ${new Date().toUTCString()} ${err.Message} `);
+  try {
+    const db = await connectToDatabase();
+    const collection = db.collection("propertyData");
+    const totalDataCount = await collection.countDocuments({
+      $and: [cityFilter, ...customQuery, homeTypeQueryWrap],
     });
+
+    const data = await collection
+      .aggregate([
+        {
+          $match: {
+            $and: [cityFilter, ...customQuery, homeTypeQueryWrap],
+          },
+        },
+        {
+          $lookup: {
+            from: "propertyDataImages",
+            localField: "listing_id",
+            foreignField: "ListingId",
+            as: "propertyImages",
+          },
+        },
+        { $match: { propertyImages: { $exists: true, $ne: [] } } },
+        { $sort: { "other_data.list_date": sort } },
+        { $skip: SKIP_ITEM },
+        { $limit: DATA_COUNT },
+      ])
+      .toArray();
+    res.status(200).json({ properities: data, totalDataCount });
+  } catch (error) {
+    console.log(
+      `Error occurred at ${new Date().toUTCString()}: ${error.message}`
+    );
+    res.status(500).json({ error: "Something went wrong." });
+  }
 };
 
 module.exports = getExploreData;

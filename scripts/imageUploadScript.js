@@ -1,7 +1,7 @@
 const fs = require("fs");
 const MongoClient = require("mongodb").MongoClient;
-const CONSTANTS = require("./constants");
-const { RETS_CLIENT, getTodayDate } = require("./utils");
+const CONSTANTS = require("../constants");
+const { RETS_CLIENT, getTodayDate } = require("../utils");
 var os = require("os");
 const _ = require("lodash");
 
