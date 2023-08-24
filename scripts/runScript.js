@@ -7,10 +7,10 @@ const addres_field = require("../addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT, getTodayDate } = require("../utils.js");
-const imageUploadAfterInsert = require("./imageUploadAfterInsert.js");
+const imageUploadAfterInsert = require("../cronFunction/imageUploadAfterInsert.js");
 const { exec } = require("child_process");
 
-const temp = fs.readFileSync("metaDataLookup.json");
+const temp = fs.readFileSync("../metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
 async function addRecordsToMongoDB(records, client) {
