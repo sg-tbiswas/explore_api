@@ -49,7 +49,7 @@ const recordUpdate = async () => {
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
         let cnt = 1;
         for (const item of recordsWithUpdatedFields) {
-          crossCheckRecords(item, client);
+          await crossCheckRecords(item, client);
           cnt++;
         }
         console.log(`${cnt} recordUpdate Done!`);
