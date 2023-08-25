@@ -25,9 +25,9 @@ async function checkExistingMediaURL(data, client) {
 }
 
 const imageUploadAfterInsert = async (listingChunks) => {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-  await client.connect();
   try {
+    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+    await client.connect();
     if (listingChunks) {
       for (const id of listingChunks) {
         if (id) {

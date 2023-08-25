@@ -27,9 +27,10 @@ async function checkExistingMediaURL(data, client) {
 
 const imageUpload = async () => {
   try {
-    //const listingChunks = ["DCDC2102806"];
+    const nodeClient = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+    await nodeClient.connect();
     const listingChunks = await getListingIds();
-    console.log("listingChunks>>", listingChunks);
+    console.log("listingChunks>>", listingChunks?.length);
 
     if (listingChunks && listingChunks.length > 0) {
       let gcn = 0;
@@ -39,8 +40,7 @@ const imageUpload = async () => {
         console.log(pcnt, id);
         if (id) {
           try {
-            const nodeClient = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-            await nodeClient.connect();
+            
             const query = await RETS_CLIENT.search(
               "Media",
               "PROP_MEDIA",
@@ -82,6 +82,7 @@ const imageUpload = async () => {
           continue;
         }
       }
+      await client.close();
       console.log(
         `All images fetched and added successfully! imageUpload()=> ${gcn}`
       );
@@ -107,6 +108,7 @@ const getListingIds = async () => {
         Select: "ListingId",
       }
     );
+    
     const listingIds = listingIdData.Objects.map((obj) => obj.ListingId);
     return listingIds;
   } catch (err) {
@@ -126,12 +128,9 @@ const addRecordsToMongoDBImage = async (records, client) => {
     await collection.insertMany(records, (err, res) => {
       if (err) throw err;
       console.log(`${res.insertedCount} documents inserted`);
-      client.close();
     });
   } catch (e) {
     console.error(`error occur ${new Date().toUTCString()}`, e.message);
-  } finally {
-    await client.close();
   }
 };
 

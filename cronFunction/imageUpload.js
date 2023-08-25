@@ -26,8 +26,8 @@ async function checkExistingMediaURL(data, client) {
 }
 
 const imageUpload = async () => {
-  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
+    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
     await client.connect();
     const listingChunks = await getListingIds();
     if (listingChunks && listingChunks.length > 0) {
@@ -76,6 +76,7 @@ const imageUpload = async () => {
           continue;
         }
       }
+      await client.close();
       console.log(`All images fetched and added successfully! imageUpload()`);
     }
   } catch (error) {
