@@ -94,6 +94,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
       `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-22+)`,
       {
         offset,
+        limit:500,
         Select: feildsValues.join(","),
       }
     );
@@ -150,6 +151,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
     // console.log(recordsWithUpdatedFields, className);
 
     const updatedRecords = [];
+    const allListings = [];
     for (const result of recordsWithUpdatedFields) {
       let data = result;
 
@@ -240,6 +242,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
       data.fullBathrooms = fullBathrooms;
 
       const chkData = await checkExistingRecord(data, client);
+      allListings.push(data);
       if (!chkData) {
         continue;
       } else if (Array.isArray(chkData)) {
@@ -250,7 +253,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
     }
     if (updatedRecords.length > 0) {
       await addRecordsToMongoDB(updatedRecords, client);
-      const listingIds = updatedRecords.map((obj) => obj.listing_id);
+      const listingIds = allListings.map((obj) => obj.listing_id);
       return listingIds;
     } else {
       return [];
