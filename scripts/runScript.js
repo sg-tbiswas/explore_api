@@ -94,7 +94,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
       `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-22+)`,
       {
         offset,
-        limit: 100,
+        limit: 1000,
         Select: feildsValues.join(","),
       }
     );
