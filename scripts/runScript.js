@@ -77,7 +77,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
     const client = await db.connect();
 
     let allRecords = [];
-    let offset = 3000;
+    let offset = 3500;
     let count;
     const now = new Date();
     console.log(now.toUTCString());
@@ -94,7 +94,6 @@ const fetchRecords = async (resource, className, keyMapping) => {
       `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-22+)`,
       {
         offset,
-        limit:500,
         Select: feildsValues.join(","),
       }
     );
