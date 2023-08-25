@@ -7,27 +7,45 @@ const addres_field = require("../addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT, getTodayDate } = require("../utils.js");
-const imageUploadAfterInsert = require("../cronFunction/imageUploadAfterInsert.js");
+const imageUploadAfterInsert = require("../cronFunction/imageUploadAfterInsert_old.js");
 const { exec } = require("child_process");
 
 const temp = fs.readFileSync("../metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
-async function addRecordsToMongoDB(records, client) {
+
+class Database {
+  constructor() {
+    this.client = null;
+  }
+
+  async connect() {
+    if (!this.client) {
+      this.client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+      await this.client.connect();
+    }
+    return this.client;
+  }
+
+  async disconnect() {
+    if (this.client) {
+      await this.client.close();
+      this.client = null;
+    }
+  }
+}
+
+const db = new Database();
+
+
+async function addRecordsToMongoDB(records) {
   try {
+    const client = await db.connect();
     const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
-    await collection.insertMany(records, (err, res) => {
-      if (err) throw err;
-      console.log(`${res.insertedCount} documents inserted`);
-      client.close();
-    });
+    const result = await collection.insertMany(records);
+    console.log(`${result.insertedCount} documents inserted`);
   } catch (error) {
-    console.error(
-      `error from addRecordsToMongoDB ${new Date().toUTCString()}`,
-      error.message
-    );
-  } finally {
-    await client.close();
+    console.error("Error from addRecordsToMongoDB:", error.message);
   }
 }
 
@@ -56,8 +74,7 @@ const textReplace = (str) => {
 
 const fetchRecords = async (resource, className, keyMapping) => {
   try {
-    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-    await client.connect();
+    const client = await db.connect();
 
     let allRecords = [];
     let offset = 1;
@@ -248,12 +265,10 @@ const fetchRecords = async (resource, className, keyMapping) => {
   }
 };
 
-const gobyHomes = async () => {
+async function gobyHomes() {
   try {
     const loginResponse = await RETS_CLIENT.login();
-    if (loginResponse) {
-      console.log("Successfully logged in to server");
-    } else {
+    if (!loginResponse) {
       console.log("There was an error connecting to the server");
       return;
     }
@@ -264,14 +279,12 @@ const gobyHomes = async () => {
     await imageUploadAfterInsert(records);
     console.log("All records fetched and written successfully!");
     RETS_CLIENT.logout();
+    await db.disconnect(); // Disconnect from the database after processing
   } catch (err) {
-    console.error(
-      `Error occurred in gobyHomes function: ${new Date().toUTCString()} ${
-        err.message
-      }`
-    );
+    console.error("Error occurred in gobyHomes function:", err.message);
+    await db.disconnect(); // Ensure disconnect even in case of error
   }
-};
+}
 
 // module.exports = gobyHomes;
 gobyHomes();

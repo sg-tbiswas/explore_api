@@ -4,17 +4,10 @@ const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("../constants");
 const { RETS_CLIENT } = require("../utils");
 
-async function checkExistingMediaURL(data, client) {
+async function checkExistingMediaURL(data, collection) {
   try {
-    const collection = client
-      .db(CONSTANTS.DB_NAME)
-      .collection("propertyDataImages");
     const ddt = await collection.find({ MediaURL: data.MediaURL }).toArray();
-    if (ddt) {
-      return ddt;
-    } else {
-      return [];
-    }
+    return ddt;
   } catch (e) {
     console.error(
       `error from checkExistingMediaURL imageUploadAfterInsert() ${new Date().toUTCString()}`,
@@ -25,13 +18,17 @@ async function checkExistingMediaURL(data, client) {
 }
 
 const imageUploadAfterInsert = async (listingChunks) => {
+  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
+    await client.connect();
+    const collection = client
+      .db(CONSTANTS.DB_NAME)
+      .collection("propertyDataImages");
+
     if (listingChunks) {
       for (const id of listingChunks) {
         if (id) {
           try {
-            const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-            await client.connect();
             const query = await RETS_CLIENT.search(
               "Media",
               "PROP_MEDIA",
@@ -43,19 +40,15 @@ const imageUploadAfterInsert = async (listingChunks) => {
             );
 
             if (query.Objects && query.Objects.length > 0) {
-              let records = [];
+              const records = [];
               for (const obj of query.Objects) {
-                const chkData = await checkExistingMediaURL(obj, client);
-                if (!chkData) {
-                  continue;
-                } else if (Array.isArray(chkData)) {
-                  if (chkData.length < 1) {
-                    records.push(obj);
-                  }
+                const chkData = await checkExistingMediaURL(obj, collection);
+                if (chkData && Array.isArray(chkData) && chkData.length === 0) {
+                  records.push(obj);
                 }
               }
               if (records.length > 0) {
-                await addRecordsToMongoDBImage(records, client);
+                await addRecordsToMongoDBImage(records, collection);
               } else {
                 console.log(
                   `No images available for listingID ${id} to add! imageUploadAfterInsert()`
@@ -80,28 +73,23 @@ const imageUploadAfterInsert = async (listingChunks) => {
         error.message
       }`
     );
+  } finally {
+    await client.close();
   }
 };
 
-const addRecordsToMongoDBImage = async (records, client) => {
+const addRecordsToMongoDBImage = async (records, collection) => {
   try {
-    const collection = client
-      .db(CONSTANTS.DB_NAME)
-      .collection("propertyDataImages");
-    await collection.insertMany(records, (err, res) => {
-      if (err) throw err;
-      console.log(
-        `${res.insertedCount} documents inserted into propertyDataImages`
-      );
-      client.close();
-    });
+    const result = await collection.insertMany(records);
+    console.log(
+      `${result.insertedCount} documents inserted into propertyDataImages`
+    );
   } catch (error) {
     console.error(
       `error occurred add record to DBImage ${new Date().toUTCString()}`,
       error.message
     );
-  } finally {
-    await client.close();
   }
 };
+
 module.exports = imageUploadAfterInsert;
