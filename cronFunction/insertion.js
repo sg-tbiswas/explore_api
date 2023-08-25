@@ -11,7 +11,6 @@ const { RETS_CLIENT, getTodayDate } = require("../utils.js");
 const temp = fs.readFileSync("../metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
-const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
 
 async function addRecordsToMongoDB(records, client) {
   try {
@@ -247,6 +246,7 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
 
 const gobyHomes = async () => {
   try {
+    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
     await client.connect();
     const loginResponse = await RETS_CLIENT.login();
     if (loginResponse) {
@@ -262,6 +262,7 @@ const gobyHomes = async () => {
 
     console.log("All records fetched and written successfully!");
     RETS_CLIENT.logout();
+    await client.close();
     return records;
   } catch (err) {
     console.error(

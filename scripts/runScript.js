@@ -77,7 +77,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
     const client = await db.connect();
 
     let allRecords = [];
-    let offset = 1;
+    let offset = 1000;
     let count;
     const now = new Date();
     console.log(now.toUTCString());

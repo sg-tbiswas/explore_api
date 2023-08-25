@@ -5,7 +5,10 @@ const { RETS_CLIENT, getTodayDate } = require("../utils");
 var os = require("os");
 const _ = require("lodash");
 
-async function checkExistingMediaURL(data, collection) {
+async function checkExistingMediaURL(data, client) {
+  const collection = client
+      .db(CONSTANTS.DB_NAME)
+      .collection("propertyDataImages");
   try {
     const ddt = await collection.find({ MediaURL: data.MediaURL }).toArray();
     if (ddt) {
@@ -26,10 +29,6 @@ const imageUpload = async () => {
   const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
     await client.connect();
-    const collection = client
-      .db(CONSTANTS.DB_NAME)
-      .collection("propertyDataImages");
-
     const listingChunks = await getListingIds();
     if (listingChunks && listingChunks.length > 0) {
       for (const id of listingChunks) {
@@ -47,7 +46,7 @@ const imageUpload = async () => {
             if (query.Objects && query.Objects.length > 0) {
               let records = [];
               for (const obj of query.Objects) {
-                const chkData = await checkExistingMediaURL(obj, collection);
+                const chkData = await checkExistingMediaURL(obj, client);
                 if (!chkData) {
                   continue;
                 } else if (Array.isArray(chkData)) {
@@ -58,7 +57,7 @@ const imageUpload = async () => {
               }
 
               if (records.length > 0) {
-                await addRecordsToMongoDBImage(records, collection);
+                await addRecordsToMongoDBImage(records, client);
               } else {
                 console.log(
                   `No images available for listingID ${id} to add! imageUpload()`
@@ -131,8 +130,11 @@ const getListingIds = async () => {
   }
 };
 
-const addRecordsToMongoDBImage = async (records, collection) => {
+const addRecordsToMongoDBImage = async (records, client) => {
   try {
+    const collection = client
+      .db(CONSTANTS.DB_NAME)
+      .collection("propertyDataImages");
     await collection.insertMany(records, (err, res) => {
       if (err) throw err;
       console.log(`${res.insertedCount} documents inserted`);
