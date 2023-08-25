@@ -35,6 +35,8 @@ const recordUpdate = async () => {
         Select: feildsValues.join(","),
       }
     );
+    let totalCount = parseInt(temp.TotalCount);
+    console.log("totalCount>>>>",totalCount)
     let allRecords = [];
 
     if (temp.Objects && Array.isArray(temp.Objects)) {
