@@ -5,11 +5,8 @@ const { RETS_CLIENT, getTodayDate } = require("../utils");
 var os = require("os");
 const _ = require("lodash");
 
-async function checkExistingMediaURL(data, client) {
+async function checkExistingMediaURL(data, collection) {
   try {
-    const collection = client
-      .db(CONSTANTS.DB_NAME)
-      .collection("propertyDataImages");
     const ddt = await collection.find({ MediaURL: data.MediaURL }).toArray();
     if (ddt) {
       return ddt;
@@ -26,14 +23,18 @@ async function checkExistingMediaURL(data, client) {
 }
 
 const imageUpload = async () => {
+  const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
   try {
+    await client.connect();
+    const collection = client
+      .db(CONSTANTS.DB_NAME)
+      .collection("propertyDataImages");
+
     const listingChunks = await getListingIds();
     if (listingChunks && listingChunks.length > 0) {
       for (const id of listingChunks) {
         if (id) {
           try {
-            const nodeClient = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-            await nodeClient.connect();
             const query = await RETS_CLIENT.search(
               "Media",
               "PROP_MEDIA",
@@ -46,7 +47,7 @@ const imageUpload = async () => {
             if (query.Objects && query.Objects.length > 0) {
               let records = [];
               for (const obj of query.Objects) {
-                const chkData = await checkExistingMediaURL(obj, nodeClient);
+                const chkData = await checkExistingMediaURL(obj, collection);
                 if (!chkData) {
                   continue;
                 } else if (Array.isArray(chkData)) {
@@ -57,7 +58,7 @@ const imageUpload = async () => {
               }
 
               if (records.length > 0) {
-                await addRecordsToMongoDBImage(records, nodeClient);
+                await addRecordsToMongoDBImage(records, collection);
               } else {
                 console.log(
                   `No images available for listingID ${id} to add! imageUpload()`
@@ -130,20 +131,14 @@ const getListingIds = async () => {
   }
 };
 
-const addRecordsToMongoDBImage = async (records, client) => {
+const addRecordsToMongoDBImage = async (records, collection) => {
   try {
-    const collection = client
-      .db(CONSTANTS.DB_NAME)
-      .collection("propertyDataImages");
     await collection.insertMany(records, (err, res) => {
       if (err) throw err;
       console.log(`${res.insertedCount} documents inserted`);
-      client.close();
     });
   } catch (e) {
     console.error(`error occur ${new Date().toUTCString()}`, e.message);
-  } finally {
-    await client.close();
   }
 };
 
