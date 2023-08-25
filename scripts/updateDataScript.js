@@ -22,18 +22,20 @@ const recordUpdate = async () => {
     await client.connect();
     const now = new Date();
 
-    const targetDateTime = new Date(new Date("2023-08-22"));
-    const formattedTime = targetDateTime.toISOString().slice(0, -1);
+    const fromDateTime = new Date(new Date("2023-08-22"));
+    const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
+
+    const toDateTime = new Date(new Date("2023-08-23"));
+    const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
+
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
 
-    console.log(formattedTime, currentDate);
+    console.log(formattedFromDateTime, formattedToDateTime);
     const temp = await RETS_CLIENT.search(
       "Property",
       "ALL",
-      `(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
+      `(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedFromDateTime}-${formattedToDateTime})`,
       {
-        offset:1,
-        limit:1000,
         Select: feildsValues.join(","),
       }
     );
