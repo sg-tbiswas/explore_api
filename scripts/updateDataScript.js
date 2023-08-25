@@ -32,6 +32,8 @@ const recordUpdate = async () => {
       "ALL",
       `(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedTime}+)`,
       {
+        offset:1,
+        limit:1000,
         Select: feildsValues.join(","),
       }
     );
