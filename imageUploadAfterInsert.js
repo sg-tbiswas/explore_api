@@ -1,8 +1,8 @@
 const fs = require("fs");
 const _ = require("lodash");
 const MongoClient = require("mongodb").MongoClient;
-const CONSTANTS = require("../constants");
-const { RETS_CLIENT } = require("../utils");
+const CONSTANTS = require("./constants");
+const { RETS_CLIENT } = require("./utils");
 
 async function checkExistingMediaURL(data, client) {
   try {

@@ -1,9 +1,9 @@
-const gobyHomes = require("./cronFunction/insertion");
-const recordUpdate = require("./cronFunction/updation");
-const imageUpload = require("./cronFunction/imageUpload");
-const statusUpdate = require("./cronFunction/statusUpdate");
-const imageUploadAfterInsert = require("./cronFunction/imageUploadAfterInsert");
-const resetOffset = require("./cronFunction/resetOffset");
+const gobyHomes = require("./insertion");
+const recordUpdate = require("./updation");
+const imageUpload = require("./imageUpload");
+const statusUpdate = require("./statusUpdate");
+const imageUploadAfterInsert = require("./imageUploadAfterInsert");
+const resetOffset = require("./resetOffset");
 const Cron = require("croner");
 const os = require("os");
 const { exec } = require("child_process");

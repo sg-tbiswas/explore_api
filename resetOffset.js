@@ -2,7 +2,7 @@ const fs = require("fs");
 const _ = require("lodash");
 
 const MongoClient = require("mongodb").MongoClient;
-const CONSTANTS = require("../constants.js");
+const CONSTANTS = require("./constants.js");
 
 const resetOffset = async () => {
   try {

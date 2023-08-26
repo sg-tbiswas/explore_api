@@ -1,14 +1,14 @@
 const fs = require("fs");
 const _ = require("lodash");
-const feildsValues = require("../selected_feild.js");
-const keyMapping = require("../name_change.js");
-const main_field = require("../main_field.js");
-const addres_field = require("../addres_field.js");
+const feildsValues = require("./selected_feild.js");
+const keyMapping = require("./name_change.js");
+const main_field = require("./main_field.js");
+const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const {ObjectId } = require("mongodb");
 
-const CONSTANTS = require("../constants.js");
-const { RETS_CLIENT, getTodayDate } = require("../utils.js");
+const CONSTANTS = require("./constants.js");
+const { RETS_CLIENT, getTodayDate } = require("./utils.js");
 
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
