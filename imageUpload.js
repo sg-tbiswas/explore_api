@@ -93,14 +93,13 @@ const getListingIds = async () => {
     let allRecords = [];
     const now = new Date();
 
-    // Subtract 45 minutes from the current datetime
-    const fortyFiveMinutesAgo = new Date(now.getTime() - 45 * 60000);
+    // Subtract 3 hours from the current datetime
+    const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
 
     // Format the datetime string without the timezone indicator
-    const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
     const midnight = new Date(new Date().setHours(0, 0, 0, 0));
-    const newFormattedTime = midnight.toISOString().slice(0, -1);
+    const newFormattedTime = threeHoursAgo.toISOString().slice(0, -1);
 
     /*
     const listingIdData = await RETS_CLIENT.search(
