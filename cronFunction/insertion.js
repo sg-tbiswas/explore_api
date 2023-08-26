@@ -74,8 +74,8 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
         Select: feildsValues.join(","),
       }
     );
+    allRecords = records.Objects?allRecords.concat(records.Objects):[];
 
-    allRecords = allRecords.concat(records.Objects);
 
     count = parseInt(records.TotalCount);
 

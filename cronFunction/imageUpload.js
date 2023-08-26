@@ -90,6 +90,7 @@ const imageUpload = async () => {
 
 const getListingIds = async () => {
   try {
+    let allRecords = [];
     const now = new Date();
 
     // Subtract 45 minutes from the current datetime
@@ -119,8 +120,9 @@ const getListingIds = async () => {
         Select: "ListingId",
       }
     );
+    allRecords = listingIdData?.Objects?allRecords.concat(listingIdData.Objects):[];
 
-    const listingIds = listingIdData.Objects.map((obj) => obj.ListingId);
+    const listingIds = allRecords.map((obj) => obj.ListingId);
     return listingIds;
   } catch (err) {
     console.error(

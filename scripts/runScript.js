@@ -77,7 +77,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
     const client = await db.connect();
 
     let allRecords = [];
-    let offset = 3500;
+    let offset = 1;
     let count;
     const now = new Date();
     console.log(now.toUTCString());
@@ -97,11 +97,13 @@ const fetchRecords = async (resource, className, keyMapping) => {
         Select: feildsValues.join(","),
       }
     );
-
-    allRecords = allRecords.concat(records.Objects);
-
+    
     count = parseInt(records.TotalCount);
-    console.log("allRecords", allRecords.length);
+    console.log("allRecords",records, allRecords.length);
+
+    allRecords = records.Objects?allRecords.concat(records.Objects):[];
+
+    
     const recordsWithUpdatedFields = allRecords.map((record, key) => {
       console.log(key);
       const updatedRecord = {};
