@@ -10,7 +10,7 @@ const {ObjectId } = require("mongodb");
 const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT, getTodayDate } = require("../utils.js");
 
-const temp = fs.readFileSync("../metaDataLookup.json");
+const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
 
