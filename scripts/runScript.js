@@ -99,7 +99,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
     );
     
     count = parseInt(records.TotalCount);
-    console.log("allRecords",records, allRecords.length);
+    console.log("allRecords", allRecords.length);
 
     allRecords = records.Objects?allRecords.concat(records.Objects):[];
 
