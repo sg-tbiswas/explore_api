@@ -5,6 +5,8 @@ const keyMapping = require("../name_change.js");
 const main_field = require("../main_field.js");
 const addres_field = require("../addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
+const {ObjectId } = require("mongodb");
+
 const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT, getTodayDate } = require("../utils.js");
 
@@ -15,18 +17,13 @@ const lookupValues = JSON.parse(temp);
 async function addRecordsToMongoDB(records, client) {
   try {
     const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
-    await collection.insertMany(records, (err, res) => {
-      if (err) throw err;
-      console.log(`${res.insertedCount} documents inserted`);
-      client.close();
-    });
+    const result = await collection.insertMany(records);
+    console.log(`${result.insertedCount} documents inserted`);
   } catch (error) {
     console.error(
       `error from addRecordsToMongoDB ${new Date().toUTCString()}`,
       error.message
     );
-  } finally {
-    await client.close();
   }
 }
 
@@ -55,14 +52,22 @@ const textReplace = (str) => {
 
 const fetchRecords = async (resource, className, keyMapping, client) => {
   try {
+    const offCollection = client.db(CONSTANTS.DB_NAME).collection("dataOperationRecord");
+    const ddt = await offCollection
+      .find({ _id: new ObjectId("64e9c0aaa5312247dc2452be") })
+      .toArray();
+    const lastOffset = ddt[0]?.lastOffset;
+
+    console.log("lastOffset>>>",lastOffset);
+
     let allRecords = [];
-    let offset = 1;
+    let offset = lastOffset?lastOffset:1;
     let count;
     const now = new Date();
     console.log(now.toUTCString());
 
     // Subtract 45 minutes from the current datetime
-    const fortyFiveMinutesAgo = new Date(now.getTime() - 45 * 60000);
+    const fortyFiveMinutesAgo = new Date(now.getTime() - 120 * 60000);
 
     // Format the datetime string without the timezone indicator
     const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
@@ -72,6 +77,7 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
       `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()})`,
       {
         Select: feildsValues.join(","),
+        offset
       }
     );
     allRecords = records.Objects?allRecords.concat(records.Objects):[];
@@ -261,6 +267,14 @@ const gobyHomes = async () => {
     const records = await fetchRecords(Class, Resource, keyMapping, client);
 
     console.log("All records fetched and written successfully!");
+    const offCollection = client.db(CONSTANTS.DB_NAME).collection("dataOperationRecord");
+    await offCollection.updateOne(
+      { _id: new ObjectId("64e9c0aaa5312247dc2452be") },
+      {
+        $set: { lastOffset: records.length },
+      }
+    );
+
     RETS_CLIENT.logout();
     await client.close();
     return records;

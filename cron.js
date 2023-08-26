@@ -3,6 +3,7 @@ const recordUpdate = require("./cronFunction/updation");
 const imageUpload = require("./cronFunction/imageUpload");
 const statusUpdate = require("./cronFunction/statusUpdate");
 const imageUploadAfterInsert = require("./cronFunction/imageUploadAfterInsert");
+const resetOffset = require("./cronFunction/resetOffset");
 const Cron = require("croner");
 const os = require("os");
 const { exec } = require("child_process");
@@ -15,7 +16,7 @@ let corn3Running = false;
 
 Cron("*/30 * * * *", async () => {
   let fromInsertData = false;
-  
+
   if (corn1Running) {
     console.warn("Already running 30 minute cron.", new Date().toUTCString());
     return;
@@ -82,32 +83,42 @@ Cron("*/20 * * * *", async () => {
     );
     corn3Running = false;
   }
-
 });
 
-Cron("0 */2 * * *", async () => {
-  console.log(`Cron Job and MongoDB restarted at ${new Date().toUTCString()}`);
-  exec("sudo systemctl restart mongod.service", (error, stdout, stderr) => {
-    if (error) {
-      console.log(`error: ${error.message}`);
-      return;
-    }
-    if (stderr) {
-      console.log(`stderr: ${stderr}`);
-      return;
-    }
-    console.log(`mongodb restarted: ${stdout}`);
-  });
-  await sleep(5000);
-  exec("pm2 restart 1", (error, stdout, stderr) => {
-    if (error) {
-      console.log(`error: ${error.message}`);
-      return;
-    }
-    if (stderr) {
-      console.log(`stderr: ${stderr}`);
-      return;
-    }
-    console.log(`pm2 cron restarted: ${stdout}`);
-  });
+Cron("0 0 * * *", async () => {
+  try {
+    await resetOffset();
+  } catch (error) {
+    console.log(
+      `Something went wrong in midnight reset cron.${new Date().toUTCString()}`,
+      error.message
+    );
+  }
 });
+
+// Cron("0 */2 * * *", async () => {
+//   console.log(`Cron Job and MongoDB restarted at ${new Date().toUTCString()}`);
+//   exec("sudo systemctl restart mongod.service", (error, stdout, stderr) => {
+//     if (error) {
+//       console.log(`error: ${error.message}`);
+//       return;
+//     }
+//     if (stderr) {
+//       console.log(`stderr: ${stderr}`);
+//       return;
+//     }
+//     console.log(`mongodb restarted: ${stdout}`);
+//   });
+//   await sleep(5000);
+//   exec("pm2 restart 1", (error, stdout, stderr) => {
+//     if (error) {
+//       console.log(`error: ${error.message}`);
+//       return;
+//     }
+//     if (stderr) {
+//       console.log(`stderr: ${stderr}`);
+//       return;
+//     }
+//     console.log(`pm2 cron restarted: ${stdout}`);
+//   });
+// });

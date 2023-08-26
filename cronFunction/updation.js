@@ -47,11 +47,14 @@ const recordUpdate = async () => {
           cnt++;
         }
         console.log(`${cnt} recordUpdate Done!`);
+        await client.close();
         return true;
       } else {
+        await client.close();
         return true;
       }
     } else {
+      await client.close();
       return true;
     }
   } catch (error) {
