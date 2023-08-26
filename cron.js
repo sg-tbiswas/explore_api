@@ -3,7 +3,6 @@ const recordUpdate = require("./updation");
 const imageUpload = require("./imageUpload");
 const statusUpdate = require("./statusUpdate");
 const imageUploadAfterInsert = require("./imageUploadAfterInsert");
-const resetOffset = require("./resetOffset");
 const Cron = require("croner");
 const os = require("os");
 const { exec } = require("child_process");
