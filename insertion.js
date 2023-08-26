@@ -5,14 +5,13 @@ const keyMapping = require("./name_change.js");
 const main_field = require("./main_field.js");
 const addres_field = require("./addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
-const {ObjectId } = require("mongodb");
+const { ObjectId } = require("mongodb");
 
 const CONSTANTS = require("./constants.js");
 const { RETS_CLIENT, getTodayDate } = require("./utils.js");
 
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
-
 
 async function addRecordsToMongoDB(records, client) {
   try {
@@ -52,16 +51,8 @@ const textReplace = (str) => {
 
 const fetchRecords = async (resource, className, keyMapping, client) => {
   try {
-    const offCollection = client.db(CONSTANTS.DB_NAME).collection("dataOperationRecord");
-    const ddt = await offCollection
-      .find({ _id: new ObjectId("64e9c0aaa5312247dc2452be") })
-      .toArray();
-    const lastOffset = ddt[0]?.lastOffset;
-
-    console.log("lastOffset>>>",lastOffset);
-
     let allRecords = [];
-    let offset = lastOffset?lastOffset:1;
+    let offset = 1;
     let count;
     const now = new Date();
     console.log(now.toUTCString());
@@ -77,11 +68,10 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
       `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()})`,
       {
         Select: feildsValues.join(","),
-        offset
+        offset,
       }
     );
-    allRecords = records.Objects?allRecords.concat(records.Objects):[];
-
+    allRecords = records.Objects ? allRecords.concat(records.Objects) : [];
 
     count = parseInt(records.TotalCount);
 
@@ -90,46 +80,29 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
     const recordsWithUpdatedFields = allRecords.map((record, key) => {
       console.log(key);
       const updatedRecord = {};
+      const otherData = (updatedRecord["other_data"] = {});
+      const addressData = (updatedRecord["address"] = {});
+
       Object.keys(record).forEach((field) => {
         const fieldValues = record[field].split(",");
         const updatedFieldValues = fieldValues.map((value) => {
           const matchingLookup = lookupValues.find(
             (lookup) => lookup.MetadataEntryID === value.trim()
           );
-          if (matchingLookup) {
-            return matchingLookup.LongValue;
-          }
-          return value;
+          return matchingLookup ? matchingLookup.LongValue : value;
         });
 
-        // Check if the field name exists in keyMapping
         if (keyMapping.hasOwnProperty(field)) {
-          if (!updatedRecord.hasOwnProperty("other_data")) {
-            updatedRecord["other_data"] = {};
-          }
-          const newField = keyMapping[field] || field;
-          updatedRecord["other_data"][newField] = updatedFieldValues.join(",");
+          otherData[keyMapping[field] || field] = updatedFieldValues.join(",");
+        } else if (main_field.hasOwnProperty(field)) {
+          updatedRecord[main_field[field]] = updatedFieldValues.join(",");
+        } else if (addres_field.hasOwnProperty(field)) {
+          addressData[addres_field[field]] = updatedFieldValues.join(",");
         } else {
-          // Check if the field name exists in the main_field
-          if (main_field.hasOwnProperty(field)) {
-            // If it exists in main_field's key, use the value as the new field name
-            const newField = main_field[field];
-            updatedRecord[newField] = updatedFieldValues.join(",");
-          } else {
-            // Check if the field name exists in address_field
-            if (addres_field.hasOwnProperty(field)) {
-              // If it exists in address_field's key, add it to the array of addresses in updatedRecord
-              if (!updatedRecord.hasOwnProperty("address")) {
-                updatedRecord["address"] = {};
-              }
-              const newField = addres_field[field];
-              updatedRecord["address"][newField] = updatedFieldValues.join(",");
-            } else {
-              updatedRecord[field] = updatedFieldValues.join(",");
-            }
-          }
+          updatedRecord[field] = updatedFieldValues.join(",");
         }
       });
+
       return updatedRecord;
     });
     // console.log(recordsWithUpdatedFields, className);
@@ -267,13 +240,6 @@ const gobyHomes = async () => {
     const records = await fetchRecords(Class, Resource, keyMapping, client);
 
     console.log("All records fetched and written successfully!");
-    const offCollection = client.db(CONSTANTS.DB_NAME).collection("dataOperationRecord");
-    await offCollection.updateOne(
-      { _id: new ObjectId("64e9c0aaa5312247dc2452be") },
-      {
-        $set: { lastOffset: records.length },
-      }
-    );
 
     RETS_CLIENT.logout();
     await client.close();
@@ -287,5 +253,4 @@ const gobyHomes = async () => {
     return false;
   }
 };
-
 module.exports = gobyHomes;

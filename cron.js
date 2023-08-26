@@ -85,17 +85,6 @@ Cron("*/20 * * * *", async () => {
   }
 });
 
-Cron("0 0 * * *", async () => {
-  try {
-    await resetOffset();
-  } catch (error) {
-    console.log(
-      `Something went wrong in midnight reset cron.${new Date().toUTCString()}`,
-      error.message
-    );
-  }
-});
-
 // Cron("0 */2 * * *", async () => {
 //   console.log(`Cron Job and MongoDB restarted at ${new Date().toUTCString()}`);
 //   exec("sudo systemctl restart mongod.service", (error, stdout, stderr) => {

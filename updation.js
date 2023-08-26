@@ -40,6 +40,7 @@ const recordUpdate = async () => {
     if (temp.Objects && Array.isArray(temp.Objects)) {
       allRecords = allRecords.concat(temp.Objects);
       const recordsWithUpdatedFields = allRecords.map(mapRecord);
+ 
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
         let cnt = 1;
         for (const item of recordsWithUpdatedFields) {
@@ -69,54 +70,42 @@ const recordUpdate = async () => {
 const mapRecord = (record, key) => {
   console.log(key);
   const updatedRecord = {};
+  const otherData = {};
+  const addressData = {};
+  const imageData = {};
+  
   Object.keys(record).forEach((field) => {
     const fieldValues = record[field].split(",");
     const updatedFieldValues = fieldValues.map((value) => {
       const matchingLookup = lookupValues.find(
         (lookup) => lookup.MetadataEntryID === value.trim()
       );
-      if (matchingLookup) {
-        return matchingLookup.LongValue;
-      }
-
-      return value;
+      return matchingLookup ? matchingLookup.LongValue : value;
     });
+  
     if (keyMapping.hasOwnProperty(field)) {
-      if (!updatedRecord.hasOwnProperty("other_data")) {
-        updatedRecord["other_data"] = {};
-      }
-      const newField = keyMapping[field] || field;
-      updatedRecord["other_data"][newField] = updatedFieldValues.join(",");
+      otherData[keyMapping[field] || field] = updatedFieldValues.join(",");
+    } else if (main_field.hasOwnProperty(field)) {
+      updatedRecord[main_field[field]] = updatedFieldValues.join(",");
+    } else if (addres_field.hasOwnProperty(field)) {
+      addressData[addres_field[field]] = updatedFieldValues.join(",");
+    } else if (image_list.hasOwnProperty(field)) {
+      imageData[image_list[field]] = updatedFieldValues.join(",");
     } else {
-      // Check if the field name exists in the main_field
-      if (main_field.hasOwnProperty(field)) {
-        // If it exists in main_field's key, use the value as the new field name
-        const newField = main_field[field];
-        updatedRecord[newField] = updatedFieldValues.join(",");
-      } else {
-        // Check if the field name exists in address_field
-        if (addres_field.hasOwnProperty(field)) {
-          // If it exists in address_field's key, add it to the array of addresses in updatedRecord
-          if (!updatedRecord.hasOwnProperty("address")) {
-            updatedRecord["address"] = {};
-          }
-          const newField = addres_field[field];
-          updatedRecord["address"][newField] = updatedFieldValues.join(",");
-        } else {
-          if (image_list.hasOwnProperty(field)) {
-            if (!updatedRecord.hasOwnProperty("image")) {
-              updatedRecord["image"] = {};
-            }
-            const newField = image_list[field];
-            updatedRecord["image"][newField] = updatedFieldValues.join(",");
-          } else {
-            // None of the above, use the field name as is
-            updatedRecord[field] = updatedFieldValues.join(",");
-          }
-        }
-      }
+      updatedRecord[field] = updatedFieldValues.join(",");
     }
   });
+  
+  if (Object.keys(otherData).length > 0) {
+    updatedRecord["other_data"] = otherData;
+  }
+  if (Object.keys(addressData).length > 0) {
+    updatedRecord["address"] = addressData;
+  }
+  if (Object.keys(imageData).length > 0) {
+    updatedRecord["image"] = imageData;
+  }
+  
   return updatedRecord;
 };
 
@@ -226,3 +215,4 @@ const crossCheckRecords = async (result, client) => {
 };
 
 module.exports = recordUpdate;
+
