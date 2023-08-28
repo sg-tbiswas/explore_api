@@ -92,10 +92,11 @@ const fetchRecords = async (resource, className, keyMapping) => {
     const records = await RETS_CLIENT.search(
       resource,
       className,
-      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-26+)`,
+      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-28+)`,
       {
         offset,
         Select: feildsValues.join(","),
+        limit:5
       }
     );
     
@@ -282,7 +283,7 @@ async function gobyHomes() {
     const records = await fetchRecords(Class, Resource, keyMapping);
     await imageUploadAfterInsert(records);
     console.log("All records fetched and written successfully!");
-    RETS_CLIENT.logout();
+    await RETS_CLIENT.logout();
     await db.disconnect(); // Disconnect from the database after processing
   } catch (err) {
     console.error("Error occurred in gobyHomes function:", err.message);
