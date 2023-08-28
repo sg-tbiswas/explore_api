@@ -7,10 +7,10 @@ const addres_field = require("../addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT, getTodayDate } = require("../utils.js");
-const imageUploadAfterInsert = require("../cronFunction/imageUploadAfterInsert.js");
+const imageUploadAfterInsert = require("../imageUploadAfterInsert.js");
 const { exec } = require("child_process");
 
-const temp = fs.readFileSync("metaDataLookup.json");
+const temp = fs.readFileSync("../metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
 
@@ -86,12 +86,13 @@ const fetchRecords = async (resource, className, keyMapping) => {
     const fortyFiveMinutesAgo = new Date(now.getTime() - 45 * 60000);
 
     // Format the datetime string without the timezone indicator
+    //`(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-26+)`
     const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
     console.log("Fetching records....");
     const records = await RETS_CLIENT.search(
       resource,
       className,
-      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-25+)`,
+      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-26+)`,
       {
         offset,
         Select: feildsValues.join(","),
@@ -100,7 +101,6 @@ const fetchRecords = async (resource, className, keyMapping) => {
     
     count = parseInt(records.TotalCount);
     console.log("allRecords", count);
-
     allRecords = records.Objects?allRecords.concat(records.Objects):[];
 
     
