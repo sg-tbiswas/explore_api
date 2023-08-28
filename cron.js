@@ -31,7 +31,7 @@ Cron("*/30 * * * *", async () => {
       corn1Running = false;
     }
   } catch (error) {
-    console.log(
+    console.error(
       `Something went wrong in 30 min Insert cron.${new Date().toUTCString()}`,
       error.message
     );
@@ -56,7 +56,7 @@ Cron("*/45 * * * *", async () => {
       corn2Running = false;
     }
   } catch (error) {
-    console.log(
+    console.error(
       `Something went wrong in 55 min Update cron.${new Date().toUTCString()}`,
       error.message
     );
@@ -76,7 +76,7 @@ Cron("*/20 * * * *", async () => {
     await statusUpdate();
     corn3Running = false;
   } catch (error) {
-    console.log(
+    console.error(
       `Something went wrong in 20 min status Update cron.${new Date().toUTCString()}`,
       error.message
     );

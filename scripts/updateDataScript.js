@@ -22,10 +22,10 @@ const recordUpdate = async () => {
     await client.connect();
     const now = new Date();
 
-    const fromDateTime = new Date(new Date("2023-08-25"));
+    const fromDateTime = new Date(new Date("2023-08-26"));
     const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
 
-    const toDateTime = new Date(new Date("2023-08-26"));
+    const toDateTime = new Date(new Date("2023-08-27"));
     const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
 
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);

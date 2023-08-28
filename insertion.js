@@ -75,8 +75,6 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
 
     count = parseInt(records.TotalCount);
 
-    console.log("allRecords", allRecords.length);
-
     const recordsWithUpdatedFields = allRecords.map((record, key) => {
       console.log(key);
       const updatedRecord = {};
@@ -205,6 +203,7 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
           updatedRecords.push(data);
         }
       }
+ 
     }
     if (updatedRecords.length > 0) {
       await addRecordsToMongoDB(updatedRecords, client);
@@ -231,7 +230,7 @@ const gobyHomes = async () => {
     if (loginResponse) {
       console.log("Successfully logged in to server");
     } else {
-      console.log("There was an error connecting to the server");
+      console.error("There was an error connecting to the server");
       return;
     }
 
@@ -241,7 +240,7 @@ const gobyHomes = async () => {
 
     console.log("All records fetched and written successfully!");
 
-    RETS_CLIENT.logout();
+    await RETS_CLIENT.logout();
     await client.close();
     return records;
   } catch (err) {
