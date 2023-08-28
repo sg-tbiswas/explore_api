@@ -70,6 +70,7 @@ const imageUploadAfterInsert = async (listingChunks) => {
           }
         }
       }
+      await RETS_CLIENT.logout();
       await client.close();
       console.log(
         `All images fetched and added successfully! imageUploadAfterInsert()`

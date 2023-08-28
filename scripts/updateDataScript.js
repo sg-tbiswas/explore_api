@@ -22,10 +22,10 @@ const recordUpdate = async () => {
     await client.connect();
     const now = new Date();
 
-    const fromDateTime = new Date(new Date("2023-08-26"));
+    const fromDateTime = new Date(new Date("2023-08-27"));
     const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
 
-    const toDateTime = new Date(new Date("2023-08-27"));
+    const toDateTime = new Date(new Date("2023-08-28"));
     const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
 
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
@@ -55,6 +55,7 @@ const recordUpdate = async () => {
         console.log(`${cnt} recordUpdate Done!`);
       }
     }
+    await RETS_CLIENT.logout();
     await client.close();
   } catch (error) {
     console.error(

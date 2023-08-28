@@ -48,6 +48,7 @@ const statusUpdate = async () => {
         console.log(`${cnt} statusUpdate Done!`);
       }
     }
+    await RETS_CLIENT.logout();
     await client.close();
     return true;
   } catch (error) {
