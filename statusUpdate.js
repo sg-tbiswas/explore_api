@@ -18,8 +18,10 @@ const statusUpdate = async () => {
     await client.connect();
     const now = new Date();
 
-    const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
-    const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
+    // Subtract 3 hours from the current datetime
+
+    const sixtyMinutesAgo = new Date(now.getTime() - 60 * 60000);
+    const formattedTime = sixtyMinutesAgo.toISOString().slice(0, -1);
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
     console.log(formattedTime, currentDate);
 
@@ -61,7 +63,7 @@ const statusUpdate = async () => {
   }
 };
 const mapRecord = (record, key) => {
-  console.log(key);
+  console.log(`ST -> ${key}`);
   const updatedRecord = {};
   Object.keys(record).forEach((field) => {
     const fieldValues = record[field].split(",");

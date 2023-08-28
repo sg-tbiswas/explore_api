@@ -23,7 +23,10 @@ const recordUpdate = async () => {
     const now = new Date();
 
     const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
-    const formattedTime = fortyFiveMinutesAgo.toISOString().slice(0, -1);
+
+    const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+    
+    const formattedTime = threeHoursAgo.toISOString().slice(0, -1);
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
     console.log(formattedTime, currentDate);
     const temp = await RETS_CLIENT.search(
@@ -68,7 +71,7 @@ const recordUpdate = async () => {
   }
 };
 const mapRecord = (record, key) => {
-  console.log(key);
+  console.log(`UPT -> ${key}`);
   const updatedRecord = {};
   const otherData = {};
   const addressData = {};

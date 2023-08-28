@@ -76,7 +76,7 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
     count = parseInt(records.TotalCount);
 
     const recordsWithUpdatedFields = allRecords.map((record, key) => {
-      console.log(key);
+      console.log(`In -> ${key}`);
       const updatedRecord = {};
       const otherData = (updatedRecord["other_data"] = {});
       const addressData = (updatedRecord["address"] = {});

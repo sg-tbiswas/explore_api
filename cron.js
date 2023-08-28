@@ -39,16 +39,16 @@ Cron("*/30 * * * *", async () => {
   }
 });
 
-Cron("*/45 * * * *", async () => {
+Cron("*45 * * * *", async () => {
   let fromRecordUpdate = false;
   if (corn2Running) {
-    console.warn("Already running 45 minute cron.", new Date().toUTCString());
+    console.warn("Already running 45 minute of hour cron.", new Date().toUTCString());
     return;
   }
   corn2Running = true;
 
   try {
-    console.log("running a task every 45 minute.", new Date().toUTCString());
+    console.log("running a task every 45 minute of hour.", new Date().toUTCString());
     fromRecordUpdate = await recordUpdate();
     if (fromRecordUpdate) {
       await sleep(10000);
@@ -57,7 +57,7 @@ Cron("*/45 * * * *", async () => {
     }
   } catch (error) {
     console.error(
-      `Something went wrong in 55 min Update cron.${new Date().toUTCString()}`,
+      `Something went wrong in 45 min of hour Update cron.${new Date().toUTCString()}`,
       error.message
     );
     corn2Running = false;
