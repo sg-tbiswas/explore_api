@@ -39,7 +39,7 @@ Cron("*/30 * * * *", async () => {
   }
 });
 
-Cron("*45 * * * *", async () => {
+Cron("45 * * * *", async () => {
   let fromRecordUpdate = false;
   if (corn2Running) {
     console.warn("Already running 45 minute of hour cron.", new Date().toUTCString());
