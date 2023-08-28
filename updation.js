@@ -39,7 +39,8 @@ const recordUpdate = async () => {
       }
     );
     let allRecords = [];
-
+    count = parseInt(temp.TotalCount);
+    console.log("UPT total",count);
     if (temp.Objects && Array.isArray(temp.Objects)) {
       allRecords = allRecords.concat(temp.Objects);
       const recordsWithUpdatedFields = allRecords.map(mapRecord);

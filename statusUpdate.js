@@ -32,7 +32,8 @@ const statusUpdate = async () => {
       { Select: feildsValues.join(",") }
     );
     let allRecords = [];
-
+    count = parseInt(temp.TotalCount);
+    console.log("ST total",count);
     if (temp.Objects && Array.isArray(temp.Objects)) {
       allRecords = allRecords.concat(temp.Objects);
       console.log(

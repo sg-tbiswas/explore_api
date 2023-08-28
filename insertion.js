@@ -74,7 +74,7 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
     allRecords = records.Objects ? allRecords.concat(records.Objects) : [];
 
     count = parseInt(records.TotalCount);
-
+    console.log("IN total",count);
     const recordsWithUpdatedFields = allRecords.map((record, key) => {
       console.log(`In -> ${key}`);
       const updatedRecord = {};
