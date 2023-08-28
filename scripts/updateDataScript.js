@@ -9,7 +9,7 @@ const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT } = require("../utils.js");
 
-const temp = fs.readFileSync("metaDataLookup.json");
+const temp = fs.readFileSync("../metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
 const textReplace = (str) => {
