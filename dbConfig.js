@@ -2,21 +2,32 @@ const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("./constants");
 
 // Create a MongoDB client
-const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+let client;
 
 async function connect() {
   try {
     // Connect to the MongoDB server
+    client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
     await client.connect();
-    console.log('Connected to the database');
-    
-    // Return the database reference
-    return client.db(CONSTANTS.DB_NAME);
   } catch (error) {
-    console.error('Error connecting to the database:', error);
+    console.error("Error connecting to the database:", error);
     throw error;
   }
 }
 
-const db = connect(); // Connect when the module is imported
-module.exports = db;
+async function getDB() {
+  try {
+    if (client) {
+      // Return the database reference
+      return client.db(CONSTANTS.DB_NAME);
+    }
+  } catch (error) {
+    console.error("Error connecting to the database:", error);
+    throw error;
+  }
+}
+
+module.exports = {
+  connect,
+  getDB,
+};

@@ -3,6 +3,8 @@ const app = express();
 const PORT = 3000;
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const dbModule = require("./dbConfig");
+
 const getExploreData = require("./api/getExploreData");
 const getSingleExploreData = require("./api/getSingleExploreData");
 const getCitiesAndState = require("./api/getCitiesAndState");
@@ -17,7 +19,7 @@ const whitelist = [
   "http://localhost:5000",
   "http://localhost:5001",
   "https://gobyhomes.com",
-  "https://goby-homes-qa-v2.web.app"
+  "https://goby-homes-qa-v2.web.app",
 ];
 
 const corsOptions = {
@@ -34,8 +36,15 @@ app.get("/getCities", getCitiesAndState);
 app.get("/getPropertiesByAgentId", getPropertiesByAgentId);
 app.get("/getPropertiesByOfficeId", getPropertiesByOfficeId);
 
-
 app.listen(PORT, function (err) {
   if (err) console.log("Error in server setup");
   console.log("Server listening on Port", PORT);
+  dbModule
+    .connect()
+    .then(() => {
+      console.log("Connected to MongoDB");
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 });

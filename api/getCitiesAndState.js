@@ -1,12 +1,9 @@
 const _ = require("lodash");
-const MongoClient = require("mongodb").MongoClient;
-const CONSTANTS = require("../constants");
-
+const { getDB } = require("../dbConfig");
 
 const getCitiesAndState = async (req, res) => {
   try {
-    const client = await MongoClient.connect(CONSTANTS.DB_CONNECTION_URI);
-    const db = client.db(CONSTANTS.DB_NAME);
+    const db = await getDB();
     const collection = db.collection("propertyData");
     const data = await collection
       .aggregate([
@@ -29,7 +26,6 @@ const getCitiesAndState = async (req, res) => {
         { $unset: "_id" },
       ])
       .toArray();
-    await client.close();
     res.status(200).json({ properities: data[0] });
   } catch (error) {
     console.log(
