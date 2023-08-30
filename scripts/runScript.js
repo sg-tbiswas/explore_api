@@ -94,7 +94,6 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
       `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-29+)`,
       {
         offset,
-        limit:5,
         Select: feildsValues.join(","),
       }
     );
@@ -283,6 +282,7 @@ async function gobyHomes() {
     const Class = "Property";
     const Resource = "ALL";
     const records = await fetchRecords(Class, Resource, keyMapping,client);
+    await client.close();
     await imageUploadAfterInsert(records);
     console.log("All records fetched and written successfully!");
     await RETS_CLIENT.logout();
