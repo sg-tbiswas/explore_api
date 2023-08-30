@@ -1,5 +1,4 @@
 const _ = require("lodash");
-const {connectToDatabase, disconnectFromDatabase} = require('../utils');
 
 const getPropertiesByOfficeId = async (req, res) => {
   const params = req.query;
@@ -11,7 +10,8 @@ const getPropertiesByOfficeId = async (req, res) => {
 
   console.log("here", params);
     try {
-      const db = await connectToDatabase();
+      const client = await MongoClient.connect(CONSTANTS.DB_CONNECTION_URI);
+      const db = client.db(CONSTANTS.DB_NAME);
       const collection = db.collection("propertyData");
       const data = await collection
       .aggregate([
@@ -30,7 +30,7 @@ const getPropertiesByOfficeId = async (req, res) => {
         { $limit: 10 },
       ])
       .toArray();
-      await disconnectFromDatabase();
+      await client.close();
       if (data && data.length > 0) {
         res.status(200).send({responseData:data});
       } else {

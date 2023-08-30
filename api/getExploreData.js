@@ -1,6 +1,5 @@
 const _ = require("lodash");
 const CONSTANTS = require("../constants");
-const { connectToDatabase, disconnectFromDatabase } = require("../utils");
 
 const queryObjectFilter = (objData, fieldName) => {
   if (Object.keys(objData).length === 0) return "";
@@ -250,7 +249,8 @@ const getExploreData = async (req, res) => {
 
   console.log("here", JSON.stringify(customQuery), cityFilter, params);
   try {
-    const db = await connectToDatabase();
+    const client = await MongoClient.connect(CONSTANTS.DB_CONNECTION_URI);
+    const db = client.db(CONSTANTS.DB_NAME);
     const collection = db.collection("propertyData");
     const totalDataCount = await collection.countDocuments({
       $and: [cityFilter, ...customQuery, homeTypeQueryWrap],
@@ -277,7 +277,7 @@ const getExploreData = async (req, res) => {
         { $limit: DATA_COUNT },
       ])
       .toArray();
-    await disconnectFromDatabase();
+    await client.close();
     res.status(200).json({ properities: data, totalDataCount });
   } catch (error) {
     console.log(

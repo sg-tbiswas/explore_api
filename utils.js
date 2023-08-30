@@ -10,8 +10,6 @@ const retsClient = RETS.initialize({
   logLevel: "info",
 });
 
-const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-
 const getTodayDate = () => {
   const today = new Date();
   const year = today.getFullYear();
@@ -20,30 +18,7 @@ const getTodayDate = () => {
   return `${year}-${month}-${day}`;
 };
 
-async function connectToDatabase() {
-  try {
-    await client.connect();
-    db = client.db(CONSTANTS.DB_NAME); 
-    return db;
-  } catch (error) {
-    throw new Error('Database connection failed');
-  }
-}
-
-async function disconnectFromDatabase() {
-  try {
-    if (client.isConnected()) {
-      await client.close();
-      db = null;
-    }
-  } catch (error) {
-    throw new Error('Error disconnecting from the database');
-  }
-}
-
 module.exports = Object.freeze({
   RETS_CLIENT: retsClient,
-  getTodayDate,
-  connectToDatabase,
-  disconnectFromDatabase
+  getTodayDate
 });
