@@ -1,5 +1,5 @@
 const _ = require("lodash");
-
+const MongoClient = require("mongodb").MongoClient;
 
 const getCitiesAndState = async (req, res) => {
   try {

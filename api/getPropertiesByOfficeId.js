@@ -1,4 +1,5 @@
 const _ = require("lodash");
+const MongoClient = require("mongodb").MongoClient;
 
 const getPropertiesByOfficeId = async (req, res) => {
   const params = req.query;
