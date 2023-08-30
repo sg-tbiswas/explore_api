@@ -3,7 +3,7 @@ const app = express();
 const PORT = 3000;
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const dbModule = require("./dbConfig");
+const dbConfig = require("./dbConfig");
 
 const getExploreData = require("./api/getExploreData");
 const getSingleExploreData = require("./api/getSingleExploreData");
@@ -39,7 +39,7 @@ app.get("/getPropertiesByOfficeId", getPropertiesByOfficeId);
 app.listen(PORT, function (err) {
   if (err) console.log("Error in server setup");
   console.log("Server listening on Port", PORT);
-  dbModule
+  dbConfig
     .connect()
     .then(() => {
       console.log("Connected to MongoDB");
