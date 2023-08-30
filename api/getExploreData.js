@@ -1,6 +1,6 @@
 const _ = require("lodash");
 const CONSTANTS = require("../constants");
-const { connectToDatabase } = require("../utils");
+const { connectToDatabase, disconnectFromDatabase } = require("../utils");
 
 const queryObjectFilter = (objData, fieldName) => {
   if (Object.keys(objData).length === 0) return "";
@@ -277,6 +277,7 @@ const getExploreData = async (req, res) => {
         { $limit: DATA_COUNT },
       ])
       .toArray();
+    await disconnectFromDatabase();
     res.status(200).json({ properities: data, totalDataCount });
   } catch (error) {
     console.log(

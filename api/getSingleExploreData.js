@@ -29,14 +29,14 @@ const getSingleExploreData = async (req, res) => {
         },
       },
     ]).toArray();
-
+    client.close();
     if (data && data.length > 0) {
       res.status(200).send({ ...data[0] });
     } else {
       res.status(404).json({ message: "Invalid Listing Id" });
     }
 
-    client.close();
+    
   } catch (err) {
     console.log(
       `error occurred at ${new Date().toUTCString()} ${err.message}`

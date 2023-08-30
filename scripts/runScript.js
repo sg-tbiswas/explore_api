@@ -36,11 +36,8 @@ class Database {
 }
 
 const db = new Database();
-
-
-async function addRecordsToMongoDB(records) {
+async function addRecordsToMongoDB(records,client) {
   try {
-    const client = await db.connect();
     const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
     const result = await collection.insertMany(records);
     console.log(`${result.insertedCount} documents inserted`);
@@ -72,9 +69,8 @@ const textReplace = (str) => {
   return str.split(" ").join("_");
 };
 
-const fetchRecords = async (resource, className, keyMapping) => {
+const fetchRecords = async (resource, className, keyMapping, client) => {
   try {
-    const client = await db.connect();
 
     let allRecords = [];
     let offset = 1;
@@ -95,9 +91,10 @@ const fetchRecords = async (resource, className, keyMapping) => {
     const records = await RETS_CLIENT.search(
       resource,
       className,
-      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${formattedTime}+)`,
+      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-29+)`,
       {
         offset,
+        limit:5,
         Select: feildsValues.join(","),
       }
     );
@@ -258,8 +255,10 @@ const fetchRecords = async (resource, className, keyMapping) => {
     if (updatedRecords.length > 0) {
       await addRecordsToMongoDB(updatedRecords, client);
       const listingIds = allListings.map((obj) => obj.listing_id);
+      await db.disconnect(); // Disconnect from the database after processing
       return listingIds;
     } else {
+      await db.disconnect(); // Disconnect from the database after processing
       return [];
     }
   } catch (err) {
@@ -275,6 +274,7 @@ const fetchRecords = async (resource, className, keyMapping) => {
 async function gobyHomes() {
   try {
     const loginResponse = await RETS_CLIENT.login();
+    const client = await db.connect();
     if (!loginResponse) {
       console.log("There was an error connecting to the server");
       return;
@@ -282,11 +282,11 @@ async function gobyHomes() {
 
     const Class = "Property";
     const Resource = "ALL";
-    const records = await fetchRecords(Class, Resource, keyMapping);
+    const records = await fetchRecords(Class, Resource, keyMapping,client);
     await imageUploadAfterInsert(records);
     console.log("All records fetched and written successfully!");
     await RETS_CLIENT.logout();
-    await db.disconnect(); // Disconnect from the database after processing
+    
   } catch (err) {
     console.error("Error occurred in gobyHomes function:", err.message);
     await db.disconnect(); // Ensure disconnect even in case of error

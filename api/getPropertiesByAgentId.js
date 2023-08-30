@@ -1,5 +1,5 @@
 const _ = require("lodash");
-const { connectToDatabase } = require("../utils");
+const { connectToDatabase, disconnectFromDatabase } = require("../utils");
 
 const getPropertiesByAgentId = async (req, res) => {
   const params = req.query;
@@ -29,7 +29,7 @@ const getPropertiesByAgentId = async (req, res) => {
         { $limit: 10 },
       ])
       .toArray();
-
+    await disconnectFromDatabase();
     if (data && data.length > 0) {
       res.status(200).send({ responseData: data });
     } else {

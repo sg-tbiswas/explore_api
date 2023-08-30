@@ -1,5 +1,5 @@
 const _ = require("lodash");
-const { connectToDatabase } = require("../utils");
+const { connectToDatabase, disconnectFromDatabase } = require("../utils");
 
 const getCitiesAndState = async (req, res) => {
   try {
@@ -26,7 +26,7 @@ const getCitiesAndState = async (req, res) => {
         { $unset: "_id" },
       ])
       .toArray();
-
+    await disconnectFromDatabase();
     res.status(200).json({ properities: data[0] });
   } catch (error) {
     console.log(
