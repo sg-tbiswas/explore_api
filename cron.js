@@ -14,7 +14,7 @@ let corn1Running = false;
 let corn2Running = false;
 let corn3Running = false;
 
-Cron("*/30 * * * *", async () => {
+Cron("*/2 * * * *", async () => {
   let fromInsertData = false;
 
   if (corn1Running) {
@@ -88,7 +88,7 @@ Cron("45 * * * *", async () => {
   }
 });
 
-Cron("*/20 * * * *", async () => {
+Cron("*/5 * * * *", async () => {
   if (corn3Running) {
     console.warn("Already running 20 minute cron.", new Date().toUTCString());
     return;
