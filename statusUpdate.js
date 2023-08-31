@@ -12,10 +12,8 @@ const { RETS_CLIENT } = require("./utils.js");
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
-const statusUpdate = async () => {
+const statusUpdate = async (client) => {
   try {
-    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-    await client.connect();
     const now = new Date();
 
     // Subtract 3 hours from the current datetime
@@ -52,7 +50,6 @@ const statusUpdate = async () => {
       }
     }
     await RETS_CLIENT.logout();
-    await client.close();
     return true;
   } catch (error) {
     console.error(

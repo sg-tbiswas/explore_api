@@ -16,10 +16,8 @@ const textReplace = (str) => {
   return str.split(" ").join("_");
 };
 
-const recordUpdate = async () => {
+const recordUpdate = async (client) => {
   try {
-    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-    await client.connect();
     const now = new Date();
 
     const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
@@ -52,14 +50,11 @@ const recordUpdate = async () => {
           cnt++;
         }
         console.log(`${cnt} recordUpdate Done!`);
-        await client.close();
         return true;
       } else {
-        await client.close();
         return true;
       }
     } else {
-      await client.close();
       return true;
     }
   } catch (error) {

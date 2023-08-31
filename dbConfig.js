@@ -7,7 +7,10 @@ let client;
 async function connect() {
   try {
     // Connect to the MongoDB server
-    client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
+    client = new MongoClient(CONSTANTS.DB_CONNECTION_URI, {
+      maxPoolSize: 2,
+      maxConnecting: 2,
+    });
     await client.connect();
   } catch (error) {
     console.error("Error connecting to the database:", error);

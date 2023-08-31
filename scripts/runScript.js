@@ -9,34 +9,14 @@ const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT, getTodayDate } = require("../utils.js");
 const imageUploadAfterInsert = require("../imageUploadAfterInsert.js");
 const { exec } = require("child_process");
+const dbConn = require('../dbConnection.js');
 
 const temp = fs.readFileSync("../metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
 
-class Database {
-  constructor() {
-    this.client = null;
-  }
 
-  async connect() {
-    if (!this.client) {
-      this.client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-      await this.client.connect();
-    }
-    return this.client;
-  }
-
-  async disconnect() {
-    if (this.client) {
-      await this.client.close();
-      this.client = null;
-    }
-  }
-}
-
-const db = new Database();
-async function addRecordsToMongoDB(records,client) {
+async function addRecordsToMongoDB(records, client) {
   try {
     const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
     const result = await collection.insertMany(records);
@@ -71,7 +51,6 @@ const textReplace = (str) => {
 
 const fetchRecords = async (resource, className, keyMapping, client) => {
   try {
-
     let allRecords = [];
     let offset = 1;
     let count;
@@ -91,18 +70,18 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
     const records = await RETS_CLIENT.search(
       resource,
       className,
-      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-30+)`,
+      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-31+)`,
       {
         offset,
+        limit: 5,
         Select: feildsValues.join(","),
       }
     );
-    
+
     count = parseInt(records.TotalCount);
     console.log("allRecords", count);
-    allRecords = records.Objects?allRecords.concat(records.Objects):[];
+    allRecords = records.Objects ? allRecords.concat(records.Objects) : [];
 
-    
     const recordsWithUpdatedFields = allRecords.map((record, key) => {
       console.log(`In -> ${key}`);
       const updatedRecord = {};
@@ -254,10 +233,8 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
     if (updatedRecords.length > 0) {
       await addRecordsToMongoDB(updatedRecords, client);
       const listingIds = allListings.map((obj) => obj.listing_id);
-      await db.disconnect(); // Disconnect from the database after processing
       return listingIds;
     } else {
-      await db.disconnect(); // Disconnect from the database after processing
       return [];
     }
   } catch (err) {
@@ -273,6 +250,7 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
 async function gobyHomes() {
   try {
     const loginResponse = await RETS_CLIENT.login();
+    const db = new dbConn();
     const client = await db.connect();
     if (!loginResponse) {
       console.log("There was an error connecting to the server");
@@ -281,15 +259,16 @@ async function gobyHomes() {
 
     const Class = "Property";
     const Resource = "ALL";
-    const records = await fetchRecords(Class, Resource, keyMapping,client);
-    await client.close();
-    await imageUploadAfterInsert(records);
+    const records = await fetchRecords(Class, Resource, keyMapping, client);
+    await imageUploadAfterInsert(records, client);
     console.log("All records fetched and written successfully!");
+    await client.close();
     await RETS_CLIENT.logout();
-    
   } catch (err) {
     console.error("Error occurred in gobyHomes function:", err.message);
-    await db.disconnect(); // Ensure disconnect even in case of error
+  } finally {
+    const db = new dbConn();
+    await db.disconnect();
   }
 }
 

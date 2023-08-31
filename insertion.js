@@ -222,10 +222,8 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
   }
 };
 
-const gobyHomes = async () => {
+const gobyHomes = async (client) => {
   try {
-    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-    await client.connect();
     const loginResponse = await RETS_CLIENT.login();
     if (loginResponse) {
       console.log("Successfully logged in to server");
@@ -239,9 +237,7 @@ const gobyHomes = async () => {
     const records = await fetchRecords(Class, Resource, keyMapping, client);
 
     console.log("All records fetched and written successfully!");
-
     await RETS_CLIENT.logout();
-    await client.close();
     return records;
   } catch (err) {
     console.error(

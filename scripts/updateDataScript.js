@@ -8,6 +8,7 @@ const addres_field = require("../addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT } = require("../utils.js");
+const dbConn = require('../dbConnection.js');
 
 const temp = fs.readFileSync("../metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
@@ -18,8 +19,8 @@ const textReplace = (str) => {
 
 const recordUpdate = async () => {
   try {
-    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-    await client.connect();
+    const db = new dbConn();
+    const client = await db.connect();
     const now = new Date();
 
     const fromDateTime = new Date(new Date("2023-08-29"));
@@ -63,6 +64,9 @@ const recordUpdate = async () => {
         error.message
       }`
     );
+  }finally{
+    const db = new dbConn();
+    await db.disconnect();
   }
 };
 const mapRecord = (record, key) => {

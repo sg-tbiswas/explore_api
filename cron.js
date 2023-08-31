@@ -4,6 +4,7 @@ const imageUpload = require("./imageUpload");
 const statusUpdate = require("./statusUpdate");
 const imageUploadAfterInsert = require("./imageUploadAfterInsert");
 const Cron = require("croner");
+const dbConnection = require('./dbConnection');
 const os = require("os");
 const { exec } = require("child_process");
 
@@ -24,18 +25,25 @@ Cron("*/30 * * * *", async () => {
   corn1Running = true;
   try {
     console.log("running a task every 30 minute.", new Date().toUTCString());
-    fromInsertData = await gobyHomes();
+    const db = new dbConnection();
+    const client = await db.connect();
+
+    fromInsertData = await gobyHomes(client);
     if (fromInsertData && fromInsertData.length > 0) {
       await sleep(10000);
-      await imageUploadAfterInsert(fromInsertData);
+      await imageUploadAfterInsert(fromInsertData, client);
       corn1Running = false;
     }
+    await client.close();
   } catch (error) {
     console.error(
       `Something went wrong in 30 min Insert cron.${new Date().toUTCString()}`,
       error.message
     );
     corn1Running = false;
+  }finally{
+    const db = new dbConnection();
+    await db.disconnect();
   }
 });
 
@@ -48,11 +56,14 @@ Cron("45 * * * *", async () => {
   corn2Running = true;
 
   try {
+    const db = new dbConnection();
+    const client = await db.connect();
+
     console.log("running a task every 45 minute of hour.", new Date().toUTCString());
-    fromRecordUpdate = await recordUpdate();
+    fromRecordUpdate = await recordUpdate(client);
     if (fromRecordUpdate) {
       await sleep(10000);
-      await imageUpload();
+      await imageUpload(client);
       corn2Running = false;
     }
   } catch (error) {
@@ -61,6 +72,9 @@ Cron("45 * * * *", async () => {
       error.message
     );
     corn2Running = false;
+  }finally{
+    const db = new dbConnection();
+    await db.disconnect();
   }
 });
 
@@ -72,8 +86,10 @@ Cron("*/20 * * * *", async () => {
   corn3Running = true;
 
   try {
+    const db = new dbConnection();
+    const client = await db.connect();
     console.log("running a task every 20 min.", new Date().toUTCString());
-    await statusUpdate();
+    await statusUpdate(client);
     corn3Running = false;
   } catch (error) {
     console.error(
@@ -81,6 +97,9 @@ Cron("*/20 * * * *", async () => {
       error.message
     );
     corn3Running = false;
+  }finally{
+    const db = new dbConnection();
+    await db.disconnect();
   }
 });
 

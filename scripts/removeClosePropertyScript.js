@@ -8,15 +8,18 @@ const addres_field = require("../addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT } = require("../utils.js");
+const dbConn = require("../dbConnection.js");
 
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
 
 const removeData = async () => {
   let propertyDataCollectionData;
+  const db = new dbConn();
+  const client = await db.connect();
+  await client.connect();
+
   try {
-    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-    await client.connect();
     const propertyDataCollection = client
       .db(CONSTANTS.DB_NAME)
       .collection("propertyData");
@@ -40,7 +43,6 @@ const removeData = async () => {
     for (const listing of propertyDataCollectionData) {
       try {
         dcnt++;
-        const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
         const propertyDataCollection = client
           .db(CONSTANTS.DB_NAME)
           .collection("propertyData");
@@ -54,8 +56,6 @@ const removeData = async () => {
           ListingId: listing.listing_id,
         });
         console.log("deleteCount>>", dcnt);
-
-
       } catch (error) {
         console.log(
           `Error occurred in compare with RETS client: ${error.message}, ListingID:${listing.listing_id}`
@@ -65,6 +65,8 @@ const removeData = async () => {
     }
     console.log("deleteCount>>", dcnt);
   }
+
+  await db.disconnect();
 };
 
 const compareWithRets = async (listing_id) => {

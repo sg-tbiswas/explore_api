@@ -4,6 +4,7 @@ const CONSTANTS = require("../constants");
 const { RETS_CLIENT, getTodayDate } = require("../utils");
 var os = require("os");
 const _ = require("lodash");
+const dbConn = require('../dbConnection.js');
 
 async function checkExistingMediaURL(data, client) {
   try {
@@ -27,8 +28,9 @@ async function checkExistingMediaURL(data, client) {
 
 const imageUpload = async () => {
   try {
-    const nodeClient = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-    await nodeClient.connect();
+    const db = new dbConn();
+    const client = await db.connect();
+    await client.connect();
     const listingChunks = await getListingIds();
     console.log("listingChunks>>", listingChunks?.length);
 
@@ -82,7 +84,6 @@ const imageUpload = async () => {
           continue;
         }
       }
-      await client.close();
       console.log(
         `All images fetched and added successfully! imageUpload()=> ${gcn}`
       );
@@ -93,6 +94,9 @@ const imageUpload = async () => {
         error.message
       }`
     );
+  }finally{
+    const db = new dbConn();
+    await db.disconnect();
   }
 };
 

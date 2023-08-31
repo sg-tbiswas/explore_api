@@ -9,9 +9,12 @@ const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT, getTodayDate } = require("../utils.js");
 const imageUploadAfterInsert = require("./imageUploadAfterInsert.js");
 const { exec } = require("child_process");
+const dbConn = require('../dbConnection.js');
+
 
 const temp = fs.readFileSync("metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
+
 
 async function checkExistingRecord(data, client) {
   try {
@@ -36,11 +39,8 @@ const textReplace = (str) => {
   return str.split(" ").join("_");
 };
 
-const fetchRecord = async (resource, className, keyMapping) => {
+const fetchRecord = async (resource, className, keyMapping, client) => {
   try {
-    const client = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-    await client.connect();
-
     let allRecords = [];
     const now = new Date();
     console.log(now.toUTCString());
@@ -137,8 +137,9 @@ async function checkExistingMediaURL(data, client) {
 
 const fetchImagesWithListingId = async (id) => {
   try {
-    const nodeClient = new MongoClient(CONSTANTS.DB_CONNECTION_URI);
-    await nodeClient.connect();
+    const db = new dbConn();
+    const client = await db.connect();
+    await client.connect();
     const query = await RETS_CLIENT.search(
       "Media",
       "PROP_MEDIA",
@@ -151,7 +152,7 @@ const fetchImagesWithListingId = async (id) => {
     let records = [];
     if (query.Objects && query.Objects.length > 0) {
       for (const obj of query.Objects) {
-        const chkData = await checkExistingMediaURL(obj, nodeClient);
+        const chkData = await checkExistingMediaURL(obj,client);
         if (!chkData) {
           continue;
         } else if (Array.isArray(chkData)) {
@@ -174,7 +175,10 @@ const fetchImagesWithListingId = async (id) => {
 const fetchRecordWithListingId = async () => {
   const Class = "Property";
   const Resource = "ALL";
-  await fetchRecord(Class, Resource, keyMapping);
+  const db = new dbConn();
+  const client = await db.connect();
+  await client.connect();
+  await fetchRecord(Class, Resource, keyMapping,client);
 };
 
 fetchRecordWithListingId();
