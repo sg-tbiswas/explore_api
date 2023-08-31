@@ -9,7 +9,7 @@ class Database {
   async connect() {
     if (!this.client) {
       this.client = new MongoClient(CONSTANTS.DB_CONNECTION_URI, {
-        maxPoolSize: 2,
+        maxPoolSize: 1,
         maxConnecting: 2,
       });
       await this.client.connect();
