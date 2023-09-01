@@ -23,7 +23,7 @@ const recordUpdate = async (client) => {
     const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
 
     const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-    
+
     const formattedTime = threeHoursAgo.toISOString().slice(0, -1);
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
     console.log(formattedTime, currentDate);
@@ -38,11 +38,11 @@ const recordUpdate = async (client) => {
     );
     let allRecords = [];
     count = parseInt(temp.TotalCount);
-    console.log("UPT total",count);
+    console.log("UPT total", count);
     if (temp.Objects && Array.isArray(temp.Objects)) {
       allRecords = allRecords.concat(temp.Objects);
       const recordsWithUpdatedFields = allRecords.map(mapRecord);
- 
+
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
         let cnt = 1;
         for (const item of recordsWithUpdatedFields) {
@@ -72,7 +72,7 @@ const mapRecord = (record, key) => {
   const otherData = {};
   const addressData = {};
   const imageData = {};
-  
+
   Object.keys(record).forEach((field) => {
     const fieldValues = record[field].split(",");
     const updatedFieldValues = fieldValues.map((value) => {
@@ -81,7 +81,7 @@ const mapRecord = (record, key) => {
       );
       return matchingLookup ? matchingLookup.LongValue : value;
     });
-  
+
     if (keyMapping.hasOwnProperty(field)) {
       otherData[keyMapping[field] || field] = updatedFieldValues.join(",");
     } else if (main_field.hasOwnProperty(field)) {
@@ -94,7 +94,7 @@ const mapRecord = (record, key) => {
       updatedRecord[field] = updatedFieldValues.join(",");
     }
   });
-  
+
   if (Object.keys(otherData).length > 0) {
     updatedRecord["other_data"] = otherData;
   }
@@ -104,7 +104,7 @@ const mapRecord = (record, key) => {
   if (Object.keys(imageData).length > 0) {
     updatedRecord["image"] = imageData;
   }
-  
+
   return updatedRecord;
 };
 
@@ -129,30 +129,30 @@ const crossCheckRecords = async (result, client) => {
     ? parseInt(result?.other_data?.DOM)
     : 0;
 
-  newData.other_data.HOA_Fee = result?.other_data["HOA_Fee"]
-    ? parseFloat(result?.other_data["HOA_Fee"])
+  newData.other_data.HOA_Fee = result?.other_data["HOA Fee"]
+    ? parseFloat(result?.other_data["HOA Fee"])
     : 0;
 
-  newData.other_data["Garage_YN"] = result?.other_data["Garage_YN"]
-    ? result?.other_data["Garage_YN"]
+  newData.other_data["Garage_YN"] = result?.other_data["Garage YN"]
+    ? result?.other_data["Garage YN"]
     : "0";
-  newData.other_data["Fireplace_YN"] = result?.other_data["Fireplace_YN"]
-    ? result?.other_data["Fireplace_YN"]
+  newData.other_data["Fireplace_YN"] = result?.other_data["Fireplace YN"]
+    ? result?.other_data["Fireplace YN"]
     : "0";
-  newData.other_data["Basement_YN"] = result?.other_data["Basement_YN"]
-    ? result?.other_data["Basement_YN"]
+  newData.other_data["Basement_YN"] = result?.other_data["Basement YN"]
+    ? result?.other_data["Basement YN"]
     : "0";
-  newData.other_data["Water_View_YN"] = result?.other_data["Water_View_YN"]
-    ? result?.other_data["Water_View_YN"]
+  newData.other_data["Water_View_YN"] = result?.other_data["Water View YN"]
+    ? result?.other_data["Water View YN"]
     : "0";
-  newData.other_data["HOA_Y/N"] = result?.other_data["HOA_Y/N"]
-    ? result?.other_data["HOA_Y/N"]
+  newData.other_data["HOA_Y/N"] = result?.other_data["HOA Y/N"]
+    ? result?.other_data["HOA Y/N"]
     : "0";
 
   newData.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
-    "Condo/Coop_Association_Y/N"
+    "Condo/Coop Association Y/N"
   ]
-    ? result?.other_data["Condo/Coop_Association_Y/N"]
+    ? result?.other_data["Condo/Coop Association Y/N"]
     : "0";
 
   const place1 = [];
@@ -214,4 +214,3 @@ const crossCheckRecords = async (result, client) => {
 };
 
 module.exports = recordUpdate;
-

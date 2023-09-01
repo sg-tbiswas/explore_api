@@ -47,7 +47,7 @@ const fetchRecord = async (resource, className, keyMapping, client) => {
     const records = await RETS_CLIENT.search(
       resource,
       className,
-      `(ListingId=MDMC2103164)`,
+      `(ListingId=DCDC2108186)`,
       {
         Select: feildsValues.join(","),
       }
@@ -103,8 +103,8 @@ const fetchRecord = async (resource, className, keyMapping, client) => {
       return updatedRecord;
     });
     const result = recordsWithUpdatedFields[0];
-
-    await updateSingleListing(result, client);
+    console.log("result>>>>", result)
+    //await updateSingleListing(result, client);
   } catch (err) {
     console.error(
       `Error occurred in fetchRecords function: ${new Date().toUTCString()} ${
@@ -212,8 +212,6 @@ const fetchRecordWithListingId = async () => {
       await db.disconnect();
     }
   } catch (error) {}
-
-  await client.close();
 };
 
 fetchRecordWithListingId();

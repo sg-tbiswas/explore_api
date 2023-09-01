@@ -150,30 +150,30 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
         ? parseInt(result?.other_data?.DOM)
         : 0;
 
-      data.other_data.HOA_Fee = result?.other_data["HOA_Fee"]
-        ? parseFloat(result?.other_data["HOA_Fee"])
+      data.other_data.HOA_Fee = result?.other_data["HOA Fee"]
+        ? parseFloat(result?.other_data["HOA Fee"])
         : 0;
 
-      data.other_data["Garage_YN"] = result?.other_data["Garage_YN"]
-        ? result?.other_data["Garage_YN"]
+      data.other_data["Garage_YN"] = result?.other_data["Garage YN"]
+        ? result?.other_data["Garage YN"]
         : "0";
-      data.other_data["Fireplace_YN"] = result?.other_data["Fireplace_YN"]
-        ? result?.other_data["Fireplace_YN"]
+      data.other_data["Fireplace_YN"] = result?.other_data["Fireplace YN"]
+        ? result?.other_data["Fireplace YN"]
         : "0";
-      data.other_data["Basement_YN"] = result?.other_data["Basement_YN"]
-        ? result?.other_data["Basement_YN"]
+      data.other_data["Basement_YN"] = result?.other_data["Basement YN"]
+        ? result?.other_data["Basement YN"]
         : "0";
-      data.other_data["Water_View_YN"] = result?.other_data["Water_View_YN"]
-        ? result?.other_data["Water_View_YN"]
+      data.other_data["Water_View_YN"] = result?.other_data["Water View YN"]
+        ? result?.other_data["Water View YN"]
         : "0";
-      data.other_data["HOA_Y/N"] = result?.other_data["HOA_Y/N"]
-        ? result?.other_data["HOA_Y/N"]
+      data.other_data["HOA_Y/N"] = result?.other_data["HOA Y/N"]
+        ? result?.other_data["HOA Y/N"]
         : "0";
 
       data.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
-        "Condo/Coop_Association_Y/N"
+        "Condo/Coop Association Y/N"
       ]
-        ? result?.other_data["Condo/Coop_Association_Y/N"]
+        ? result?.other_data["Condo/Coop Association Y/N"]
         : "0";
 
       const place1 = [];

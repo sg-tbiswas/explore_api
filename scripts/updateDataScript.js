@@ -18,6 +18,17 @@ const textReplace = (str) => {
 
 const recordUpdate = async () => {
   try {
+    const temp = await RETS_CLIENT.search(
+      "Property",
+      "ALL",
+      `(StandardStatus=|Active) AND (MLSListDate=2023-08-25-2023-08-31)`,
+      {
+        Select: feildsValues.join(","),
+      }
+    );
+    let totalCount = parseInt(temp.TotalCount);
+    console.log("totalCount>>>>", totalCount);
+    return;
     const db = new dbConn();
     const client = await db.connect();
     try {
@@ -35,7 +46,7 @@ const recordUpdate = async () => {
       const temp = await RETS_CLIENT.search(
         "Property",
         "ALL",
-        `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-25-2023-08-31)`,
+        `(StandardStatus=|Active) AND (MLSListDate=2023-08-25-2023-08-31)`,
         {
           Select: feildsValues.join(","),
         }
@@ -146,30 +157,30 @@ const crossCheckRecords = async (result, client) => {
     ? parseInt(result?.other_data?.DOM)
     : 0;
 
-  newData.other_data.HOA_Fee = result?.other_data["HOA_Fee"]
-    ? parseFloat(result?.other_data["HOA_Fee"])
+  newData.other_data.HOA_Fee = result?.other_data["HOA Fee"]
+    ? parseFloat(result?.other_data["HOA Fee"])
     : 0;
 
-  newData.other_data["Garage_YN"] = result?.other_data["Garage_YN"]
-    ? result?.other_data["Garage_YN"]
+  newData.other_data["Garage_YN"] = result?.other_data["Garage YN"]
+    ? result?.other_data["Garage YN"]
     : "0";
-  newData.other_data["Fireplace_YN"] = result?.other_data["Fireplace_YN"]
-    ? result?.other_data["Fireplace_YN"]
+  newData.other_data["Fireplace_YN"] = result?.other_data["Fireplace YN"]
+    ? result?.other_data["Fireplace YN"]
     : "0";
-  newData.other_data["Basement_YN"] = result?.other_data["Basement_YN"]
-    ? result?.other_data["Basement_YN"]
+  newData.other_data["Basement_YN"] = result?.other_data["Basement YN"]
+    ? result?.other_data["Basement YN"]
     : "0";
-  newData.other_data["Water_View_YN"] = result?.other_data["Water_View_YN"]
-    ? result?.other_data["Water_View_YN"]
+  newData.other_data["Water_View_YN"] = result?.other_data["Water View YN"]
+    ? result?.other_data["Water View YN"]
     : "0";
-  newData.other_data["HOA_Y/N"] = result?.other_data["HOA_Y/N"]
-    ? result?.other_data["HOA_Y/N"]
+  newData.other_data["HOA_Y/N"] = result?.other_data["HOA Y/N"]
+    ? result?.other_data["HOA Y/N"]
     : "0";
 
   newData.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
-    "Condo/Coop_Association_Y/N"
+    "Condo/Coop Association Y/N"
   ]
-    ? result?.other_data["Condo/Coop_Association_Y/N"]
+    ? result?.other_data["Condo/Coop Association Y/N"]
     : "0";
 
   const place1 = [];
