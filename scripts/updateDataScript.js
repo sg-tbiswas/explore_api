@@ -35,7 +35,7 @@ const recordUpdate = async () => {
       const temp = await RETS_CLIENT.search(
         "Property",
         "ALL",
-        `(StandardStatus=|Active) AND (MLSListDate=2023-08-01-2023-08-31)`,
+        `(StandardStatus=|Pending) AND (MLSListDate=2023-08-01-2023-08-31)`,
         {
           Select: feildsValues.join(","),
         }
