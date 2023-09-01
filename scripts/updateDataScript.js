@@ -18,17 +18,6 @@ const textReplace = (str) => {
 
 const recordUpdate = async () => {
   try {
-    const temp = await RETS_CLIENT.search(
-      "Property",
-      "ALL",
-      `(StandardStatus=|Active) AND (MLSListDate=2023-08-25-2023-08-31)`,
-      {
-        Select: feildsValues.join(","),
-      }
-    );
-    let totalCount = parseInt(temp.TotalCount);
-    console.log("totalCount>>>>", totalCount);
-    return;
     const db = new dbConn();
     const client = await db.connect();
     try {
@@ -46,7 +35,7 @@ const recordUpdate = async () => {
       const temp = await RETS_CLIENT.search(
         "Property",
         "ALL",
-        `(StandardStatus=|Active) AND (MLSListDate=2023-08-25-2023-08-31)`,
+        `(StandardStatus=|Active) AND (MLSListDate=2023-08-01-2023-08-31)`,
         {
           Select: feildsValues.join(","),
         }
