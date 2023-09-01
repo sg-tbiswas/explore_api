@@ -5,10 +5,9 @@ const keyMapping = require("../name_change.js");
 const image_list = require("../image_list.js");
 const main_field = require("../main_field.js");
 const addres_field = require("../addres_field.js");
-const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT } = require("../utils.js");
-const dbConn = require('../dbConnection.js');
+const dbConn = require("../dbConnection.js");
 
 const temp = fs.readFileSync("../metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
@@ -21,52 +20,55 @@ const recordUpdate = async () => {
   try {
     const db = new dbConn();
     const client = await db.connect();
-    const now = new Date();
+    try {
+      const now = new Date();
 
-    const fromDateTime = new Date(new Date("2023-08-29"));
-    const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
+      const fromDateTime = new Date(new Date("2023-08-29"));
+      const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
 
-    const toDateTime = new Date(new Date("2023-08-30"));
-    const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
+      const toDateTime = new Date(new Date("2023-08-30"));
+      const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
 
-    const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
+      const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
 
-    console.log(formattedFromDateTime, formattedToDateTime);
-    const temp = await RETS_CLIENT.search(
-      "Property",
-      "ALL",
-      `(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedFromDateTime}-${formattedToDateTime})`,
-      {
-        Select: feildsValues.join(","),
-      }
-    );
-    let totalCount = parseInt(temp.TotalCount);
-    console.log("totalCount>>>>",totalCount)
-    let allRecords = [];
-
-    if (temp.Objects && Array.isArray(temp.Objects)) {
-      allRecords = allRecords.concat(temp.Objects);
-      const recordsWithUpdatedFields = allRecords.map(mapRecord);
-      if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
-        let cnt = 1;
-        for (const item of recordsWithUpdatedFields) {
-          await crossCheckRecords(item, client);
-          cnt++;
+      console.log(formattedFromDateTime, formattedToDateTime);
+      const temp = await RETS_CLIENT.search(
+        "Property",
+        "ALL",
+        `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-25-2023-08-31)`,
+        {
+          Select: feildsValues.join(","),
         }
-        console.log(`${cnt} recordUpdate Done!`);
+      );
+      let totalCount = parseInt(temp.TotalCount);
+      console.log("totalCount>>>>", totalCount);
+      let allRecords = [];
+
+      if (temp.Objects && Array.isArray(temp.Objects)) {
+        allRecords = allRecords.concat(temp.Objects);
+        const recordsWithUpdatedFields = allRecords.map(mapRecord);
+        if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
+          let cnt = 1;
+          for (const item of recordsWithUpdatedFields) {
+            await crossCheckRecords(item, client);
+            cnt++;
+          }
+          console.log(`${cnt} recordUpdate Done!`);
+        }
       }
+      await RETS_CLIENT.logout();
+      await db.disconnect();
+    } catch (error) {
+      console.error(
+        `Error occurred in recordUpdate function: ${new Date().toUTCString()} ${
+          error.message
+        }`
+      );
+    } finally {
+      await db.disconnect();
     }
-    await RETS_CLIENT.logout();
-    await client.close();
   } catch (error) {
-    console.error(
-      `Error occurred in recordUpdate function: ${new Date().toUTCString()} ${
-        error.message
-      }`
-    );
-  }finally{
-    const db = new dbConn();
-    await db.disconnect();
+    console.error(error.message);
   }
 };
 const mapRecord = (record, key) => {

@@ -7,14 +7,12 @@ const addres_field = require("../addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT, getTodayDate } = require("../utils.js");
-const imageUploadAfterInsert = require("./imageUploadAfterInsert.js");
+const imageUploadAfterInsert = require("../imageUploadAfterInsert.js");
 const { exec } = require("child_process");
-const dbConn = require('../dbConnection.js');
+const dbConn = require("../dbConnection.js");
 
-
-const temp = fs.readFileSync("metaDataLookup.json");
+const temp = fs.readFileSync("../metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
-
 
 async function checkExistingRecord(data, client) {
   try {
@@ -49,7 +47,7 @@ const fetchRecord = async (resource, className, keyMapping, client) => {
     const records = await RETS_CLIENT.search(
       resource,
       className,
-      `(ListingId=DCDC2102616)`,
+      `(ListingId=MDMC2103164)`,
       {
         Select: feildsValues.join(","),
       }
@@ -104,7 +102,9 @@ const fetchRecord = async (resource, className, keyMapping, client) => {
       });
       return updatedRecord;
     });
-    console.log(recordsWithUpdatedFields);
+    const result = recordsWithUpdatedFields[0];
+
+    await updateSingleListing(result, client);
   } catch (err) {
     console.error(
       `Error occurred in fetchRecords function: ${new Date().toUTCString()} ${
@@ -112,6 +112,23 @@ const fetchRecord = async (resource, className, keyMapping, client) => {
       }`
     );
     throw err;
+  }
+};
+
+const updateSingleListing = async (result, client) => {
+  try {
+    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
+    await collection.updateOne(
+      { listing_id: result["listing_id"] },
+      {
+        $set: { ...result },
+      }
+    );
+  } catch (error) {
+    console.error(
+      `error while updating data from crossCheckRecords() ${new Date().toUTCString()}`,
+      error
+    );
   }
 };
 
@@ -139,46 +156,64 @@ const fetchImagesWithListingId = async (id) => {
   try {
     const db = new dbConn();
     const client = await db.connect();
-    await client.connect();
-    const query = await RETS_CLIENT.search(
-      "Media",
-      "PROP_MEDIA",
-      `(ListingId=${id})`,
-      {
-        Select:
-          "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
-      }
-    );
-    let records = [];
-    if (query.Objects && query.Objects.length > 0) {
-      for (const obj of query.Objects) {
-        const chkData = await checkExistingMediaURL(obj,client);
-        if (!chkData) {
-          continue;
-        } else if (Array.isArray(chkData)) {
-          if (chkData.length < 1) {
-            records.push(obj);
+    try {
+      const query = await RETS_CLIENT.search(
+        "Media",
+        "PROP_MEDIA",
+        `(ListingId=${id})`,
+        {
+          Select:
+            "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
+        }
+      );
+      let records = [];
+      if (query.Objects && query.Objects.length > 0) {
+        for (const obj of query.Objects) {
+          const chkData = await checkExistingMediaURL(obj, client);
+          if (!chkData) {
+            continue;
+          } else if (Array.isArray(chkData)) {
+            if (chkData.length < 1) {
+              records.push(obj);
+            }
           }
         }
       }
+      console.log("records>>>>", records);
+    } catch (err) {
+      console.error(
+        `Error searching for ListingId ${id}: ${
+          err.message
+        } imageUpload() ${new Date().toUTCString()}`
+      );
+    } finally {
+      await db.disconnect();
     }
-    console.log("records>>>>", records);
-  } catch (err) {
-    console.error(
-      `Error searching for ListingId ${id}: ${
-        err.message
-      } imageUpload() ${new Date().toUTCString()}`
-    );
+  } catch (error) {
+    console.log("DB connection error!", error.message);
   }
 };
 
 const fetchRecordWithListingId = async () => {
   const Class = "Property";
   const Resource = "ALL";
-  const db = new dbConn();
-  const client = await db.connect();
-  await client.connect();
-  await fetchRecord(Class, Resource, keyMapping,client);
+
+  try {
+    const db = new dbConn();
+    const client = await db.connect();
+    try {
+      await fetchRecord(Class, Resource, keyMapping, client);
+    } catch (error) {
+      console.error(
+        `${err.message} from
+        } fetchRecordWithListingId() ${new Date().toUTCString()}`
+      );
+    } finally {
+      await db.disconnect();
+    }
+  } catch (error) {}
+
+  await client.close();
 };
 
 fetchRecordWithListingId();

@@ -9,12 +9,10 @@ const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT, getTodayDate } = require("../utils.js");
 const imageUploadAfterInsert = require("../imageUploadAfterInsert.js");
 const { exec } = require("child_process");
-const dbConn = require('../dbConnection.js');
+const dbConn = require("../dbConnection.js");
 
 const temp = fs.readFileSync("../metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
-
-
 
 async function addRecordsToMongoDB(records, client) {
   try {
@@ -249,26 +247,29 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
 
 async function gobyHomes() {
   try {
-    const loginResponse = await RETS_CLIENT.login();
     const db = new dbConn();
     const client = await db.connect();
-    if (!loginResponse) {
-      console.log("There was an error connecting to the server");
-      return;
-    }
+    try {
+      const loginResponse = await RETS_CLIENT.login();
+      if (!loginResponse) {
+        console.log("There was an error connecting to the server");
+        return;
+      }
 
-    const Class = "Property";
-    const Resource = "ALL";
-    const records = await fetchRecords(Class, Resource, keyMapping, client);
-    await imageUploadAfterInsert(records, client);
-    console.log("All records fetched and written successfully!");
-    await client.close();
-    await RETS_CLIENT.logout();
-  } catch (err) {
-    console.error("Error occurred in gobyHomes function:", err.message);
-  } finally {
-    const db = new dbConn();
-    await db.disconnect();
+      const Class = "Property";
+      const Resource = "ALL";
+      const records = await fetchRecords(Class, Resource, keyMapping, client);
+      await imageUploadAfterInsert(records, client);
+      console.log("All records fetched and written successfully!");
+      await client.close();
+      await RETS_CLIENT.logout();
+    } catch (err) {
+      console.error("Error occurred in gobyHomes function:", err.message);
+    } finally {
+      await db.disconnect();
+    }
+  } catch (error) {
+    console.log("DB connection error", error.message);
   }
 }
 
