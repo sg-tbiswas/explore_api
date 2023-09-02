@@ -18,10 +18,10 @@ const statusUpdate = async () => {
     const db = new dbConn();
     const client = await db.connect();
     const now = new Date();
-    const fromDateTime = new Date(new Date("2023-08-29"));
+    const fromDateTime = new Date(new Date("2023-09-01"));
     const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
 
-    const toDateTime = new Date(new Date("2023-08-30"));
+    const toDateTime = new Date(new Date("2023-09-02"));
     const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
 
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
