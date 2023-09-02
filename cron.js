@@ -18,7 +18,7 @@ Cron("*/30 * * * *", async () => {
   let fromInsertData = false;
 
   if (corn1Running) {
-    console.warn("Already running 30 minute cron.", new Date().toUTCString());
+    console.log("Already running 30 minute cron.", new Date().toUTCString());
     return;
   }
   corn1Running = true;
@@ -52,7 +52,7 @@ Cron("*/30 * * * *", async () => {
 Cron("45 * * * *", async () => {
   let fromRecordUpdate = false;
   if (corn2Running) {
-    console.warn(
+    console.log(
       "Already running 45 minute of hour cron.",
       new Date().toUTCString()
     );
@@ -90,7 +90,7 @@ Cron("45 * * * *", async () => {
 
 Cron("*/20 * * * *", async () => {
   if (corn3Running) {
-    console.warn("Already running 20 minute cron.", new Date().toUTCString());
+    console.log("Already running 20 minute cron.", new Date().toUTCString());
     return;
   }
   corn3Running = true;
