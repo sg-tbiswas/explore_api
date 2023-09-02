@@ -8,7 +8,7 @@ const addres_field = require("../addres_field.js");
 const MongoClient = require("mongodb").MongoClient;
 const CONSTANTS = require("../constants.js");
 const { RETS_CLIENT } = require("../utils.js");
-const dbConn = require('../dbConnection.js');
+const dbConn = require("../dbConnection.js");
 
 const temp = fs.readFileSync("../metaDataLookup.json");
 const lookupValues = JSON.parse(temp);
@@ -16,30 +16,29 @@ const lookupValues = JSON.parse(temp);
 const statusUpdate = async () => {
   try {
     const db = new dbConn();
-      const client = await db.connect();
+    const client = await db.connect();
     try {
-      
       const now = new Date();
       const fromDateTime = new Date(new Date("2023-09-01"));
       const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
-  
+
       const toDateTime = new Date(new Date("2023-09-02"));
       const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
-  
+
       const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
-      console.log(formattedFromDateTime,"  ", formattedToDateTime);
-  
+      console.log(formattedFromDateTime, "  ", formattedToDateTime);
+
       const temp = await RETS_CLIENT.search(
         "Property",
         "ALL",
         `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedToDateTime}+)`,
-        { Select: feildsValues.join(","),limit:4000 }
+        { Select: feildsValues.join(","), offset: 4000, limit: 4000 }
       );
       let allRecords = [];
-  
+
       let totalCount = parseInt(temp.TotalCount);
-      console.log("totalCount>>>>",totalCount)
-  
+      console.log("totalCount>>>>", totalCount);
+
       if (temp.Objects && Array.isArray(temp.Objects)) {
         allRecords = allRecords.concat(temp.Objects);
         console.log(
@@ -47,7 +46,7 @@ const statusUpdate = async () => {
           new Date(now.getTime()).toUTCString()
         );
         const recordsWithUpdatedFields = allRecords.map(mapRecord);
-  
+
         if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
           let cnt = 1;
           for (const item of recordsWithUpdatedFields) {
@@ -64,13 +63,12 @@ const statusUpdate = async () => {
           error.message
         }`
       );
-    }finally{
+    } finally {
       await db.disconnect();
     }
   } catch (error) {
-    console.log("DB connection error!",error.message)
+    console.log("DB connection error!", error.message);
   }
- 
 };
 const mapRecord = (record, key) => {
   console.log(key);
