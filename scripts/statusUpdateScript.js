@@ -16,57 +16,61 @@ const lookupValues = JSON.parse(temp);
 const statusUpdate = async () => {
   try {
     const db = new dbConn();
-    const client = await db.connect();
-    const now = new Date();
-    const fromDateTime = new Date(new Date("2023-09-01"));
-    const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
-
-    const toDateTime = new Date(new Date("2023-09-02"));
-    const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
-
-    const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
-    console.log(formattedFromDateTime,"  ", formattedToDateTime);
-
-    const temp = await RETS_CLIENT.search(
-      "Property",
-      "ALL",
-      `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedFromDateTime}-${formattedToDateTime})`,
-      { Select: feildsValues.join(",") }
-    );
-    let allRecords = [];
-
-    let totalCount = parseInt(temp.TotalCount);
-    console.log("totalCount>>>>",totalCount)
-
-    if (temp.Objects && Array.isArray(temp.Objects)) {
-      allRecords = allRecords.concat(temp.Objects);
-      console.log(
-        "getting formated record",
-        new Date(now.getTime()).toUTCString()
+      const client = await db.connect();
+    try {
+      
+      const now = new Date();
+      const fromDateTime = new Date(new Date("2023-09-01"));
+      const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
+  
+      const toDateTime = new Date(new Date("2023-09-02"));
+      const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
+  
+      const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
+      console.log(formattedFromDateTime,"  ", formattedToDateTime);
+  
+      const temp = await RETS_CLIENT.search(
+        "Property",
+        "ALL",
+        `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedFromDateTime}-${formattedToDateTime})`,
+        { Select: feildsValues.join(",") }
       );
-      const recordsWithUpdatedFields = allRecords.map(mapRecord);
-
-      if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
-        let cnt = 1;
-        for (const item of recordsWithUpdatedFields) {
-          await crossCheckRecords(item, client);
-          cnt++;
+      let allRecords = [];
+  
+      let totalCount = parseInt(temp.TotalCount);
+      console.log("totalCount>>>>",totalCount)
+  
+      if (temp.Objects && Array.isArray(temp.Objects)) {
+        allRecords = allRecords.concat(temp.Objects);
+        console.log(
+          "getting formated record",
+          new Date(now.getTime()).toUTCString()
+        );
+        const recordsWithUpdatedFields = allRecords.map(mapRecord);
+  
+        if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
+          let cnt = 1;
+          for (const item of recordsWithUpdatedFields) {
+            await crossCheckRecords(item, client);
+            cnt++;
+          }
+          console.log(`${cnt} statusUpdate Done!`);
         }
-        console.log(`${cnt} statusUpdate Done!`);
       }
+      await db.disconnect();
+    } catch (error) {
+      console.error(
+        `Error occurred in statusUpdate function: ${new Date().toUTCString()} ${
+          error.message
+        }`
+      );
+    }finally{
+      await db.disconnect();
     }
-    return true;
   } catch (error) {
-    console.error(
-      `Error occurred in statusUpdate function: ${new Date().toUTCString()} ${
-        error.message
-      }`
-    );
-    return true;
-  }finally{
-    const db = new dbConn();
-    await db.disconnect();
+    console.log("DB connection error!",error.message)
   }
+ 
 };
 const mapRecord = (record, key) => {
   console.log(key);
