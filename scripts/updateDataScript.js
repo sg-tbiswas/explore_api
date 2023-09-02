@@ -31,11 +31,12 @@ const recordUpdate = async () => {
 
       const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
 
+      //`(StandardStatus=|Pending) AND (MLSListDate=2023-08-01-2023-08-31)`
       console.log(formattedFromDateTime, formattedToDateTime);
       const temp = await RETS_CLIENT.search(
         "Property",
         "ALL",
-        `(StandardStatus=|Pending) AND (MLSListDate=2023-08-01-2023-08-31)`,
+        `(StandardStatus=|Pending) AND (MLSListDate=2023-08-01-2023-09-01)`,
         {
           Select: feildsValues.join(","),
         }
