@@ -32,7 +32,7 @@ const statusUpdate = async () => {
       const temp = await RETS_CLIENT.search(
         "Property",
         "ALL",
-        `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedFromDateTime}-${formattedToDateTime})`,
+        `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedToDateTime}+)`,
         { Select: feildsValues.join(",") }
       );
       let allRecords = [];
