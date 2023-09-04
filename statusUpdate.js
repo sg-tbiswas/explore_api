@@ -14,6 +14,13 @@ const lookupValues = JSON.parse(temp);
 
 const statusUpdate = async (client) => {
   try {
+    const loginResponse = await RETS_CLIENT.login();
+    if (loginResponse) {
+      console.log("Successfully logged in to server");
+    } else {
+      console.error("There was an error connecting to the server");
+      return;
+    }
     const now = new Date();
 
     // Subtract 3 hours from the current datetime

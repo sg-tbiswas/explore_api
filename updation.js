@@ -18,6 +18,13 @@ const textReplace = (str) => {
 
 const recordUpdate = async (client) => {
   try {
+    const loginResponse = await RETS_CLIENT.login();
+    if (loginResponse) {
+      console.log("Successfully logged in to server");
+    } else {
+      console.error("There was an error connecting to the server");
+      return;
+    }
     const now = new Date();
 
     const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
@@ -50,11 +57,14 @@ const recordUpdate = async (client) => {
           cnt++;
         }
         console.log(`${cnt} recordUpdate Done!`);
+        await RETS_CLIENT.logout();
         return true;
       } else {
+        await RETS_CLIENT.logout();
         return true;
       }
     } else {
+      await RETS_CLIENT.logout();
       return true;
     }
   } catch (error) {

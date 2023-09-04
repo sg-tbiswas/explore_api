@@ -27,6 +27,13 @@ async function checkExistingMediaURL(data, client) {
 
 const imageUpload = async (client) => {
   try {
+    const loginResponse = await RETS_CLIENT.login();
+    if (loginResponse) {
+      console.log("Successfully logged in to server");
+    } else {
+      console.error("There was an error connecting to the server");
+      return;
+    }
     const listingChunks = await getListingIds();
     if (listingChunks && listingChunks.length > 0) {
       for (const id of listingChunks) {
