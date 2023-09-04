@@ -32,7 +32,7 @@ const statusUpdate = async () => {
         "Property",
         "ALL",
         `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedToDateTime}+)`,
-        { Select: feildsValues.join(","), offset: 4000, limit: 4000 }
+        { Select: feildsValues.join(",") }
       );
       let allRecords = [];
 
