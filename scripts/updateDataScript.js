@@ -36,7 +36,7 @@ const recordUpdate = async () => {
       const temp = await RETS_CLIENT.search(
         "Property",
         "ALL",
-        `(StandardStatus=|Pending) AND (MLSListDate=2023-07-01-2023-07-31)`,
+        `(StandardStatus=|Active Under Contract) AND (MLSListDate=2023-07-01-2023-07-31)`,
         {
           Select: feildsValues.join(","),
         }
@@ -57,7 +57,6 @@ const recordUpdate = async () => {
           console.log(`${cnt} recordUpdate Done!`);
         }
       }
-      await RETS_CLIENT.logout();
       await db.disconnect();
     } catch (error) {
       console.error(
