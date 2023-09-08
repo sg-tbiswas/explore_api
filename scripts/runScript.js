@@ -53,22 +53,19 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
     let offset = 1;
     let count;
     const now = new Date();
-    console.log(now.toUTCString());
 
-    // Subtract 45 minutes from the current datetime
-    const fortyFiveMinutesAgo = new Date(now.getTime() - 45 * 60000);
+    //`(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${newFormattedTime}+)`,
 
-    // Subtract 4 hours from the current datetime
-    const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
+    // Subtract 3 hours from the current datetime
+    const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    const newFormattedTime = sixHoursAgo.toISOString().slice(0, -1);
 
-    // Format the datetime string without the timezone indicator
-    //`(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-08-26+)`
-    const formattedTime = fourHoursAgo.toISOString().slice(0, -1);
+    console.log(newFormattedTime);
     console.log("Fetching records....");
     const records = await RETS_CLIENT.search(
       resource,
       className,
-      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-09-03+)`,
+      `(StandardStatus=|Active,Pending,Active Under Contract)  AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${newFormattedTime}+)`,
       {
         Select: feildsValues.join(","),
       }
