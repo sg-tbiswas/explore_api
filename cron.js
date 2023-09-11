@@ -21,8 +21,9 @@ Cron("*/30 * * * *", async () => {
     console.log("Already running 30 minute cron.", new Date().toUTCString());
     return;
   }
-  corn1Running = true;
+
   try {
+    corn1Running = true;
     const db = new dbConnection();
     const client = await db.connect();
     try {
@@ -58,8 +59,9 @@ Cron("45 * * * *", async () => {
     );
     return;
   }
-  corn2Running = true;
+
   try {
+    corn2Running = true;
     const db = new dbConnection();
     const client = await db.connect();
     try {
@@ -93,9 +95,9 @@ Cron("*/20 * * * *", async () => {
     console.log("Already running 20 minute cron.", new Date().toUTCString());
     return;
   }
-  corn3Running = true;
 
   try {
+    corn3Running = true;
     const db = new dbConnection();
     const client = await db.connect();
     try {
