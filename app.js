@@ -20,6 +20,7 @@ const whitelist = [
   "http://localhost:5001",
   "https://gobyhomes.com",
   "https://goby-homes-qa-v2.web.app",
+  "https://goby-homes-prod.web.app"
 ];
 
 const corsOptions = {
