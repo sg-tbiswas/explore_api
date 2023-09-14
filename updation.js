@@ -26,12 +26,9 @@ const recordUpdate = async (client) => {
       return;
     }
     const now = new Date();
+    const nintyMinutesAgo = new Date(now.getTime() - 90 * 60000);
 
-    const fortyFiveMinutesAgo = new Date(now.getTime() - 60 * 60000);
-
-    const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-
-    const formattedTime = threeHoursAgo.toISOString().slice(0, -1);
+    const formattedTime = nintyMinutesAgo.toISOString().slice(0, -1);
     const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
     console.log(formattedTime, currentDate);
     const temp = await RETS_CLIENT.search(
