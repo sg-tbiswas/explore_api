@@ -33,7 +33,6 @@ Cron("*/30 * * * *", async () => {
       if (fromInsertData && fromInsertData.length > 0) {
         await sleep(10000);
         await imageUploadAfterInsert(fromInsertData, client);
-        corn1Running = false;
       }
       await db.disconnect();
     } catch (error) {
@@ -41,8 +40,8 @@ Cron("*/30 * * * *", async () => {
         `Something went wrong in 30 min Insert cron.${new Date().toUTCString()}`,
         error.message
       );
-      corn1Running = false;
     } finally {
+      corn1Running = false;
       await db.disconnect();
     }
   } catch (error) {
@@ -73,7 +72,6 @@ Cron("45 * * * *", async () => {
       if (fromRecordUpdate) {
         await sleep(10000);
         await imageUpload(client);
-        corn2Running = false;
       }
       await db.disconnect();
     } catch (error) {
@@ -81,8 +79,8 @@ Cron("45 * * * *", async () => {
         `Something went wrong in 45 min of hour Update cron.${new Date().toUTCString()}`,
         error.message
       );
-      corn2Running = false;
     } finally {
+      corn2Running = false;
       await db.disconnect();
     }
   } catch (error) {
@@ -103,7 +101,6 @@ Cron("*/20 * * * *", async () => {
     try {
       console.log("running a task every 20 min.", new Date().toUTCString());
       await statusUpdate(client);
-      corn3Running = false;
       await db.disconnect();
     } catch (error) {
       console.error(
@@ -112,6 +109,7 @@ Cron("*/20 * * * *", async () => {
       );
       corn3Running = false;
     } finally {
+      corn3Running = false;
       await db.disconnect();
     }
   } catch (error) {
