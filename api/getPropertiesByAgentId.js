@@ -16,7 +16,7 @@ const getPropertiesByAgentId = async (req, res) => {
     const data = await collection
       .aggregate([
         {
-          $match: { agent_id: { $eq: agentId } },
+          $match: { agent_id: { $eq: agentId }, status: { $eq: "Active" } },
         },
         {
           $lookup: {

@@ -10,13 +10,13 @@ const getPropertiesByOfficeId = async (req, res) => {
   }
 
   console.log("here", params);
-    try {
-      const db = await getDB();
-      const collection = db.collection("propertyData");
-      const data = await collection
+  try {
+    const db = await getDB();
+    const collection = db.collection("propertyData");
+    const data = await collection
       .aggregate([
         {
-          $match: { office_id: { $eq: officeId } },
+          $match: { office_id: { $eq: officeId }, status: { $eq: "Active" } },
         },
         {
           $lookup: {
@@ -30,17 +30,15 @@ const getPropertiesByOfficeId = async (req, res) => {
         { $limit: 10 },
       ])
       .toArray();
-      if (data && data.length > 0) {
-        res.status(200).send({responseData:data});
-      } else {
-        res.status(404).json({ message: "No data found for this Office Id" });
-      }
-    } catch (error) {
-      console.log(
-        `error occured at ${new Date().toUTCString()} ${err.Message}`
-      );
-      res.status(500).json({ error: "Something went wrong." });
+    if (data && data.length > 0) {
+      res.status(200).send({ responseData: data });
+    } else {
+      res.status(404).json({ message: "No data found for this Office Id" });
     }
+  } catch (error) {
+    console.log(`error occured at ${new Date().toUTCString()} ${err.Message}`);
+    res.status(500).json({ error: "Something went wrong." });
+  }
 };
 
 module.exports = getPropertiesByOfficeId;
