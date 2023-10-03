@@ -40,6 +40,7 @@ Cron("*/30 * * * *", async () => {
         `Something went wrong in 30 min Insert cron.${new Date().toUTCString()}`,
         error.message
       );
+      corn1Running = false;
     } finally {
       corn1Running = false;
       await db.disconnect();
@@ -79,6 +80,7 @@ Cron("45 * * * *", async () => {
         `Something went wrong in 45 min of hour Update cron.${new Date().toUTCString()}`,
         error.message
       );
+      corn2Running = false;
     } finally {
       corn2Running = false;
       await db.disconnect();
