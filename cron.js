@@ -90,58 +90,31 @@ Cron("45 * * * *", async () => {
   }
 });
 
-Cron("*/20 * * * *", async () => {
-  if (corn3Running) {
-    console.log("Already running 20 minute cron.", new Date().toUTCString());
-    return;
-  }
+// Cron("*/20 * * * *", async () => {
+//   if (corn3Running) {
+//     console.log("Already running 20 minute cron.", new Date().toUTCString());
+//     return;
+//   }
 
-  try {
-    corn3Running = true;
-    const db = new dbConnection();
-    const client = await db.connect();
-    try {
-      console.log("running a task every 20 min.", new Date().toUTCString());
-      await statusUpdate(client);
-      await db.disconnect();
-    } catch (error) {
-      console.error(
-        `Something went wrong in 20 min status Update cron.${new Date().toUTCString()}`,
-        error.message
-      );
-      corn3Running = false;
-    } finally {
-      corn3Running = false;
-      await db.disconnect();
-    }
-  } catch (error) {
-    console.log("DB connection error!", error);
-  }
-});
-
-// Cron("0 */2 * * *", async () => {
-//   console.log(`Cron Job and MongoDB restarted at ${new Date().toUTCString()}`);
-//   exec("sudo systemctl restart mongod.service", (error, stdout, stderr) => {
-//     if (error) {
-//       console.log(`error: ${error.message}`);
-//       return;
+//   try {
+//     corn3Running = true;
+//     const db = new dbConnection();
+//     const client = await db.connect();
+//     try {
+//       console.log("running a task every 20 min.", new Date().toUTCString());
+//       await statusUpdate(client);
+//       await db.disconnect();
+//     } catch (error) {
+//       console.error(
+//         `Something went wrong in 20 min status Update cron.${new Date().toUTCString()}`,
+//         error.message
+//       );
+//       corn3Running = false;
+//     } finally {
+//       corn3Running = false;
+//       await db.disconnect();
 //     }
-//     if (stderr) {
-//       console.log(`stderr: ${stderr}`);
-//       return;
-//     }
-//     console.log(`mongodb restarted: ${stdout}`);
-//   });
-//   await sleep(5000);
-//   exec("pm2 restart 1", (error, stdout, stderr) => {
-//     if (error) {
-//       console.log(`error: ${error.message}`);
-//       return;
-//     }
-//     if (stderr) {
-//       console.log(`stderr: ${stderr}`);
-//       return;
-//     }
-//     console.log(`pm2 cron restarted: ${stdout}`);
-//   });
+//   } catch (error) {
+//     console.log("DB connection error!", error);
+//   }
 // });
