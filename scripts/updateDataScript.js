@@ -26,7 +26,7 @@ const recordUpdate = async () => {
       const fromDateTime = new Date(new Date("2023-08-29"));
       const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
 
-      const toDateTime = new Date(new Date("2023-08-30"));
+      const toDateTime = new Date(new Date("2023-10-04"));
       const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
 
       const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
@@ -36,7 +36,7 @@ const recordUpdate = async () => {
       const temp = await RETS_CLIENT.search(
         "Property",
         "ALL",
-        `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2022-08-01-2022-08-31)`,
+        `(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedToDateTime}+)`,
         {
           Select: feildsValues.join(","),
         }
