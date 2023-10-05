@@ -70,7 +70,6 @@ const imageUploadAfterInsert = async (listingChunks, client) => {
         } else if (Array.isArray(chkData)) {
           if (chkData.length < 1) {
             newRecords.push(obj);
-            gcn++;
           }
         }
       }
