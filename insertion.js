@@ -61,19 +61,25 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
     const newFormattedTime = threeHoursAgo.toISOString().slice(0, -1);
 
     console.log(newFormattedTime);
-    const records = await RETS_CLIENT.search(
-      resource,
-      className,
-      `(StandardStatus=|Active,Pending,Active Under Contract)  AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${newFormattedTime}+)`,
-      {
-        Select: feildsValues.join(","),
-        offset,
-      }
-    );
-    allRecords = records.Objects ? allRecords.concat(records.Objects) : [];
+    do {
+      const records = await RETS_CLIENT.search(
+        resource,
+        className,
+        `(StandardStatus=|Active,Pending,Active Under Contract)  AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${newFormattedTime}+)`,
+        {
+          Select: feildsValues.join(","),
+          offset,
+        }
+      );
+      allRecords = records.Objects && allRecords.concat(records.Objects);
 
-    count = parseInt(records.TotalCount);
-    console.log("IN total", count);
+      count = parseInt(records.TotalCount);
+
+      offset += 200;
+      console.log(`count=>${count}, offset=>${offset}`);
+    } while (offset < count);
+    console.log("allRecords", allRecords.length);
+
     const recordsWithUpdatedFields = allRecords.map((record, key) => {
       console.log(`In -> ${key}`);
       const updatedRecord = {};

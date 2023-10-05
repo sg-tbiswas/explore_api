@@ -70,10 +70,12 @@ Cron("45 * * * *", async () => {
         new Date().toUTCString()
       );
       fromRecordUpdate = await recordUpdate(client);
+      /*
       if (fromRecordUpdate) {
         await sleep(10000);
         await imageUpload(client);
       }
+      */
       await db.disconnect();
     } catch (error) {
       console.error(

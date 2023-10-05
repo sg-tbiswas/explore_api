@@ -34,6 +34,9 @@ const imageUploadAfterInsert = async (listingChunks, client) => {
       return;
     }
     if (listingChunks) {
+      const allRecords = [];
+      const newRecords = [];
+
       for (const id of listingChunks) {
         if (id) {
           try {
@@ -45,28 +48,12 @@ const imageUploadAfterInsert = async (listingChunks, client) => {
                 Select:
                   "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
               }
-            );
+            ); 
 
             if (query.Objects && query.Objects.length > 0) {
-              let records = [];
-              for (const obj of query.Objects) {
-                const chkData = await checkExistingMediaURL(obj, client);
-                if (!chkData) {
-                  continue;
-                } else if (Array.isArray(chkData)) {
-                  if (chkData.length < 1) {
-                    records.push(obj);
-                  }
-                }
-              }
-              if (records.length > 0) {
-                await addRecordsToMongoDBImage(records, client);
-              } else {
-                console.log(
-                  `No images available for listingID ${id} to add! imageUploadAfterInsert()`
-                );
-              }
+              allRecords.push(...query.Objects);
             }
+
           } catch (err) {
             console.error(
               `Error searching for ListingId ${id}: ${err.message} from imageUploadAfterInsert()`
@@ -74,6 +61,23 @@ const imageUploadAfterInsert = async (listingChunks, client) => {
             continue; // Skip to next iteration of the loop
           }
         }
+      }
+
+      for (const obj of allRecords) {
+        const chkData = await checkExistingMediaURL(obj, client);
+        if (!chkData) {
+          continue;
+        } else if (Array.isArray(chkData)) {
+          if (chkData.length < 1) {
+            newRecords.push(obj);
+            gcn++;
+          }
+        }
+      }
+      if (newRecords.length > 0) {
+        await addRecordsToMongoDBImage(newRecords, client);
+      } else {
+        console.log("No images available to add! imageUpload()");
       }
       await RETS_CLIENT.logout();
       // await client.close();
