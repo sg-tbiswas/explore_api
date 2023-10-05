@@ -90,31 +90,31 @@ Cron("45 * * * *", async () => {
   }
 });
 
-// Cron("*/20 * * * *", async () => {
-//   if (corn3Running) {
-//     console.log("Already running 20 minute cron.", new Date().toUTCString());
-//     return;
-//   }
+Cron("*/20 * * * *", async () => {
+  if (corn3Running) {
+    console.log("Already running 20 minute cron.", new Date().toUTCString());
+    return;
+  }
 
-//   try {
-//     corn3Running = true;
-//     const db = new dbConnection();
-//     const client = await db.connect();
-//     try {
-//       console.log("running a task every 20 min.", new Date().toUTCString());
-//       await statusUpdate(client);
-//       await db.disconnect();
-//     } catch (error) {
-//       console.error(
-//         `Something went wrong in 20 min status Update cron.${new Date().toUTCString()}`,
-//         error.message
-//       );
-//       corn3Running = false;
-//     } finally {
-//       corn3Running = false;
-//       await db.disconnect();
-//     }
-//   } catch (error) {
-//     console.log("DB connection error!", error);
-//   }
-// });
+  try {
+    corn3Running = true;
+    const db = new dbConnection();
+    const client = await db.connect();
+    try {
+      console.log("running a task every 20 min.", new Date().toUTCString());
+      await statusUpdate(client);
+      await db.disconnect();
+    } catch (error) {
+      console.error(
+        `Something went wrong in 20 min status Update cron.${new Date().toUTCString()}`,
+        error.message
+      );
+      corn3Running = false;
+    } finally {
+      corn3Running = false;
+      await db.disconnect();
+    }
+  } catch (error) {
+    console.log("DB connection error!", error);
+  }
+});
