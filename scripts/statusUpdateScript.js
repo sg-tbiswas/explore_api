@@ -22,7 +22,7 @@ const statusUpdate = async () => {
       const fromDateTime = new Date(new Date("2023-09-01"));
       const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
 
-      const toDateTime = new Date(new Date("2023-10-03"));
+      const toDateTime = new Date(new Date("2023-10-05"));
       const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
 
       const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
@@ -32,7 +32,7 @@ const statusUpdate = async () => {
         "Property",
         "ALL",
         `~(StandardStatus=|Active,Pending,Active Under Contract) AND (ModificationTimestamp=${formattedToDateTime}+)`,
-        { Select: feildsValues.join(","), Offset: 40000 }
+        { Select: feildsValues.join(",") }
       );
       let allRecords = [];
       const recordsWithUpdatedFields = [];
@@ -72,12 +72,12 @@ const statusUpdate = async () => {
             status: getStatusString(record.StandardStatus),
           });
         }
-        console.log(recordsWithUpdatedFields);
-
         console.log(
           "getting formated record",
           new Date(now.getTime()).toUTCString()
         );
+
+        console.log("recordsWithUpdatedFields>>", recordsWithUpdatedFields.length);
 
         if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
           let cnt = 1;

@@ -39,13 +39,50 @@ const statusUpdate = async (client) => {
     let allRecords = [];
     count = parseInt(temp.TotalCount);
     console.log("ST total",count);
+    const recordsWithUpdatedFields = [];
+
+    let totalCount = parseInt(temp.TotalCount);
+    console.log("totalCount>>>>", totalCount);
+
     if (temp.Objects && Array.isArray(temp.Objects)) {
       allRecords = allRecords.concat(temp.Objects);
+      function getStatusString(statusCode) {
+        if (statusCode == 10000069142) {
+          return "Active";
+        } else if (statusCode == 10000069143) {
+          return "Closed";
+        } else if (statusCode == 200004325489) {
+          return "Withdrawn";
+        } else if (statusCode == 200004325487) {
+          return "Hold";
+        } else if (statusCode == 200005504193) {
+          return "Delete";
+        } else if (statusCode == 10000069146) {
+          return "Pending";
+        } else if (statusCode == 200003535148) {
+          return "Coming Soon";
+        } else if (statusCode == 200004325488) {
+          return "Canceled";
+        } else if (statusCode == 10000069144) {
+          return "Expired";
+        } else if (statusCode == 85049738628) {
+          return "Active Under Contract";
+        }
+      }
+      for (let i = 0; i < allRecords.length; i++) {
+        const record = allRecords[i];
+        recordsWithUpdatedFields.push({
+          listingId: record.ListingId,
+          status: getStatusString(record.StandardStatus),
+        });
+      }
       console.log(
         "getting formated record",
         new Date(now.getTime()).toUTCString()
       );
-      const recordsWithUpdatedFields = allRecords.map(mapRecord);
+      console.log("recordsWithFields>>", recordsWithUpdatedFields.length);
+
+      console.log("statusUpdate started....");
 
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
         let cnt = 1;
@@ -67,59 +104,6 @@ const statusUpdate = async (client) => {
     return true;
   }
 };
-const mapRecord = (record, key) => {
-  console.log(`ST -> ${key}`);
-  const updatedRecord = {};
-  Object.keys(record).forEach((field) => {
-    const fieldValues = record[field].split(",");
-    const updatedFieldValues = fieldValues.map((value) => {
-      const matchingLookup = lookupValues.find(
-        (lookup) => lookup.MetadataEntryID === value.trim()
-      );
-      if (matchingLookup) {
-        return matchingLookup.LongValue;
-      }
-
-      return value;
-    });
-    if (keyMapping.hasOwnProperty(field)) {
-      if (!updatedRecord.hasOwnProperty("other_data")) {
-        updatedRecord["other_data"] = {};
-      }
-      const newField = keyMapping[field] || field;
-      updatedRecord["other_data"][newField] = updatedFieldValues.join(",");
-    } else {
-      // Check if the field name exists in the main_field
-      if (main_field.hasOwnProperty(field)) {
-        // If it exists in main_field's key, use the value as the new field name
-        const newField = main_field[field];
-        updatedRecord[newField] = updatedFieldValues.join(",");
-      } else {
-        // Check if the field name exists in address_field
-        if (addres_field.hasOwnProperty(field)) {
-          // If it exists in address_field's key, add it to the array of addresses in updatedRecord
-          if (!updatedRecord.hasOwnProperty("address")) {
-            updatedRecord["address"] = {};
-          }
-          const newField = addres_field[field];
-          updatedRecord["address"][newField] = updatedFieldValues.join(",");
-        } else {
-          if (image_list.hasOwnProperty(field)) {
-            if (!updatedRecord.hasOwnProperty("image")) {
-              updatedRecord["image"] = {};
-            }
-            const newField = image_list[field];
-            updatedRecord["image"][newField] = updatedFieldValues.join(",");
-          } else {
-            // None of the above, use the field name as is
-            updatedRecord[field] = updatedFieldValues.join(",");
-          }
-        }
-      }
-    }
-  });
-  return updatedRecord;
-};
 
 const crossCheckRecords = async (result, client) => {
   try {
@@ -129,21 +113,21 @@ const crossCheckRecords = async (result, client) => {
       .db(CONSTANTS.DB_NAME)
       .collection("propertyDataImages");
 
-    if (result["status"] == "Closed") {
-      await collection.deleteOne({
-        listing_id: result["listing_id"],
-      });
-      await imageCollection.deleteMany({
-        ListingId: result["listing_id"],
-      });
-    } else {
-      await collection.updateOne(
-        { listing_id: result["listing_id"] },
-        {
-          $set: { status: result["status"] },
-        }
-      );
-    }
+      if (result["status"] == "Closed") {
+        await collection.deleteOne({
+          listing_id: result["listingId"],
+        });
+        await imageCollection.deleteMany({
+          ListingId: result["listingId"],
+        });
+      } else {
+        await collection.updateOne(
+          { listing_id: result["listingId"] },
+          {
+            $set: { status: result["status"] },
+          }
+        );
+      }
   } catch (error) {
     console.error(
       `error while updating data from crossCheckRecords() ${new Date().toUTCString()}`,
