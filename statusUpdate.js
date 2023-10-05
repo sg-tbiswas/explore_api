@@ -42,7 +42,6 @@ const statusUpdate = async (client) => {
     const recordsWithUpdatedFields = [];
 
     let totalCount = parseInt(temp.TotalCount);
-    console.log("totalCount>>>>", totalCount);
 
     if (temp.Objects && Array.isArray(temp.Objects)) {
       allRecords = allRecords.concat(temp.Objects);
@@ -85,7 +84,7 @@ const statusUpdate = async (client) => {
       console.log("statusUpdate started....");
 
       if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
-        let cnt = 1;
+        let cnt = 0;
         for (const item of recordsWithUpdatedFields) {
           await crossCheckRecords(item, client);
           cnt++;
