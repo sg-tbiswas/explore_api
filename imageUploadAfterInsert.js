@@ -63,7 +63,7 @@ const imageUploadAfterInsert = async (listingChunks, client) => {
                 await addRecordsToMongoDBImage(records, client);
               } else {
                 console.log(
-                  `No images available for listingID ${id} to add! imageUpload()`
+                  `No images available for listingID ${id} to add! imageUploadAfterInsert()`
                 );
               }
             }
@@ -71,7 +71,7 @@ const imageUploadAfterInsert = async (listingChunks, client) => {
             console.error(
               `Error searching for ListingId ${id}: ${
                 err.message
-              } imageUpload() ${new Date().toUTCString()}`
+              } imageUploadAfterInsert() ${new Date().toUTCString()}`
             );
             continue;
           }
