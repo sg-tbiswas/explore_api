@@ -60,55 +60,65 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
     const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
     const newFormattedTime = threeHoursAgo.toISOString().slice(0, -1);
 
-    console.log(newFormattedTime);
-    do {
-      const records = await RETS_CLIENT.search(
-        resource,
-        className,
-        `(StandardStatus=|Active,Pending,Active Under Contract)  AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${newFormattedTime}+)`,
-        {
-          Select: feildsValues.join(","),
-          offset,
-        }
-      );
-      allRecords = records.Objects && allRecords.concat(records.Objects);
+    const records = await RETS_CLIENT.search(
+      resource,
+      className,
+      `(StandardStatus=|Active,Pending,Active Under Contract)  AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${newFormattedTime}+)`,
+      {
+        Select: feildsValues.join(","),
+      }
+    );
 
-      count = parseInt(records.TotalCount);
-
-      offset += 200;
-      console.log(`count=>${count}, offset=>${offset}`);
-    } while (offset < count);
-    console.log("allRecords", allRecords.length);
+    count = parseInt(records.TotalCount);
+    console.log("allRecords", count);
+    allRecords = records.Objects ? allRecords.concat(records.Objects) : [];
 
     const recordsWithUpdatedFields = allRecords.map((record, key) => {
       console.log(`In -> ${key}`);
       const updatedRecord = {};
-      const otherData = (updatedRecord["other_data"] = {});
-      const addressData = (updatedRecord["address"] = {});
-
       Object.keys(record).forEach((field) => {
         const fieldValues = record[field].split(",");
         const updatedFieldValues = fieldValues.map((value) => {
           const matchingLookup = lookupValues.find(
             (lookup) => lookup.MetadataEntryID === value.trim()
           );
-          return matchingLookup ? matchingLookup.LongValue : value;
+          if (matchingLookup) {
+            return matchingLookup.LongValue;
+          }
+          return value;
         });
 
+        // Check if the field name exists in keyMapping
         if (keyMapping.hasOwnProperty(field)) {
-          otherData[keyMapping[field] || field] = updatedFieldValues.join(",");
-        } else if (main_field.hasOwnProperty(field)) {
-          updatedRecord[main_field[field]] = updatedFieldValues.join(",");
-        } else if (addres_field.hasOwnProperty(field)) {
-          addressData[addres_field[field]] = updatedFieldValues.join(",");
+          if (!updatedRecord.hasOwnProperty("other_data")) {
+            updatedRecord["other_data"] = {};
+          }
+          const newField = keyMapping[field] || field;
+          updatedRecord["other_data"][newField] = updatedFieldValues.join(",");
         } else {
-          updatedRecord[field] = updatedFieldValues.join(",");
+          // Check if the field name exists in the main_field
+          if (main_field.hasOwnProperty(field)) {
+            // If it exists in main_field's key, use the value as the new field name
+            const newField = main_field[field];
+            updatedRecord[newField] = updatedFieldValues.join(",");
+          } else {
+            // Check if the field name exists in address_field
+            if (addres_field.hasOwnProperty(field)) {
+              // If it exists in address_field's key, add it to the array of addresses in updatedRecord
+              if (!updatedRecord.hasOwnProperty("address")) {
+                updatedRecord["address"] = {};
+              }
+              const newField = addres_field[field];
+              updatedRecord["address"][newField] = updatedFieldValues.join(",");
+            } else {
+              updatedRecord[field] = updatedFieldValues.join(",");
+            }
+          }
         }
       });
-
       return updatedRecord;
     });
-    // console.log(recordsWithUpdatedFields, className);
+
 
     const updatedRecords = [];
     for (const result of recordsWithUpdatedFields) {
@@ -252,4 +262,6 @@ const gobyHomes = async (client) => {
     return false;
   }
 };
-module.exports = gobyHomes;
+//module.exports = gobyHomes;
+
+gobyHomes();
