@@ -65,7 +65,7 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
       className,
       `(StandardStatus=|Active,Pending,Active Under Contract)  AND (MLSListDate=${getTodayDate()}) AND (ModificationTimestamp=${newFormattedTime}+)`,
       {
-        Select: feildsValues.join(","),
+        Select: feildsValues.join(",")
       }
     );
 
@@ -262,6 +262,4 @@ const gobyHomes = async (client) => {
     return false;
   }
 };
-//module.exports = gobyHomes;
-
-gobyHomes();
+module.exports = gobyHomes;
