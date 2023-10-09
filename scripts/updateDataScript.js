@@ -22,7 +22,7 @@ const recordUpdate = async () => {
     const client = await db.connect();
     try {
       const now = new Date();
-      
+
       const fromDateTime = new Date(new Date("2023-08-29"));
       const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
 
@@ -50,11 +50,17 @@ const recordUpdate = async () => {
         const recordsWithUpdatedFields = allRecords.map(mapRecord);
         if (recordsWithUpdatedFields && recordsWithUpdatedFields.length > 0) {
           let cnt = 1;
+          let ucnt = 1;
           for (const item of recordsWithUpdatedFields) {
-            await crossCheckRecords(item, client);
+            try {
+              await crossCheckRecords(item, client);
+              ucnt++;
+            } catch (error) {
+              continue;
+            }
             cnt++;
           }
-          console.log(`${cnt} recordUpdate Done!`);
+          console.log(`${ucnt} recordUpdate done among ${cnt}!`);
         }
       }
       await db.disconnect();
@@ -127,106 +133,144 @@ const mapRecord = (record, key) => {
 
 const crossCheckRecords = async (result, client) => {
   const newData = { ...result };
-
-  const renamed = _.mapKeys(newData.other_data, function (value, key) {
-    return textReplace(key);
-  });
-  newData.other_data = renamed;
-
-  newData.listing_price = result?.listing_price
-    ? parseFloat(result.listing_price)
-    : 0;
-  newData.bedrooms = result?.bedrooms ? parseInt(result.bedrooms) : 0;
-  newData.bathrooms = result?.bathrooms ? parseInt(result.bathrooms) : 0;
-  newData.TaxTotalFinishedSqFt = result?.TaxTotalFinishedSqFt
-    ? parseInt(result.TaxTotalFinishedSqFt)
-    : 0;
-
-  newData.other_data.DOM = result?.other_data?.DOM
-    ? parseInt(result?.other_data?.DOM)
-    : 0;
-
-  newData.other_data.HOA_Fee = result?.other_data["HOA Fee"]
-    ? parseFloat(result?.other_data["HOA Fee"])
-    : 0;
-
-  newData.other_data["Garage_YN"] = result?.other_data["Garage YN"]
-    ? result?.other_data["Garage YN"]
-    : "0";
-  newData.other_data["Fireplace_YN"] = result?.other_data["Fireplace YN"]
-    ? result?.other_data["Fireplace YN"]
-    : "0";
-  newData.other_data["Basement_YN"] = result?.other_data["Basement YN"]
-    ? result?.other_data["Basement YN"]
-    : "0";
-  newData.other_data["Water_View_YN"] = result?.other_data["Water View YN"]
-    ? result?.other_data["Water View YN"]
-    : "0";
-  newData.other_data["HOA_Y/N"] = result?.other_data["HOA Y/N"]
-    ? result?.other_data["HOA Y/N"]
-    : "0";
-
-  newData.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
-    "Condo/Coop Association Y/N"
-  ]
-    ? result?.other_data["Condo/Coop Association Y/N"]
-    : "0";
-
-  const place1 = [];
-  if (newData?.address?.street_number) {
-    place1.push(newData?.address?.street_number);
-  }
-  if (newData?.address?.street) {
-    place1.push(newData?.address?.street);
-  }
-  if (newData?.address?.street_suffix) {
-    place1.push(newData?.address?.street_suffix);
-  }
-  if (newData?.address?.street_dir_suffix) {
-    place1.push(newData?.address?.street_dir_suffix);
-  }
-  if (newData?.address?.street_dir_prefix) {
-    place1.push(newData?.address?.street_dir_prefix);
-  }
-  const addrPart1 = place1.join(" ");
-  const addrArr = [];
-  let zippart;
-  if (newData?.address?.city) {
-    addrArr.push(newData?.address?.city);
-  }
-  if (newData?.other_data?.state) {
-    addrArr.push(newData?.other_data?.state);
-  }
-  if (newData?.other_data?.zipcode) {
-    zippart = newData?.other_data?.zipcode;
-  }
-  const addrPart2 = addrArr.join(", ");
-  const twoPartAddr = addrPart1.concat(", ", addrPart2);
-  const fullAddr = twoPartAddr.concat(" ", zippart);
-  // CODE TO GENERATE FULL ADDRESS
-
-  const fullBathrooms =
-    newData.bathrooms +
-    (newData?.other_data?.half_bathrooms
-      ? parseInt(newData?.other_data?.half_bathrooms)
-      : 0);
-
-  newData.address.fullAddress = fullAddr;
-  newData.fullBathrooms = fullBathrooms;
-
   try {
+    const renamed = _.mapKeys(newData.other_data, function (value, key) {
+      return textReplace(key);
+    });
+    newData.other_data = renamed;
+
+    newData.listing_price = result?.listing_price
+      ? parseFloat(result.listing_price)
+      : 0;
+    newData.bedrooms = result?.bedrooms ? parseInt(result.bedrooms) : 0;
+    newData.bathrooms = result?.bathrooms ? parseInt(result.bathrooms) : 0;
+    newData.TaxTotalFinishedSqFt = result?.TaxTotalFinishedSqFt
+      ? parseInt(result.TaxTotalFinishedSqFt)
+      : 0;
+
+    newData.other_data.DOM = result?.other_data?.DOM
+      ? parseInt(result?.other_data?.DOM)
+      : 0;
+
+    newData.other_data.HOA_Fee = result?.other_data["HOA Fee"]
+      ? parseFloat(result?.other_data["HOA Fee"])
+      : 0;
+
+    newData.other_data["Garage_YN"] = result?.other_data["Garage YN"]
+      ? result?.other_data["Garage YN"]
+      : "0";
+    newData.other_data["Fireplace_YN"] = result?.other_data["Fireplace YN"]
+      ? result?.other_data["Fireplace YN"]
+      : "0";
+    newData.other_data["Basement_YN"] = result?.other_data["Basement YN"]
+      ? result?.other_data["Basement YN"]
+      : "0";
+    newData.other_data["Water_View_YN"] = result?.other_data["Water View YN"]
+      ? result?.other_data["Water View YN"]
+      : "0";
+    newData.other_data["HOA_Y/N"] = result?.other_data["HOA Y/N"]
+      ? result?.other_data["HOA Y/N"]
+      : "0";
+
+    newData.other_data["Condo/Coop_Association_Y/N"] = result?.other_data[
+      "Condo/Coop Association Y/N"
+    ]
+      ? result?.other_data["Condo/Coop Association Y/N"]
+      : "0";
+
+    const place1 = [];
+    if (newData?.address?.street_number) {
+      place1.push(newData?.address?.street_number);
+    }
+    if (newData?.address?.street) {
+      place1.push(newData?.address?.street);
+    }
+    if (newData?.address?.street_suffix) {
+      place1.push(newData?.address?.street_suffix);
+    }
+    if (newData?.address?.street_dir_suffix) {
+      place1.push(newData?.address?.street_dir_suffix);
+    }
+    if (newData?.address?.street_dir_prefix) {
+      place1.push(newData?.address?.street_dir_prefix);
+    }
+    const addrPart1 = place1.join(" ");
+    const addrArr = [];
+    let zippart;
+    if (newData?.address?.city) {
+      addrArr.push(newData?.address?.city);
+    }
+    if (newData?.other_data?.state) {
+      addrArr.push(newData?.other_data?.state);
+    }
+    if (newData?.other_data?.zipcode) {
+      zippart = newData?.other_data?.zipcode;
+    }
+    const addrPart2 = addrArr.join(", ");
+    const twoPartAddr = addrPart1.concat(", ", addrPart2);
+    const fullAddr = twoPartAddr.concat(" ", zippart);
+    // CODE TO GENERATE FULL ADDRESS
+
+    const fullBathrooms =
+      newData.bathrooms +
+      (newData?.other_data?.half_bathrooms
+        ? parseInt(newData?.other_data?.half_bathrooms)
+        : 0);
+
+    newData.address.fullAddress = fullAddr;
+    newData.fullBathrooms = fullBathrooms;
+
     const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
-    await collection.updateOne(
-      { listing_id: result["listing_id"] },
-      {
-        $set: { ...newData },
+    const ddt = await collection.findOne({ listing_id: result["listing_id"] });
+    if (ddt) {
+      if (
+        !ddt.new_listing_price &&
+        ddt.listing_price == parseFloat(result.listing_price)
+      ) {
+        newData.listing_price = parseFloat(result.listing_price);
+      } else if (
+        !ddt.new_listing_price &&
+        ddt.listing_price != parseFloat(result.listing_price)
+      ) {
+        newData.listing_price = ddt.listing_price;
+        newData.new_listing_price = result?.listing_price
+          ? parseFloat(result.listing_price)
+          : 0;
+      } else if (
+        ddt.new_listing_price &&
+        ddt.new_listing_price == parseFloat(result.listing_price)
+      ) {
+        newData.listing_price = ddt.listing_price;
+        newData.new_listing_price = ddt.new_listing_price;
+      } else if (
+        ddt.new_listing_price &&
+        ddt.new_listing_price != parseFloat(result.listing_price)
+      ) {
+        newData.listing_price = ddt.new_listing_price;
+        newData.new_listing_price = result?.listing_price
+          ? parseFloat(result.listing_price)
+          : 0;
       }
-    );
+    }
+
+    try {
+      const collection = client
+        .db(CONSTANTS.DB_NAME)
+        .collection("propertyData");
+      await collection.updateOne(
+        { listing_id: result["listing_id"] },
+        {
+          $set: { ...newData },
+        }
+      );
+    } catch (error) {
+      console.error(
+        `error while updating data from crossCheckRecords()`,
+        error
+      );
+    }
   } catch (error) {
-    console.error(
-      `error while updating data from crossCheckRecords() ${new Date().toUTCString()}`,
-      error
-    );
+    console.error(`error while getting and updating data from DB`, error);
   }
 };
 
