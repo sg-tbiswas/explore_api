@@ -26,7 +26,7 @@ const recordUpdate = async () => {
       const fromDateTime = new Date(new Date("2023-08-29"));
       const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
 
-      const toDateTime = new Date(new Date("2023-10-06"));
+      const toDateTime = new Date(new Date("2023-10-08"));
       const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
 
       const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
