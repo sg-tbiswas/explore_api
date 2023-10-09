@@ -47,7 +47,7 @@ const fetchRecord = async (resource, className, keyMapping, client) => {
     const records = await RETS_CLIENT.search(
       resource,
       className,
-      `(ListingId=DCDC2108186)`,
+      `(ListingId=MDBA2093994)`,
       {
         Select: feildsValues.join(","),
       }
@@ -103,7 +103,45 @@ const fetchRecord = async (resource, className, keyMapping, client) => {
       return updatedRecord;
     });
     const result = recordsWithUpdatedFields[0];
-    console.log("result>>>>", result)
+    const newData = {...result};
+    console.log("price before update>>>>", newData.listing_price);
+
+    const propertyCollection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
+    const ddt = await propertyCollection.findOne({ listing_id: result["listing_id"] });
+    if (ddt) {
+      if (
+        !ddt.new_listing_price &&
+        ddt.listing_price == parseFloat(result.listing_price)
+      ) {
+        newData.listing_price = parseFloat(result.listing_price);
+      } else if (
+        !ddt.new_listing_price &&
+        ddt.listing_price != parseFloat(result.listing_price)
+      ) {
+        newData.listing_price = ddt.listing_price;
+        newData.new_listing_price = result?.listing_price
+          ? parseFloat(result.listing_price)
+          : 0;
+      } else if (
+        ddt.new_listing_price &&
+        ddt.new_listing_price == parseFloat(result.listing_price)
+      ) {
+        newData.listing_price = ddt.listing_price;
+        newData.new_listing_price = ddt.new_listing_price;
+      } else if (
+        ddt.new_listing_price &&
+        ddt.new_listing_price != parseFloat(result.listing_price)
+      ) {
+        newData.listing_price = ddt.new_listing_price;
+        newData.new_listing_price = result?.listing_price
+          ? parseFloat(result.listing_price)
+          : 0;
+      }
+    }
+
+    console.log("after result>>>>", newData);
+
+
     //await updateSingleListing(result, client);
   } catch (err) {
     console.error(

@@ -123,9 +123,6 @@ const crossCheckRecords = async (result, client) => {
   });
   newData.other_data = renamed;
 
-  newData.listing_price = result?.listing_price
-    ? parseFloat(result.listing_price)
-    : 0;
   newData.bedrooms = result?.bedrooms ? parseInt(result.bedrooms) : 0;
   newData.bathrooms = result?.bathrooms ? parseInt(result.bathrooms) : 0;
   newData.TaxTotalFinishedSqFt = result?.TaxTotalFinishedSqFt
@@ -203,6 +200,43 @@ const crossCheckRecords = async (result, client) => {
 
   newData.address.fullAddress = fullAddr;
   newData.fullBathrooms = fullBathrooms;
+
+  const propertyCollection = client
+    .db(CONSTANTS.DB_NAME)
+    .collection("propertyData");
+  const ddt = await propertyCollection.findOne({
+    listing_id: result["listing_id"],
+  });
+  if (ddt) {
+    if (
+      !ddt.new_listing_price &&
+      ddt.listing_price == parseFloat(result.listing_price)
+    ) {
+      newData.listing_price = parseFloat(result.listing_price);
+    } else if (
+      !ddt.new_listing_price &&
+      ddt.listing_price != parseFloat(result.listing_price)
+    ) {
+      newData.listing_price = ddt.listing_price;
+      newData.new_listing_price = result?.listing_price
+        ? parseFloat(result.listing_price)
+        : 0;
+    } else if (
+      ddt.new_listing_price &&
+      ddt.new_listing_price == parseFloat(result.listing_price)
+    ) {
+      newData.listing_price = ddt.listing_price;
+      newData.new_listing_price = ddt.new_listing_price;
+    } else if (
+      ddt.new_listing_price &&
+      ddt.new_listing_price != parseFloat(result.listing_price)
+    ) {
+      newData.listing_price = ddt.new_listing_price;
+      newData.new_listing_price = result?.listing_price
+        ? parseFloat(result.listing_price)
+        : 0;
+    }
+  }
 
   try {
     const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");

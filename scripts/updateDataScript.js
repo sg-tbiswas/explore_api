@@ -220,8 +220,8 @@ const crossCheckRecords = async (result, client) => {
     newData.address.fullAddress = fullAddr;
     newData.fullBathrooms = fullBathrooms;
 
-    const collection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
-    const ddt = await collection.findOne({ listing_id: result["listing_id"] });
+    const propertyCollection = client.db(CONSTANTS.DB_NAME).collection("propertyData");
+    const ddt = await propertyCollection.findOne({ listing_id: result["listing_id"] });
     if (ddt) {
       if (
         !ddt.new_listing_price &&
