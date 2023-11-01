@@ -201,10 +201,11 @@ const fetchImagesWithListingId = async (id) => {
         `(ListingId=${id})`,
         {
           Select:
-            "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
+            "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium,MediaDisplayOrder",
         }
       );
       let records = [];
+      console.log("query@@>>",query?.Objects)
       if (query.Objects && query.Objects.length > 0) {
         for (const obj of query.Objects) {
           const chkData = await checkExistingMediaURL(obj, client);
@@ -252,5 +253,7 @@ const fetchRecordWithListingId = async () => {
   } catch (error) {}
 };
 
-fetchRecordWithListingId();
-//fetchImagesWithListingId("DCDC2102806");
+//fetchRecordWithListingId();
+fetchImagesWithListingId("DCDC2117696");
+
+
