@@ -11,7 +11,9 @@ async function checkExistingMediaURL(data, client) {
     const collection = client
       .db(CONSTANTS.DB_NAME)
       .collection("propertyDataImages");
-    const ddt = await collection.find({ MediaURL: data.MediaURL }).toArray();
+    const ddt = await collection
+      .find({ MediaURL: data.MediaURL, ListingId: data.ListingId })
+      .toArray();
     if (ddt) {
       return ddt;
     } else {
@@ -50,7 +52,7 @@ const imageUpload = async () => {
               `(ListingId=${id})`,
               {
                 Select:
-                  "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium",
+                  "ListingId,MediaURL,MediaURLFull,MediaURLHD,MediaURLHiRes,MediaURLThumb,MediaURLMedium,MediaDisplayOrder",
               }
             );
             if (query.Objects && query.Objects.length > 0) {
@@ -109,10 +111,9 @@ const getListingIds = async () => {
     const listingIdData = await RETS_CLIENT.search(
       "Property",
       "ALL",
-      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-10-05)`,
+      `(StandardStatus=|Active,Pending,Active Under Contract) AND (MLSListDate=2023-10-31)`,
       {
         Select: "ListingId",
-        Offset: 550,
       }
     );
 

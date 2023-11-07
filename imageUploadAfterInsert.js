@@ -9,7 +9,9 @@ async function checkExistingMediaURL(data, client) {
     const collection = client
       .db(CONSTANTS.DB_NAME)
       .collection("propertyDataImages");
-    const ddt = await collection.find({ MediaURL: data.MediaURL }).toArray();
+    const ddt = await collection
+      .find({ MediaURL: data.MediaURL, ListingId: data.ListingId })
+      .toArray();
     if (ddt) {
       return ddt;
     } else {
