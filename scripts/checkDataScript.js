@@ -47,7 +47,7 @@ const fetchRecord = async (resource, className, keyMapping, client) => {
     const records = await RETS_CLIENT.search(
       resource,
       className,
-      `(ListingId=MDBA2093994)`,
+      `(ListingId=DCDC2105328)`,
       {
         Select: feildsValues.join(","),
       }
@@ -56,7 +56,7 @@ const fetchRecord = async (resource, className, keyMapping, client) => {
     allRecords = allRecords.concat(records.Objects);
 
     count = parseInt(records.TotalCount);
-    console.log("allRecords", allRecords.length);
+    console.log("allRecords", allRecords);
     const recordsWithUpdatedFields = allRecords.map((record, key) => {
       console.log(key);
       const updatedRecord = {};
@@ -217,7 +217,7 @@ const fetchImagesWithListingId = async (id) => {
           }
         }
       }
-      console.log("records>>>>", records);
+      console.log("records>>>>gggg", records);
     } catch (err) {
       console.error(
         `Error searching for ListingId ${id}: ${
@@ -253,4 +253,4 @@ const fetchRecordWithListingId = async () => {
 };
 
 fetchRecordWithListingId();
-//fetchImagesWithListingId("DCDC2102806");
+// fetchImagesWithListingId("DCDC2105328");
