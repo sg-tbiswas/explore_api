@@ -65,7 +65,7 @@ const fetchRecords = async (resource, className, keyMapping, client) => {
     const records = await RETS_CLIENT.search(
       resource,
       className,
-      `(StandardStatus=|Active,Pending,Active Under Contract)  AND (MLSListDate=2023-10-21)`,
+      `(StandardStatus=|Active,Pending,Active Under Contract)  AND (MLSListDate=2023-10-22)`,
       {
         Select: feildsValues.join(","),
       }
