@@ -120,3 +120,19 @@ Cron("*/20 * * * *", async () => {
     console.log("DB connection error!", error);
   }
 });
+
+
+Cron("0 0 * * 0,2,4,6", async () => {
+  console.log(`Cron Job restarted at ${new Date().toUTCString()}`);
+  exec("pm2 restart 1", (error, stdout, stderr) => {
+    if (error) {
+      console.log(`error: ${error.message}`);
+      return;
+    }
+    if (stderr) {
+      console.log(`stderr: ${stderr}`);
+      return;
+    }
+    console.log(`pm2 cron restarted: ${stdout}`);
+  });
+});
