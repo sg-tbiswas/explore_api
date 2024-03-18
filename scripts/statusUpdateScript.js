@@ -22,7 +22,7 @@ const statusUpdate = async () => {
       const fromDateTime = new Date(new Date("2023-09-01"));
       const formattedFromDateTime = fromDateTime.toISOString().slice(0, -1);
 
-      const toDateTime = new Date(new Date("2023-10-05"));
+      const toDateTime = new Date(new Date("2023-10-28"));
       const formattedToDateTime = toDateTime.toISOString().slice(0, -1);
 
       const currentDate = new Date(now.getTime()).toISOString().slice(0, -1);
